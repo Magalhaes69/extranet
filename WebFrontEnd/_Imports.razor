@@ -1,0 +1,52 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.JSInterop
+@using WebFrontEnd
+@using WebFrontEnd.Layout
+@using WebFrontEnd.Pages.Components
+@using WebFrontEnd.Services.Auth
+
+
+@using WebFrontEnd.Pages.Components.Geral
+@using WebFrontEnd.Services.BusinessPartners
+@using WebFrontEnd.Services.Dashboard
+@using WebFrontEnd.Services.IncomingPayments
+@using WebFrontEnd.Services.Invoices
+@using WebFrontEnd.Services.Items
+@using WebFrontEnd.Services.Orders.Models
+@using WebFrontEnd.Services
+@using WebFrontEnd.Services.Orders
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using WebFrontEnd.Helps
+@using WebFrontEnd.Services.VatGroups
+@using WebFrontEnd.Services.Warehouses
+@using WebFrontEnd.Shared.Dtos
+@using WebFrontEnd.Services.BusinessPartners.Dto
+@using WebFrontEnd.Services.Items.DTO
+@using WebFrontEnd.Services.VatGroups.DTO
+@using WebFrontEnd.Services.Warehouses.Dto
+@using WebFrontEnd.Services.Invoices.Dto
+
+@inject IJSRuntime js
+
+@inject IOrderService OrderService;
+@inject IItemsService ItemsService;
+@inject IVatGroupsService VatGroupsService;
+@inject IBusinessPartnersService BusinessPartnersService;
+@inject IWarehousesService WarehousesService;
+@inject IDashboardService DashboardService;
+@inject IInvoicesService InvoicesService;
+@inject IIncomingPaymentsService IncomingPaymentsService;
+
+@inject AuthService AuthService
+@inject NavigationManager nav
+
+@inject MessageDialogService MessageDialogService
+@inject AuthService authService
+@inject AuthenticationStateProvider AuthStateProvider

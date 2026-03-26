@@ -1,0 +1,129 @@
+﻿@using WebFrontEnd.Services.Auth
+  <!--begin::Header-->
+<nav class="app-header navbar navbar-expand bg-body">
+    <!--begin::Container-->
+    <div class="container-fluid">
+        <!--begin::Start Navbar Links-->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-lte-toggle="sidebar" @onclick="ToggleSidebar" role="button">
+                    <i class="bi bi-list-ul icon-color-default" style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-md-flex align-items-center">
+                <NavLink href=""><img style="height:1.665rem !important; width: 11.875rem !important;" src="/img/logo@sap_horizon.png" /></NavLink>
+            </li>
+            <li class="nav-item d-none d-md-block pt-1">
+                <span id="AppTilePage" class="nav-link fw-bold">Gerir ordens de compra</span>
+            </li>
+        </ul>
+        <!--end::Start Navbar Links-->
+        <!--begin::End Navbar Links-->
+        <ul class="navbar-nav ms-auto">
+            <!--begin::Navbar Search-->
+            <li class="nav-item">
+                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                    <i class="bi bi-search"></i>
+                </a>
+            </li>
+            <!--end::Navbar Search-->
+            <!--begin::Notifications Dropdown Menu-->
+            <li class="nav-item dropdown" data-bs-auto-close="outside">
+                <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                    <i class="bi bi-bell-fill"></i>
+                    <span class="navbar-badge badge text-bg-warning">15</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 dropdown-menu-principal">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs px-2 pt-2 tab-text-color" id="notifTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#all">Todos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#date">Por data</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#priority">Por prioridade</a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content text-center p-3">
+                        <div class="tab-pane fade show active" id="all">
+                            Não tem notificações
+                        </div>
+                        <div class="tab-pane fade" id="date">
+                            Sem dados
+                        </div>
+                        <div class="tab-pane fade" id="priority">
+                            Sem prioridade
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <!--end::Notifications Dropdown Menu-->
+            <!--begin::User Menu Dropdown-->
+            <li class="nav-item dropdown user-menu">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="/img/user2-160x160.jpg"
+                         class="user-image rounded-circle shadow"
+                         alt="" />
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                    <AuthorizeView>
+                        <Authorized>
+                            <span class="dropdown-item fa-bold">Hello, @context.User.Identity?.Name!</span>
+                        </Authorized>
+                    </AuthorizeView>
+                    <a href="#" class="dropdown-item">
+                        <i class="fa-solid fa-user-clock"></i> Atividades recentes
+                    </a>
+
+                    <a href="#" class="dropdown-item">
+                        <i class="bi bi-people-fill me-2"></i> Utilizado frequentemente
+                    </a>
+
+                    <a href="#" class="dropdown-item">
+                        <i class="fa-solid fa-gear"></i> Definições
+                    </a>
+
+                    <button @onclick="logout" class="dropdown-item">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Terminar a sessão
+                    </button>
+
+                </div>
+            </li>
+            <!--end::User Menu Dropdown-->
+        </ul>
+        <!--end::End Navbar Links-->
+    </div>
+    <!--end::Container-->
+</nav>
+<!--end::Header-->
+@inject AuthenticationStateProvider authenticationState
+@code {
+    private bool isCollapsed = true;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+        }
+    }
+
+    private async Task ToggleSidebar()
+    {
+        isCollapsed = !isCollapsed;
+
+        await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+    }
+
+    private async Task logout()
+    {
+        var authStateProvider = (CustomAuthStateProvider)authenticationState;
+        authStateProvider.Logout();
+        nav.NavigateTo("/login");
+
+    }
+}

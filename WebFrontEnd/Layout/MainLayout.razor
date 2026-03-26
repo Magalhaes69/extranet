@@ -1,0 +1,40 @@
+﻿@using WebFrontEnd.Services.Auth
+
+@inherits LayoutComponentBase
+<div class="app-wrapper">
+    <AppHeader />
+    <Sidebar />
+    <main class="app-main" id="main" tabindex="-1">
+        @Body
+    </main>
+</div>
+<style>
+    .dropdown-menu-principal {
+        min-width: 450px !important;
+        width: 350px !important;
+        max-width: 350px !important;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        .dropdown-menu-principal .nav-tabs .nav-link {
+        font-weight: 600;
+        border: none;
+        color: #6c757d;
+    }
+
+.dropdown-menu-principal .nav-tabs .nav-link.active {
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+        }
+
+        .dropdown-menu-principal .tab-content {
+        font-size: 14px;
+        color: #6c757d;
+    }
+
+
+</style>
+@code {
+
+}

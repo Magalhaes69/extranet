@@ -1,0 +1,139 @@
+﻿@page "/detailsOrder"
+@using WebFrontEnd.Services.Auth
+@attribute [Authorize]
+<div class="card card-primary card-outline">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">@customer.Name</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" @onclick="ToggleCollapse">
+                <i class="fas @(Collapsed ? "fa-plus" : "fa-minus")"></i>
+            </button>
+        </div>
+    </div>
+
+    @if (!Collapsed)
+    {
+        <div class="card-body">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3" id="detailsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(ActiveTab == "general" ? "active" : "")" @onclick="(() => SetActiveTab(general))">
+                        General
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(ActiveTab == "address" ? "active" : "")"
+                            >
+                        Address
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(ActiveTab == "orders" ? "active" : "")"
+                            >
+                        Orders
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- General Info -->
+                @if (ActiveTab == "general")
+                {
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">Customer ID:</div>
+                        <div class="col-sm-8">@customer.Id</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">Email:</div>
+                        <div class="col-sm-8">@customer.Email</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">Phone:</div>
+                        <div class="col-sm-8">@customer.Phone</div>
+                    </div>
+                }
+
+                <!-- Address Info -->
+                @if (ActiveTab == "address")
+                {
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">Street:</div>
+                        <div class="col-sm-8">@customer.Address.Street</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">City:</div>
+                        <div class="col-sm-8">@customer.Address.City</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4 fw-bold">Country:</div>
+                        <div class="col-sm-8">@customer.Address.Country</div>
+                    </div>
+                }
+
+                <!-- Orders Info -->
+                @if (ActiveTab == "orders")
+                {
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in customer.Orders)
+                            {
+                                <tr>
+                                    <td>@order.OrderId</td>
+                                    <td>@order.Date.ToShortDateString()</td>
+                                    <td>@order.Total.ToString("C")</td>
+                                    <td>@order.Status</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@* <h3>DetailsOrder - @docEntry</h3>
+ *@
+@code {
+    //[Parameter] public int docEntry { get; set; }
+    private string general { get; set; } = "general";
+    private bool Collapsed { get; set; } = false;
+    private string ActiveTab { get; set; } = "orders";
+
+    private void ToggleCollapse()
+    {
+        Collapsed = !Collapsed;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        ActiveTab = tab;
+    }
+
+    private CustomerModel customer = new()
+    {
+        Id = "CL10001",
+        Name = "John Doe",
+        Email = "john.doe@example.com",
+        Phone = "+258 84 123 4567",
+        Address = new AddressModel
+        {
+            Street = "123 Main St.",
+            City = "Maputo",
+            Country = "Mozambique"
+        },
+        Orders = new List<OrderModel>
+        {
+            new OrderModel { OrderId = "SO1001", Date = DateTime.Now.AddDays(-5), Total = 1500, Status = "Open" },
+            new OrderModel { OrderId = "SO1002", Date = DateTime.Now.AddDays(-1), Total = 980, Status = "Delivered" }
+        }
+    };
+}

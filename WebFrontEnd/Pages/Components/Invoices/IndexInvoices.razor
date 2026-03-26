@@ -1,0 +1,210 @@
+﻿@page "/invoices"
+
+@attribute [Authorize]
+
+<div class="bg-white mb-4 ">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="As minhas facturas do fornecedor" />
+
+        <div class="app-content">
+            <div class="container-fluid">
+                <!-- Filter Section -->
+                @if (isOpen)
+                {
+                    <div class="pb-4">
+                        <form class="row g-3 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label">Nº do documento</label>
+                                <input type="text" class="form-control" placeholder="Nº do documento">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Código do cliente</label>
+                                <input type="text" class="form-control" placeholder="Código do cliente">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nome do cliente</label>
+                                <input type="text" class="form-control" placeholder="Nome do cliente">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Data de entrega</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Status</label>
+                                <select class="form-select">
+                                    <option selected>Em aberto</option>
+                                    <option>Fechado</option>
+                                    <option>Cancelado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-sm btn-primary">Ir</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+
+                <!-- Floating toggle button -->
+                <div class="card-floating-btn">
+                    <button type="button" class="btn btn-light shadow" @onclick="ToggleCard">
+                        <i class="bi @(isOpen ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+
+
+        <!-- Top grid options -->
+        <div class="mb-2 d-flex justify-content-start grid-options">
+            <!-- Right aligned icons -->
+            <div class="ms-auto d-flex">
+                
+                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">Pré-visualização</button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Opção 1</a></li>
+                </ul>
+                <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-gear"></i></button>
+                <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-table-cells"></i></button>
+                <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-chart-column"></i></button>
+                <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-list"></i></button>
+            </div>
+        </div>
+
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-body table-wrapper p-0" style="height: calc(100vh - 300px);min-height: 300px;max-height: 80vh;overflow-y: auto;">
+                @if (isLoading)
+                {
+                    <LoadingPage />
+                }
+                else if (orders!.Count() > 0)
+                {
+                    <table class="table table-head-fixed table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col"><input type="checkbox"></th>
+                                <th scope="col">Nº do documento</th>
+                                <th scope="col">Código do cliente</th>
+                                <th scope="col">Nome do cliente</th>
+                                <th scope="col">Nº referência</th>
+                                <th scope="col" class="text-end">Data de lançamento</th>
+                                <th scope="col" class=" text-end">Data de Vencimento</th>
+                                <th scope="col" class="text-end">Total do documento</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end"> Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var item in orders!)
+                            {
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td>@item.DocNum</td>
+                                    <td>
+                                        <a href="#" class="customer-link">
+                                            <i class="bi bi-chevron-right" style="font-size:1rem!important;"></i> @item.CardCode
+                                        </a>
+                                    </td>
+                                    <td>@item.CardName</td>
+                                    <td>@item.CardCode</td>
+                                    <td class="text-end">@(item.DocDate.HasValue ? item.DocDate.Value.ToString("dd/MM/yyyy") : "" )</td>
+                                    <td class="text-end">@(item.DocDueDate.HasValue? item.DocDueDate.Value.ToString("dd/MM/yyyy") : "")</td>
+                                    <td class="text-end">@(item.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) ?? "") @item.DocCurrency</td>
+                                    <td>Fechado</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm custom-btn"><i class="icon-list-custom bi bi-chevron-right"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7" class="text-end">Total</td>
+                                <td class="text-end">@total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) MZM</td>
+                                @* <td colspan="1"></td> *@
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+                else
+                {
+                    <table class="table table-head-fixed table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scopes="col"><input type="checkbox"></th>
+                                <th scope="col">Nº do documento</th>
+                                <th scope="col">Código do cliente</th>
+                                <th scope="col">Nome do cliente</th>
+                                <th scope="col">Nº referência</th>
+                                <th scope="col" class="text-end">Data de lançamento</th>
+                                <th scope="col" class=" text-end">Data de entrega</th>
+                                <th scope="col" class="text-end">Total do documento</th>
+                                <th scope="col" class="text-end"> Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="9" class="text-center">No Invoices found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    List<GetAllInvoicesDto>? orders = new();
+    private bool isOpen = true;
+    private decimal total;
+    private bool isLoading;
+    private string CardCode = string.Empty;
+    private bool isCollapsed = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        CardCode = user.GetCardCode();
+        isLoading = true;
+        orders = await InvoicesService.GetInvoicesAsync(CardCode);
+        total = orders.Sum(x => x.DocTotal ?? 0);
+
+        isLoading = false;
+    }
+
+    private async Task Refresh()
+    {
+        orders = await InvoicesService.GetInvoicesAsync(CardCode, true);
+    }
+
+    private void ToggleCard()
+    {
+        isOpen = !isOpen;
+    }
+
+    private void Recalculate()
+    {
+        total = orders?.Sum(x => x.DocTotal) ?? 0;
+    }
+
+}

@@ -1,0 +1,126 @@
+﻿@using WebFrontEnd.Services.Auth
+@using WebFrontEnd.Services.Items.DTO
+@using WebFrontEnd.Services.VatGroups.DTO
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content rounded-3">
+
+                <!-- Body -->
+                <div class="modal-body px-3">
+                    <!-- Filters/Header -->
+                    <div class="app-content-header bg-white pt-2 pb-1">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <h4 class="mb-0">Artigos</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4 pb-4">
+                        @if (isOpen)
+                        {
+                            <div class="card-body pb-2">
+                                <form class="row g-3 align-items-end">
+                                    <div class="col-md-2">
+                                        <label class="form-label">Código</label>
+                                        <input type="text" class="form-control" placeholder="Nº do documento">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Código do cliente</label>
+                                        <input type="text" class="form-control" placeholder="Código do cliente">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Nome do cliente</label>
+                                        <input type="text" class="form-control" placeholder="Nome do cliente">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Data de entrega</label>
+                                        <input type="date" class="form-control">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select">
+                                            <option selected>Em aberto</option>
+                                            <option>Fechado</option>
+                                            <option>Cancelado</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="submit" class="btn btn-sm btn-primary">Iniciar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th scope="col">Código</th>
+                                    <th scope="col">Nome</th>
+                                    <th class="text-end" scope="col">Percentagem</th>
+                                    <th  scope="col">UE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in iva)
+                                {
+                                    <tr>
+                                        <td style="cursor:pointer" @onclick="() => Confirm(item)">@item.Code</td>
+                                        <td style="cursor:pointer" @onclick="() => Confirm(item)">@item.Name</td>
+                                        <td class="text-end" style="cursor:pointer" @onclick="() => Confirm(item)">@item.VatGroups_Lines![0].Rate</td>
+                                        <td style="cursor:pointer" @onclick="() => Confirm(item)">@item.EUDisplay</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer py-1">
+                    <button class="btn btn-secondary btn-sm rounded-1" @onclick="CloseModal">Fechar</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public EventCallback<VatGroupsDto> OnVatGroupsSelected { get; set; }
+    private List<VatGroupsDto> iva;
+
+    private bool isOpen = true;
+    private bool IsVisible = false;
+
+
+    public void Show(List<VatGroupsDto> items)
+    {
+        iva = items;
+        IsVisible = true;
+        StateHasChanged();
+    }
+    public void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private async Task Confirm(VatGroupsDto iva)
+    {
+        await OnVatGroupsSelected.InvokeAsync(iva);
+
+        CloseModal();
+    }
+
+
+
+}

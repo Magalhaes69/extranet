@@ -1,0 +1,533 @@
+﻿@page "/add-orders"
+
+@attribute [Authorize]
+@implements IDisposable
+
+<!--begin::App Content Header-->
+<AppContentHeader Title="Ordem de compra" />
+<!--end::App Content Header-->
+
+<div class="app-content">
+    <div class="container-fluid">
+        <EditForm Model="orderRequest" Enhance OnValidSubmit="HandleSaveOrders">
+             <DataAnnotationsValidator />
+             <ValidationSummary />
+
+            <div class="card mb-5" >
+                <div class="card-body">
+                    <div class="row mb-3">
+
+                        <label for="inputEmail3" class="col-sm-2 col-form-label"><span class="text-danger fw-bold">*</span>Cliente:</label>
+                        <div class="col-sm-4">
+                            <InputText class="form-control form-control form-control-sm" @bind-Value="orderRequest.CardCode" disabled />
+                        </div>
+
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Série/Nº:</label>
+                        <div class="col-sm-4">
+                            <InputNumber class="form-control form-control form-control-sm" @bind-Value="orderRequest.Series" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Nome:</label>
+                        <div class="col-sm-4">
+                            <InputText class="form-control form-control-sm" @bind-Value="orderRequest.CardName" disabled />
+                        </div>
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Data de lançamento</label>
+                        <div class="col-sm-4">
+                            <InputDate class="form-control form-control-sm" @bind-Value="orderRequest.DocDate" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Pessoa de contacto:</label>
+                        <div class="col-sm-4">
+                            <div class="position-relative">
+                                <InputText class="form-control form-control-sm" @bind-Value="orderRequest.CntctCode" />
+
+                                <button type="button" @onclick="OpenModalContactEmployees"
+                                        class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                        style="border: none; background: transparent;">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+
+                            </div>
+                        </div>
+                       
+                        <label for="inputEmail3" class="col-sm-2 col-form-label"><span class="text-danger fw-bold">*</span>Data de entrega</label>
+                        <div class="col-sm-4">
+                            <InputDate class="form-control form-control-sm" @bind-Value="orderRequest.DocDueDate" />
+
+                            <div class="text-danger">
+                                <ValidationMessage For="@(() => orderRequest.DocDueDate)" />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Nº de referência do cliente:</label>
+                        <div class="col-sm-4">
+                            <InputText class="form-control form-control-sm" @bind-Value="orderRequest.Referencia" />
+                        </div>
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Data do documento</label>
+                        <div class="col-sm-4">
+                            <InputDate class="form-control form-control-sm" @bind-Value="orderRequest.TaxDate" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Observações:</label>
+                        <div class="col-sm-4">
+                            <InputTextArea rows="3" class="form-control form-control-sm" @bind-Value="orderRequest.NumAtCard" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mt-3">Conteúdo</h4>
+
+            <div class="card" style="margin-bottom: 50px">
+                <div class="card-body">
+                    <h6 class="mt-3">Preferências</h6>
+
+                    <div class="row mb-3">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Moeda: </label>
+                        <div class="col-sm-4">
+                            <InputText class="form-control form-control-sm" @bind-Value="orderRequest.DocCurrency" />
+                        </div>
+
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Tipo de artigo/serviço:</label>
+                        <div class="col-sm-4">
+                            <InputSelect id="itemSelect" class="form-select form-select-sm" @bind-Value="orderRequest.DocType">
+                                @foreach (var item in docTypeDtos)
+                                {
+                                    <option value="@item.Code">@item.Description</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+
+
+                    <h6 class="mt-3 fw-bold">Detalhes</h6>
+
+                    <!-- Top grid options -->
+                    <div class="mb-2 d-flex justify-content-start grid-options">
+                        <!-- Right aligned icons -->
+                        <div class="ms-auto d-flex">
+                            <button type="button" class="btn btn-link btn-sm custom-btn text-decoration-none">Criar</button>
+                            <button type="button" class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">Copiar para</button>
+                            
+                            <button type="button" class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"> <i class="fa-solid fa-gear"></i></button>
+                            <button type="button" @onclick="RemoveSelectedLines" class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <!--Inicio da Tabela-->
+                            <table class="table table-hover align-middle" id="resizable-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col"><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                                        <th scope="col">#</th>
+                                        <th scope="col" style="position: relative;">Nº do artigo <div class="resizer"></div></th>
+                                        <th scope="col" style="position: relative;">Descrição do artigo <div class="resizer"></div></th>
+                                        <th class="text-end" scope="col" style="position: relative;">Quantidade <div class="resizer"></div></th>
+                                        <th class="text-end" scope="col" style="position: relative;">Preço unitário</th>
+                                        <th class="text-end" scope="col" style="position: relative;">Código de imposto</th>
+                                        <th class="text-end" scope="col" style="position: relative;">Total</th>
+                                        <th scope="col" style="position: relative;">Armazém</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in orderRequest.DocumentLines)
+                                    {
+                                        <tr>
+                                            <td><InputCheckbox @bind-Value="line.Selected" /></td>
+                                            <td><label class="col-form-label">@line.Line</label></td>
+                                            <td class="">
+                                                <div class="position-relative" style="max-width: 200px;">
+
+                                                    <InputText class="form-control form-control-sm pe-5 w-100" @bind-Value="line.ItemCode" />
+
+                                                    <button type="button"
+                                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                                            @onclick="() => OpenModal(line)"
+                                                            style="border: none; background: transparent;">
+                                                        <i class="bi bi-copy"></i>
+                                                    </button>
+
+                                                </div>
+                                            </td>
+                                            <td><InputText class="form-control form-control-sm  w-100" @bind-Value="line.ItemDescription" /></td>
+                                            <td><InputNumber step="0.01" class="form-control form-control-sm  w-100 text-end" @bind-Value="line.Quantity" /></td>
+                                            <td><InputText step="0.01" class="form-control form-control-sm  w-100 text-end" @bind-Value="line._UnitPrice" disabled /></td>
+                                            <td class="">
+                                                <div class="position-relative" style="max-width: 200px;">
+
+                                                    <InputText class="form-control form-control-sm pe-5 w-100" @bind-Value="line.VatGroup" />
+
+                                                    <button type="button"
+                                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                                            @onclick="() => OpenModalVat(line)"
+                                                            style="border: none; background: transparent;">
+                                                        <i class="bi bi-copy"></i>
+                                                    </button>
+
+                                                </div>
+                                            </td>
+                                            <td><InputText step="0.01" class="form-control form-control-sm  w-100 text-end" @bind-Value="line._LineTotal" disabled /></td>
+                                            <td class="">
+                                                <div class="position-relative" style="max-width: 200px;">
+
+                                                    <InputText class="form-control form-control-sm pe-5 w-100" @bind-Value="line.WarehouseCode" />
+
+                                                    <button type="button"
+                                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                                            @onclick="() => OpenModalWarehouses(line)"
+                                                            style="border: none; background: transparent;">
+                                                        <i class="bi bi-copy"></i>
+                                                    </button>
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+
+
+            <!-- Fixed bottom footer inside wrapper -->
+            <div class="position-fixed bottom-0 p-2 bg-light border shadow-sm rounded-3 mb-2"
+                 style="z-index:1050; width:calc(100% - 250px); left:200px;" id="bottom-footer">
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-sm btn-secondary rounded-3">Cancel</button>
+                    @if (MessageDialogService.ShowSaveButton)
+                    {
+                        <button type="submit" class="btn btn-sm btn-primary rounded-3">Save</button>
+                    }
+                    <BusyButtonComponent ShowBusyButton="@MessageDialogService.ShowBusyButton" />
+                </div>
+
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<ModalArtigos @ref="modalArtigos"
+              OnItemsSelected="OnItemsSelected"
+              Tprice="TPriceBusiness" />
+
+<ModalTaxaIVA @ref="taxaIVA"
+              OnVatGroupsSelected="OnVatGroupsSelected" />
+
+<MessageDialog @ref="MessageDialogService.messageDialog" />
+
+<ModalContactEmployees @ref="modalContact"
+                       OnContactEmployeesSelected="OnContactEmployeesSelected" />
+
+<ModalWarehouses @ref="modalWarehouses"
+                 OnWarehousesSelected="OnWarehousesSelected" />
+<style>
+    #resizable-table th {
+        user-select: none;
+    }
+
+        #resizable-table th .resizer {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 1;
+        }
+</style>
+
+@code {
+    private bool AllSelected
+    {
+        get => orderRequest.DocumentLines.All(l => l.Selected);
+        set
+        {
+            foreach (var line in orderRequest.DocumentLines)
+            {
+                line.Selected = value; 
+            }
+        }
+    }
+    private bool isOpen = true;
+    private bool ShowModal = false;
+    private string CardCode = string.Empty;
+    private string CardType = string.Empty;
+    private int? TPriceBusiness = 0;
+    private OrderLineDto CurrentLine;
+
+    private List<ItemsDto> itemsDtos = new();
+    private ModalArtigos modalArtigos;
+
+    private bool ShowModalVat = false;
+    private ModalTaxaIVA taxaIVA;
+    private List<VatGroupsDto> vatGroups = new();
+
+    private int CurrentIndex;
+
+    private OrderDto orderRequest = new();
+    private bool isCollapsed = true;
+
+    private ModalContactEmployees modalContact;
+    private List<ContactEmployeesDto> contactEmployeesDtos = new();
+
+    private List<DocTypeDto> docTypeDtos = new()
+    {
+        new DocTypeDto {Code = "dDocument_Items", Description = "Artigos"},
+        new DocTypeDto {Code = "dDocument_Service", Description = "Serviço"}
+    };
+
+    private ModalWarehouses modalWarehouses;
+    private List<WarehousesDto> warehousesDtos = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+
+            await js.InvokeVoidAsync("initResizableTable");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinessPartners();
+        MessageDialogService.Action += StateHasChanged;
+    }
+
+    private async Task LoadItems()
+    {
+        itemsDtos = await ItemsService.GetItemsAsync();
+    }
+    private void ReorderLines()
+    {
+        for (int i = 0; i < orderRequest.DocumentLines.Count; i++)
+        {
+            orderRequest.DocumentLines[i].Line = i + 1;
+        }
+    }
+    private void RemoveSelectedLines()
+    {
+        orderRequest.DocumentLines = orderRequest.DocumentLines.Where(l => !l.Selected).ToList();
+
+        ReorderLines();
+        EnsureEmptyLine();
+    }
+    private void ToggleAllLines()
+    {
+        bool allSelected = orderRequest.DocumentLines.All(l => l.Selected);
+        foreach (var line in orderRequest.DocumentLines)
+        {
+            line.Selected = !allSelected;
+        }
+    }
+    private async Task HandleSaveOrders()
+    {
+        MessageDialogService.ShowSaveButton = false;
+        MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+
+        var response= await OrderService.CreateAsync(orderRequest);
+        if (response.Flag)
+        {
+            MessageDialogService.messageDialog!.SetDialogValues("success", response.Message);
+        }
+        else
+            MessageDialogService.messageDialog!.SetDialogValues("danger", response.Message);
+
+        var getData = response.DocEntry;
+        MessageDialogService.SeMessageDialog();
+
+        return;
+    }
+
+    private async Task OpenModal(OrderLineDto line)
+    {
+        await LoadItems();
+        CurrentLine = line;
+        CurrentIndex = orderRequest.DocumentLines.IndexOf(line);
+        modalArtigos.Show(itemsDtos);
+    }
+
+    private void OnItemsSelected(List<ItemsDto> selectedItems)
+    {
+        if(!selectedItems.Any())
+            return;
+
+        var first = selectedItems.First();
+
+        var getPriceLine = first.ItemPrices!.FirstOrDefault(x => x.PriceList == TPriceBusiness);
+
+        CurrentLine.ItemCode = first.ItemCode;
+        CurrentLine.ItemDescription = first.ItemName;
+        CurrentLine.Quantity = 1;
+        CurrentLine.UnitPrice = getPriceLine!.Price;
+        CurrentLine.LineTotal = CurrentLine.Quantity * CurrentLine.UnitPrice;
+
+        CurrentLine.Currency = getPriceLine!.Currency;
+
+        int insertIndex = CurrentIndex + 1;
+
+        foreach(var item in selectedItems.Skip(1))
+        {
+            var getPriceLineItem = item.ItemPrices!.FirstOrDefault(x => x.PriceList == TPriceBusiness);
+            var newLine = new OrderLineDto
+            {
+                ItemCode = item.ItemCode,
+                ItemDescription = item.ItemName,
+                Quantity = 1,
+                UnitPrice = getPriceLineItem!.Price,
+                LineTotal = CurrentLine.Quantity * getPriceLineItem!.Price,
+                Currency = getPriceLineItem!.Currency
+            };
+            orderRequest.DocumentLines.Insert(insertIndex, newLine);
+
+            insertIndex++;
+        }
+        ReorderLines();
+        EnsureEmptyLine();
+
+        StateHasChanged();
+    }
+
+    private bool IsLineEmpty(OrderLineDto line)
+    {
+        return string.IsNullOrEmpty(line.ItemCode) && string.IsNullOrEmpty(line.ItemDescription);
+    }
+
+    private void EnsureEmptyLine()
+    {
+        if (!orderRequest.DocumentLines.Any() || !IsLineEmpty(orderRequest.DocumentLines.Last()))
+        {
+            orderRequest.DocumentLines.Add(new OrderLineDto());
+            return;
+        }
+
+        var lastline = orderRequest.DocumentLines.Last();
+        if(!IsLineEmpty(lastline))
+        {
+            orderRequest.DocumentLines.Add(new OrderLineDto());
+        }
+
+        ReorderLines();
+    }
+
+    private async Task OpenModalVat(OrderLineDto line)
+    {
+        await LoadVatGroups();
+
+        CurrentLine = line;
+        CurrentIndex = orderRequest.DocumentLines.IndexOf(line);
+        taxaIVA.Show(vatGroups);
+    }
+    private void OnVatGroupsSelected(VatGroupsDto selectedItems)
+    {
+        if (selectedItems is null)
+            return;
+
+
+        CurrentLine.VatGroup = selectedItems.Code;
+
+        ReorderLines();
+        EnsureEmptyLine();
+
+        StateHasChanged();
+    }
+    private async Task LoadVatGroups()
+    {
+        vatGroups = await VatGroupsService.GetVatGroupsAsync();
+    }
+
+    private async Task LoadBusinessPartners()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        CardCode = user.GetCardCode();
+        CardType = "cCustomer";
+        var getBus = await BusinessPartnersService.GetBusinessPartnersAsync(CardCode, CardType, true);
+        orderRequest.CardCode = getBus.CardCode;
+        orderRequest.CardName = getBus.CardName!;
+        orderRequest.Address = getBus.Address;
+        orderRequest.MailAddress = getBus.MailAddress;
+        orderRequest.MailZipCode = getBus.MailZipCode;
+        orderRequest.Phone1 = getBus.Phone1;
+        orderRequest.Phone2 = getBus.Phone2;
+        orderRequest.Fax = getBus.Fax;
+        orderRequest.CreditLimit = getBus.CreditLimit;
+        orderRequest.PriceListNum = getBus.PriceListNum;
+        TPriceBusiness = getBus.PriceListNum;
+        orderRequest.DocDate = DateTime.UtcNow;
+        orderRequest.TaxDate = DateTime.UtcNow;
+
+        orderRequest.DocumentLines.Add(new OrderLineDto
+        {
+            Quantity = 1
+        });
+        orderRequest.DocDueDate = null;
+
+        orderRequest.CntctCode = getBus.ContactEmployees![0].Name;
+        contactEmployeesDtos = getBus.ContactEmployees!;
+    }
+
+    private void OpenModalContactEmployees()
+    {
+        modalContact.Show(contactEmployeesDtos);
+    }
+    private void OnContactEmployeesSelected(ContactEmployeesDto contacto)
+    {
+        orderRequest.CntctCode = contacto.Name;
+        StateHasChanged();
+    }
+
+
+    private async Task LoadWarehouses()
+    {
+        var Inactive = "tNO";
+        warehousesDtos = await WarehousesService.GetWarehousesServiceAsync(Inactive);
+    }
+
+    private async Task OpenModalWarehouses(OrderLineDto line)
+    {
+        await LoadWarehouses();
+
+        CurrentLine = line;
+        CurrentIndex = orderRequest.DocumentLines.IndexOf(line);
+        modalWarehouses.Show(warehousesDtos);
+    }
+
+    private void OnWarehousesSelected(WarehousesDto warehouses)
+    {
+        if (warehouses is null)
+            return;
+
+
+        CurrentLine.WarehouseCode = warehouses.WarehouseCode!;
+
+        ReorderLines();
+        EnsureEmptyLine();
+
+        StateHasChanged();
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+        MessageDialogService.Action -= StateHasChanged;
+    }
+}

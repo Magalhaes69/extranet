@@ -1,0 +1,125 @@
+﻿@page "/login"
+
+@using WebFrontEnd.Services.Auth
+@inject AuthenticationStateProvider authenticationState
+@layout EmptyLayout
+
+
+<div class="login-box">
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <a href="../index2.html"
+               class="link-dark text-center link-offset-2 link-opacity-100 link-opacity-50-hover">
+                <h1 class="mb-0">Login</h1>
+            </a>
+        </div>
+
+        <div class="card-body login-card-body">
+            <p class="login-box-msg">Sign in to start your session</p>
+
+            <!-- API error alert -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-2">
+                    @errorMessage
+                </div>
+            }
+
+            <EditForm Model="login" Enhance OnValidSubmit="OnLogin">
+
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="input-group  has-validation mb-1">
+                    <div class="form-floating">
+                        <InputText type="email"  @bind-Value="login.email" id="loginEmail" class="form-control" placeholder="" />
+                        <label for="loginEmail">Email</label>
+                    </div>
+                    <div class="input-group-text">
+                        <span class="bi bi-envelope"></span>
+                    </div>
+
+                    <div class="invalid-feedback">
+                        <ValidationMessage For="@(() => login.email)" />
+                    </div>
+                </div>
+                <div class="input-group mb-1">
+                    <div class="form-floating">
+                        <InputText @bind-Value="login.password" id="loginPassword" type="password" class="form-control" placeholder="" />
+                        <label for="loginPassword">Password</label>
+                    </div>
+                    <div class="input-group-text">
+                        <span class="bi bi-lock-fill"></span>
+                    </div>
+
+                    <div class="invalid-feedback">
+                        <ValidationMessage For="@(() => login.password)" />
+                    </div>
+                </div>
+                <!--begin::Row-->
+                <div class="row">
+                    <div class="col-8 d-inline-flex align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
+                            <label class="form-check-label" for="flexCheckDefault"> Remember Me </label>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-4">
+                        <div class="d-grid gap-2">
+                             @if (MessageDialogService.ShowSaveButton)
+                            {
+                                <button type="submit" class="btn btn-primary">Sign In</button>
+                            }
+                            <BusyButtonComponent ShowBusyButton="@MessageDialogService.ShowBusyButton" />
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!--end::Row-->
+            </EditForm>
+            <p class="mb-1">
+                <a href="forgot-password.html">I forgot my password</a>
+            </p>
+           
+        </div>
+        <!-- /.login-card-body -->
+    </div>
+</div>
+@code {
+    LoginDto login = new();
+    private string? errorMessage;
+    [Parameter][SupplyParameterFromQuery] public string returnUrl { get; set; }
+    private async Task OnLogin()
+    {
+
+        MessageDialogService.ShowSaveButton = false;
+        MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+        var result = await authService.Login(login);
+
+        if (result is not null)
+        {
+            var authStateProvider = (CustomAuthStateProvider)authenticationState;
+            authStateProvider.SetUser(result);
+
+            MessageDialogService.ShowSaveButton = true;
+            MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                nav.NavigateTo(returnUrl);
+
+
+            }
+            else
+            {
+                nav.NavigateTo("/");
+            }
+        }
+        else
+        {
+            MessageDialogService.ShowSaveButton = true;
+            MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+            errorMessage = "Invalid email or password!";
+        }
+    }
+}

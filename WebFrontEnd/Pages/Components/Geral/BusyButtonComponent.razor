@@ -1,0 +1,11 @@
+﻿@using WebFrontEnd.Services.Auth
+@if (ShowBusyButton)
+{
+    <button class="btn btn-primary" type="button" disabled>
+        <sapn class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></sapn>
+      Wait...
+    </button>
+}
+@code {
+    [Parameter] public bool ShowBusyButton { get; set; }
+}

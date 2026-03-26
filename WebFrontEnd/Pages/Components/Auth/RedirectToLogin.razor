@@ -1,0 +1,24 @@
+﻿@using WebFrontEnd.Services.Auth
+@inject NavigationManager Navigation
+@code {
+    [Parameter] public string ReturnUrl { get; set; }
+    private static bool _redirecting = false;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            if (firstRender && !_redirecting)
+            {
+                _redirecting = true;
+
+                var currentUri = Navigation.ToBaseRelativePath(Navigation.Uri);
+                if (!currentUri.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+                {
+                    var returnUrl = Uri.EscapeDataString(Navigation.Uri);
+                    Navigation.NavigateTo($"/login?returnUrl={returnUrl}", true);
+                }
+            }
+        }
+    }
+}

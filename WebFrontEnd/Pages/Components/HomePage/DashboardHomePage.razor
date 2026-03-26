@@ -1,0 +1,406 @@
+﻿@page "/"
+@using WebFrontEnd.Services.Auth
+@using WebFrontEnd.Services.Dashboard.Dtos
+@attribute [Authorize]
+
+
+    <div class="app-content-header bg-white pt-2 pb-1" >
+        <div class="container-fluid">
+            <div class="top-menu sticky-top bg-white">
+                <ul class="nav custom-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(activeSection == "home" ? "active" : "")" @onclick="@(() => ScrollTo("home"))">A minha página principal </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeSection == "crm" ? "active" : "")"
+                           @onclick="@(() => ScrollTo("crm"))">CRM</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeSection == "vendas" ? "active" : "")"
+                           @onclick="@(() => ScrollTo("vendas"))">Vendas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeSection == "compras" ? "active" : "")"
+                           @onclick="@(() => ScrollTo("compras"))">Compras</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-content">
+    <div class="container-fluid">
+        <div id="home" class="d-flex gap-3 flex-wrap mt-3">
+            <a href="/add-orders">
+                <div class="card custom-tile d-flex flex-column " style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
+                    <div>
+                        <h6 class="card-title mb-2">Criar ordens de compra</h6>
+                    </div>
+
+                    <div class="d-flex flex-grow-1 align-items-center ">
+                        <div class="d-flex justify-content-center gap-2">
+                            <div class="icon-box">
+                                <i class="bi bi-file-earmark-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            
+            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="/orders" class="value-link">@getCountDto.Total</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="m-3">CRM</h2>
+        <div id="crm" class="d-flex gap-3 flex-wrap">
+            <!-- Card 1 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more cards as needed -->
+        </div>
+
+
+        <h2 class="m-3">Vendas</h2>
+        <div id="vendas" class="d-flex gap-3 flex-wrap">
+            <!-- Card 1 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more cards as needed -->
+        </div>
+
+
+        <h2 class="m-3">Compras</h2>
+        <div id="compras" class="d-flex gap-3 flex-wrap">
+            <!-- Card 1 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card custom-tile d-flex flex-column">
+                <div>
+                    <h6 class="card-title mb-2">Ordens de venda</h6>
+                </div>
+                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <a href="#" class="value-link">10</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-clock"></i>
+                        <span>6 min</span>
+                    </div>
+                    <div>
+                        <span class="status-open">Aberto</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more cards as needed -->
+        </div>
+    </div>
+</div>
+<style>
+    .custom-tabs {
+        border-bottom: none;
+        cursor: pointer
+    }
+
+        .custom-tabs .nav-link {
+            border: none;
+            color: #333;
+            font-weight: 500;
+            padding: 10px 15px;
+        }
+
+            .custom-tabs .nav-link.active {
+                border-bottom: 3px solid #0d6efd;
+                color: #0d6efd;
+                background: transparent;
+            }
+
+    .top-menu {
+        z-index: 1000;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .custom-tile {
+        height: 180px;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    /* Icon box */
+    .icon-box {
+        width: 25px;
+        height: 25px;
+        border-radius: 10px;
+        background: #f4f6f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .icon-box i {
+            font-size: 20px;
+            color: #6c757d;
+        }
+
+    /* Value */
+    .value-link {
+        font-size: 28px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #0d6efd;
+    }
+
+    /* Status */
+    .status-open {
+        color: #0d6efd;
+        font-weight: 500;
+    }
+
+</style>
+
+
+@code {
+    private string activeSection = "home";
+    private GetCountDto getCountDto = new();
+    private string CardCode = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("registerScrollSpy",
+                DotNetObjectReference.Create(this));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        CardCode = user.GetCardCode();
+      
+        getCountDto = await DashboardService.GetCountOrderAsync(CardCode, "");
+        
+    }
+
+    private async Task ScrollTo(string id)
+    {
+        activeSection = id;
+        await js.InvokeVoidAsync("scrollToSection", id);
+    }
+
+    [JSInvokable]
+    public void SetActiveSection(string section)
+    {
+        activeSection = section;
+        StateHasChanged();
+    }
+}
