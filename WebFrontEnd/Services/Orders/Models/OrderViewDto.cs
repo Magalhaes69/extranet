@@ -2,10 +2,11 @@
 {
     public class OrderViewDto
     {
+        public bool Selected { get; set; }
         public int DocEntry { get; set; }
         public int DocNum { get; set; }
         public string? DocType { get; set; }
-
+        public string? Reference1 { get; set; }
         public DateTime DocDate { get; set; }
         public DateTime DocDueDate { get; set; }
 
@@ -44,5 +45,10 @@
         public string? ControlAccount { get; set; }
 
         public int DataVersion { get; set; }
+
+        public string? ShipToCode { get; set; }
+        public string? Address2 { get; set; }
+        public string? PayToCode { get; set; }
+
     }
 }

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Domain.Models;
 
 namespace Domain.Interfaces
 {
@@ -12,7 +9,21 @@ namespace Domain.Interfaces
         Task LogoutAsync();
         Task<T> AddAsync<T>(string objectType, object obj, CancellationToken cancellationToken);
         Task<T?> GetAsync<T>(string objectType, string? odataFilter = null, CancellationToken cancellationToken = default) where T : class;
-        Task<List<T>> GetAllAsync<T>(string objectType, string? odataFilter = null, CancellationToken cancellationToken = default);
-    
-}
+        Task<List<T>> GetAllAsync<T>(
+            string objectType, 
+            string? 
+            odataFilter = null, 
+            CancellationToken 
+            cancellationToken = default);
+
+       
+        Task<List<T>> GetAllB1Async<T>(
+            string objectType,
+            string? filter,
+            Dictionary<string, string>? queryParams,
+            CancellationToken cancellationToken);
+
+
+        Task<GetAttachments2> GetAttachments2Async(string url, CancellationToken cancellationToken);
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.IncomingPayments.Dto;
-using WebFrontEnd.Services.Invoices.Dto;
+
 
 namespace WebFrontEnd.Services.IncomingPayments
 {
@@ -11,7 +11,7 @@ namespace WebFrontEnd.Services.IncomingPayments
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/IncomingPayments";
         private List<GetAllIncomingPaymentsDto>? _cache;
-        public Action InvoicesAction { get; set; }
+      
 
         public IncomingPaymentsService(HttpClient httpClient)
         {

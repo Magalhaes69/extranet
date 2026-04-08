@@ -1,0 +1,46 @@
+﻿@inject ToastService ToastService
+
+@if (ToastService.Toasts.Any())
+{
+    <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x px-5 " style="z-index: 1055">
+        @foreach (var toast in ToastService.Toasts)
+        {
+            <div class="toast show align-items-center @(ThemeService.CurrentTheme == "dark" ? "text-light border-0" : "text-dark border-soft")  @toast.BgClass border-0 mb-2 shadow shadow-white">
+                <div class="d-flex">
+                    <div class="toast-body text-center">
+                        <i class="@toast.Icon me-2"></i> @toast.Message
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .shadow-white {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .border-soft {
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+@code {
+
+    protected override void OnInitialized()
+    {
+        ThemeService.OnThemeChanged += Refresh;
+        ToastService.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= Refresh;
+        ThemeService.OnThemeChanged -= Refresh;
+    }
+}

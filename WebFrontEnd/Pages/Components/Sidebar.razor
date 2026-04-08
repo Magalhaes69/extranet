@@ -1,6 +1,10 @@
-﻿@using WebFrontEnd.Services.Auth
+﻿@implements IDisposable
+@inject IStringLocalizer<App> Language
+@inject IStringLocalizer<MenuApp> Lan
+
+@using WebFrontEnd.Services.Auth
 <!--begin::Sidebar-->
-<aside class="app-sidebar shadow bg-white" data-bs-theme="light">
+<aside class="app-sidebar shadow @(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-light")" data-bs-theme="@ThemeService.CurrentTheme">
     <!--begin::Sidebar Brand-->
     <div class="sidebar-brand">
         <!--begin::Brand Link-->
@@ -15,7 +19,7 @@
     </div>
     <!--end::Sidebar Brand-->
     <!--begin::Sidebar Wrapper-->
-    <div class="sidebar-wrapper">
+    <div class="sidebar-wrapper ">
         <nav class="mt-2">
             <!--begin::Sidebar Menu-->
             <ul class="nav sidebar-menu flex-column"
@@ -31,80 +35,65 @@
                             <NavLink href="" @onclick="ToggleSales" class="nav-link active" Match="NavLinkMatch.All">
                                 <i class="nav-icon bi bi-cart"></i>
                                 <p>
-                                    Vendas
+                                    @Lan["menuVendasGroup"]
                                     <i class="nav-arrow bi bi-chevron-right "></i>
                                 </p>
                             </NavLink>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <NavLink href="/list" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Cotações de vendas</p>
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Pedido de cotação</p>
+                                    <NavLink href="/quotations" class="nav-link" Match="NavLinkMatch.All">
+                                        <p>@Lan["menuQuotation"]</p>
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
                                     <NavLink href="/orders" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Ordens de compra</p>
+                                        <p>@Lan["menuOrder"]</p>
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
                                     <NavLink href="/add-orders" class="nav-link" Match="NavLinkMatch.All">
-                                        <p> Criar ordens de compra</p>
+                                        <p>@Lan["createOrder"]</p>
                                     </NavLink>
                                 </li>
 
                                 <li class="nav-item">
                                     <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p> Facturas de reserva d...</p>
+                                        <p>@Lan["menuARReserve"]</p>
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Guias de remoessa</p>
+                                    <NavLink href="/delivery" class="nav-link" Match="NavLinkMatch.All">
+                                        <p>@Lan["menuDeliveries"]</p>
                                     </NavLink>
                                 </li>
 
                                 <li class="nav-item">
                                     <NavLink href="/invoices" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Minhas faturas</p>
+                                        <p>@Lan["APInvoices"]</p>
+                                    </NavLink>
+                                </li>
+
+                              
+                                <li class="nav-item">
+                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
+                                        <p>@Lan["menuReturns"]</p>
                                     </NavLink>
                                 </li>
 
                                 <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Solicitação de devoluções</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Criar solicitação de devoluções</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Devoluções</p>
+                                    <NavLink href="/credits" class="nav-link" Match="NavLinkMatch.All">
+                                        <p>@Lan["menuCredit"]</p>
                                     </NavLink>
                                 </li>
 
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                <i class="nav-icon bi bi-palette"></i>
-                                <p>Theme Generate</p>
-                            </NavLink>
-                        </li>
+                      
                         <li class="nav-item @(isPaymentOpen ? "menu-open" : "")">
                             <NavLink href="" @onclick="TogglePayment" class="nav-link" Match="NavLinkMatch.All">
                                 <i class="nav-icon bi bi-credit-card-2-front"></i>
                                 <p>
-                                    Pagamentos
+                                    @Lan["menuPaymentGroup"]
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </NavLink>
@@ -120,22 +109,22 @@
                         </li>
 
                         <li class="nav-item @(isSettingsOpen ? "menu-open" : "")">
-                            <NavLink href="/cotacao" @onclick="ToggleSettings" class="nav-link">
+                            <NavLink href="" @onclick="ToggleSettings" class="nav-link">
                                 <i class="nav-icon bi bi-gear"></i>
                                 <p>
-                                    Administração
+                                    @Lan["menuAdministratorGroup"]
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </NavLink>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Utilizadores</p>
+                                        <p>@Lan["menuUsers"]</p>
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
                                     <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Criar utilizadores</p>
+                                        <p>@Lan["menuUserCreate"]</p>
                                     </NavLink>
                                 </li>
                             </ul>
@@ -149,11 +138,29 @@
     <!--end::Sidebar Wrapper-->
 </aside>
 <!--end::Sidebar-->
+
+
 @code {
     private bool isSalesOpen = false;
     private bool isPaymentOpen = false;
     private bool isSettingsOpen = false;
 
+
+    private void OnCultureChanged()
+    {
+        InvokeAsync(StateHasChanged); // force re-render
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
     private void ToggleSales()
     {
         isSalesOpen = !isSalesOpen;
@@ -166,5 +173,10 @@
     private void ToggleSettings()
     {
         isSettingsOpen = !isSettingsOpen;
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= Refresh;
     }
 }

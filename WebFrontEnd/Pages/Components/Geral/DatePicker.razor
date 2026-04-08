@@ -1,0 +1,77 @@
+﻿<input id="@Id" 
+    class="form-control form-control-sm" 
+    @bind="ValueString"
+       @onchange="OnInputChanged"
+    @bind:event="oninput" />
+
+@code {
+    [Parameter] public string Id { get; set; } = $"datepicker_{Guid.NewGuid()}";
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+    [Parameter] public string Format { get; set; } = "DD/MM/YYYY";
+    private DotNetObjectReference<DatePicker>? _dotNetRef;
+
+
+    private string ValueString
+    {
+        get => Value?.ToString("DD/MM/YYYY") ?? "";
+        set
+        {
+          if (DateTime.TryParse(value, out var date))
+            {
+                Value = date;
+                ValueChanged.InvokeAsync(Value);
+            }
+        }
+    }
+
+   
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await js.InvokeVoidAsync("initializeLitepicker", Id, _dotNetRef, Format);
+        }
+    }
+    [JSInvokable]
+    public async Task OnDateSelected(string date)
+    {
+        if (DateTime.TryParse(date, out var parsed))
+        {
+            Value = parsed;
+            await ValueChanged.InvokeAsync(Value);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Value = null;
+            await ValueChanged.InvokeAsync(Value);
+            return;
+        }
+
+        if (DateTime.TryParse(text, out var parsed))
+        {
+            Value = parsed;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnDateCleared()
+    {
+        Value = null;
+        await ValueChanged.InvokeAsync(Value);
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

@@ -1,4 +1,4 @@
-﻿using Application.UseCases.Orders.GetAllOrders;
+﻿using Application.UseCases.Invoices.Helps;
 using Domain.Interfaces;
 using MediatR;
 
@@ -14,7 +14,18 @@ namespace Application.UseCases.Items
 
         public async Task<List<GetAllItemsResponse>> Handle(GetAllItemsRequest request, CancellationToken cancellationToken)
         {
-           var getItems = await _sapClient.GetAllAsync<GetAllItemsResponse>("Items", "", cancellationToken);
+
+            var filter = ODataFilterBuilder.Build(request);
+            var queryParams = new Dictionary<string, string>
+            {
+                ["$select"] = "ItemCode,ItemName,ItemsGroupCode,ItemPrices",
+                ["$orderby"] = "ItemCode"
+            };
+            var getItems = await _sapClient.GetAllB1Async<GetAllItemsResponse>(
+                "Items",
+                filter,
+                queryParams, 
+                cancellationToken);
 
             return getItems.Select(x => new GetAllItemsResponse
             {

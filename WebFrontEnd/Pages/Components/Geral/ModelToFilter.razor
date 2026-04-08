@@ -1,0 +1,88 @@
+﻿@typeparam TITem
+@implements IDisposable
+
+@if (ShowModal)
+{
+    <div class="modal fade show d-block filter-modal" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl custom-modal-height">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h5 class="modal-title">
+                       @Title
+                    </h5>
+                </div>
+                <!-- Body -->
+                <div class="modal-body">
+                  
+                    @foreach (var item in ITems)
+                    {
+                        @Rows(item)
+                    }
+                    
+                    @AddButton
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer py-1">
+                    @Footer
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+<style>
+    .filter-modal {
+        z-index: 1065;
+    }
+
+   
+
+    .custom-modal-height {
+        max-height: 95vh;
+    }
+
+        .custom-modal-height .modal-content {
+            height: 95vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-modal-height .modal-body {
+            flex: 1; 
+            overflow-y: auto;
+        }
+</style>
+@code {
+    private bool ShowModal = false;
+    [Parameter]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public IReadOnlyList<TITem> ITems { get; set; } = new List<TITem>();
+    [Parameter]
+    public RenderFragment<TITem> Rows { get; set; } 
+    [Parameter]
+    public RenderFragment? AddButton { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    public void Show()
+    {
+        ShowModal = true;
+    }
+
+    public void CloseModal()
+    {
+        ShowModal = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using Application.Dtos;
 using Application.UseCases.Orders.CreateOrder;
+using Application.UseCases.Orders.DetailsOrders;
 using Application.UseCases.Orders.GetAllOrders;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -41,5 +42,14 @@ namespace WebAPI.Controllers
             return Ok(orders);
         }
 
+        [HttpGet("details")]
+        public async Task<IActionResult> GetdetailsOrder([FromQuery] string CardCode, int DocEntry, CancellationToken cancellationToken)
+        {
+            var request = new DetailsOrdersRequest { CardCode = CardCode, DocEntry = DocEntry };
+
+            var orders = await _mediator.Send(request, cancellationToken);
+
+            return Ok(orders);
+        }
     }
 }

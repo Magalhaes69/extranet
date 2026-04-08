@@ -1,0 +1,194 @@
+﻿<div class="multi-select-container">
+
+    <!-- Selected Tags -->
+    <div class="multi-select-input form-control-sm" @onclick="ToggleDropdown">
+
+        @if (SelectedItems.Any())
+        {
+            @foreach (var item in SelectedItems)
+            {
+                <span class="multi-tag">
+                    @item.Text
+                    <span class="remove" @onclick:stopPropagation @onclick="() => Remove(item.Value)"><i class="bi bi-x-circle"></i></span>
+                </span>
+            }
+        }
+        else
+        {
+            <span class="placeholder">@Placeholder</span>
+        }
+
+        <span class="arrow"><i class="fa-solid fa-angle-down"></i></span>
+    </div>
+
+    <!-- Dropdown -->
+    @if (IsOpen)
+    {
+        <div class="multi-dropdown">
+            @foreach (var item in Items)
+            {
+                <div class="multi-option @(ThemeService.CurrentTheme == "dark" ? "multi-option-dark" : "")">
+                    <input type="checkbox"
+                           checked="@SelectedValues.Contains(item.Value)"
+                           @onchange="e => OnCheckedChanged(e, item.Value)" />
+
+                    <label>@item.Text</label>
+                </div>
+            }
+        </div>
+    }
+
+</div>
+<style>
+    .multi-select-container {
+        position: relative;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .multi-select-input {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 2px 5px;
+        cursor: pointer;
+        margin-right: 15px;
+      
+        overflow-x: auto; 
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
+
+    .multi-tag {
+        background: #e7f1ff;
+        color: #0d6efd;
+        padding: 2px 5px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .multi-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+    .placeholder {
+        color: #ffffff;
+    }
+
+    .arrow {
+        margin-left: auto;
+    }
+
+    .multi-dropdown {
+        position: absolute;
+        width: 100%;
+        
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        margin-top: 2px;
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .multi-option {
+        padding: 5px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+        .multi-option:hover {
+            background-color: #f1f3f5;
+        }
+
+        .multi-option-dark:hover {
+        background: #2b2b2b;
+        color: #fff;
+        }
+</style>
+@code {
+
+    [Parameter] public List<OptionItem> Items { get; set; } = new();
+
+    [Parameter] public List<string> SelectedValues { get; set; } = new();
+    [Parameter]
+    public EventCallback<List<string>> SelectedValuesChanged { get; set; }
+
+    [Parameter] public EventCallback<List<string>> OnDocumentStatusesChanged { get; set; }
+    [Parameter] public EventCallback<List<string>> OnCancelledStatusesChanged { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Selecionar...";
+
+    private bool IsOpen = false;
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+    private List<OptionItem> SelectedItems =>
+        Items.Where(i => SelectedValues.Contains(i.Value)).ToList();
+
+    private void ToggleDropdown()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    private async Task OnCheckedChanged(ChangeEventArgs e, string value)
+    {
+        bool isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!SelectedValues.Contains(value))
+                SelectedValues.Add(value);
+        }
+        else
+        {
+            SelectedValues.Remove(value);
+        }
+
+        // Update the two-way binding if used
+        if (SelectedValuesChanged.HasDelegate)
+            await SelectedValuesChanged.InvokeAsync(SelectedValues);
+
+
+        if (OnDocumentStatusesChanged.HasDelegate)
+         await OnDocumentStatusesChanged.InvokeAsync(SelectedValues);
+        if (OnCancelledStatusesChanged.HasDelegate)
+            await OnCancelledStatusesChanged.InvokeAsync(SelectedValues);
+
+    }
+
+    private async Task Remove(string value)
+    {
+        SelectedValues.Remove(value);
+
+        // Update the two-way binding if used
+        if (SelectedValuesChanged.HasDelegate)
+            await SelectedValuesChanged.InvokeAsync(SelectedValues);
+
+        if (OnDocumentStatusesChanged.HasDelegate)
+        await OnDocumentStatusesChanged.InvokeAsync(SelectedValues);
+        if (OnCancelledStatusesChanged.HasDelegate)
+            await OnCancelledStatusesChanged.InvokeAsync(SelectedValues);
+    }
+
+    public class OptionItem
+    {
+        public string Value { get; set; }
+        public string Text { get; set; }
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.UseCases.Invoices.GetAllInvoices
+﻿namespace WebFrontEnd.Services.Quotations.Dto
 {
-    public class GetAllDocumentLinesResponse
+    public record DocumentLinesDto
     {
         public int LineNum { get; set; }
         public string? ItemCode { get; set; }
@@ -15,10 +9,18 @@ namespace Application.UseCases.Invoices.GetAllInvoices
         public decimal? Price { get; set; }
         public decimal? PriceAfterVAT { get; set; }
         public string? Currency { get; set; }
+        public decimal? Rate { get; set; }
         public decimal? DiscountPercent { get; set; }
         public string? SerialNum { get; set; }
         public string? WarehouseCode { get; set; }
-        public decimal? UnitPrice { get; set; }
+        public string? VatGroup { get; set; }
         public decimal? LineTotal { get; set; }
+        public decimal? TaxPercentagePerRow { get; set; }
+        public decimal? TaxTotal { get; set; }
+        public decimal? TotalInclTax { get; set; }
+        public decimal? RowTotalFC { get; set; }
+        public decimal? RowTotalSC { get; set; }
+        public decimal? UnitPrice { get; set; }
+        public string? LineStatus { get; set; }
     }
 }

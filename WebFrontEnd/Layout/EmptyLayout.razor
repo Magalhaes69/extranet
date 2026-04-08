@@ -5,3 +5,15 @@
     @Body
 </div>
 
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
+        if (string.IsNullOrEmpty(storedTheme))
+            storedTheme = "light";
+
+        ThemeService.SetTheme(storedTheme);
+        await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", storedTheme);
+    }
+}
+

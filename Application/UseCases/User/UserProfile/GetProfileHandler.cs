@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -19,7 +15,7 @@ namespace Application.UseCases.User.UserProfile
         }
         public async Task<UserDto> Handle(GetProfileRequest request, CancellationToken cancellationToken)
         {
-           var user = await _userManager.FindByIdAsync(request.userId.ToString());
+           var user = await _userManager.FindByEmailAsync(request.Email.ToString());
             if (user == null)
             {
                 throw new Exception("User not found");
@@ -32,6 +28,10 @@ namespace Application.UseCases.User.UserProfile
                 LastName = user.LastName,
                 Nuit = user.Nuit,
                 CardCode = user.CardCode,
+                Theme = user.Theme!,
+                PhoneNumber = user.PhoneNumber,
+                Language = user.Language,
+                TwoFactorEnabled = user.TwoFactorEnabled
             };
            
         }

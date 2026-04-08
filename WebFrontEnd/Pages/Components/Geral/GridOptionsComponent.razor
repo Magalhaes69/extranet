@@ -1,0 +1,19 @@
+﻿@inject IStringLocalizer<App> Lan
+
+<!-- Top grid options -->
+<div class="mb-2 d-flex justify-content-start grid-options">
+    <div class="d-flex">
+        <h6 class="fw-bold">@TotalFacturas</h6>
+    </div>
+    <!-- Right aligned icons -->
+    <div class="ms-auto d-flex">
+        @ButtonOptions
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment TotalFacturas { get; set; }
+
+    [Parameter] public RenderFragment ButtonOptions { get; set; }
+}

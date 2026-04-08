@@ -1,0 +1,47 @@
+﻿@using WebFrontEnd.Services.CultureServices
+@inject IStringLocalizer<App> Loc
+
+<span>
+    @Loc[nameof(ResourceString.TitleMenu)]:&nbsp;
+
+    <select @onchange="OnCultureChanged">
+        @foreach (var culture in LocalizerSettings.SupportedCultureWithName)
+        {
+            @if(SelectedCulture !=null && culture == SelectedCulture)
+            {
+                <option value="@culture.Culture" selected>@culture.Name</option>
+            }
+            else
+            {
+                <option value="@culture.Culture">@culture.Name</option>
+            }
+        }
+    </select>
+</span>
+
+@code {
+    CultureWithName SelectedCulture = null!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var culture = await js.InvokeAsync<string>("localStorage.getItem", "blazorCulture.get");
+        if (culture == "")
+            SelectedCulture = LocalizerSettings.NeutralCulture;
+            else
+            SelectedCulture = (from c in LocalizerSettings.SupportedCultureWithName
+                               where c.Culture == culture
+                               select c).FirstOrDefault() ?? LocalizerSettings.NeutralCulture;
+    }
+
+    private async Task OnCultureChanged(ChangeEventArgs e)
+    {
+        var selectedCulture = e.Value?.ToString();
+
+        if (!string.IsNullOrEmpty(selectedCulture))
+        {
+            await js.InvokeAsync<string>("localStorage.setItem", "blazorCulture.get", selectedCulture);
+            nav.NavigateTo(nav.Uri, forceLoad: true);
+        }
+    }
+}

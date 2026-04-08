@@ -1,4 +1,5 @@
-﻿using Application.UseCases.Invoices.GetAllInvoices;
+﻿using Application.UseCases.Invoices.DetailsInvoices;
+using Application.UseCases.Invoices.GetAllInvoices;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +14,19 @@ namespace WebAPI.Controllers
         private readonly IMediator _mediator;
         public InvoicesController(IMediator mediator) => _mediator = mediator;
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllOrder([FromQuery] string CardCode, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllOrder([FromBody] GetAllInvoicesRequest request, CancellationToken cancellationToken)
         {
-            var request = new GetAllInvoicesRequest { CardCode = CardCode };
-
             var orders = await _mediator.Send(request, cancellationToken);
-
             return Ok(orders);
+        }
+
+        [HttpGet("details")]
+        public async Task<IActionResult> GetDetailsOrder([FromQuery] string CardCode, int DocEntry, CancellationToken cancellationToken)
+        {
+            var request = new DetailsInvoicesRequest { CardCode = CardCode, DocEntry = DocEntry };
+            var invoices = await _mediator.Send(request, cancellationToken);
+            return Ok(invoices);
         }
     }
 }

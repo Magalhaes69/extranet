@@ -2,7 +2,7 @@
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Persistence.Context;
+
 
 namespace Persistence.Repositories
 {
@@ -15,12 +15,21 @@ namespace Persistence.Repositories
         }
         public async Task<IdentityResult> CreateAsync(AppUser user, string password)
         {
+           
             return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task<IdentityResult> UpdateAsync(AppUser user)
+        public async Task<IdentityResult> UpdateAsync(AppUser user, string phoneNumber)
         {
-            return await _userManager.UpdateAsync(user);
+            try
+            {
+                await UpdatePhoneNumberAsync(user, phoneNumber);
+                return await _userManager.UpdateAsync(user);
+            }
+            catch(Exception ex)
+            {
+                return null!;
+            }
         }
 
         public async Task<IdentityResult> DeleteAsync(AppUser user)
@@ -42,6 +51,23 @@ namespace Persistence.Repositories
         public async Task<List<AppUser>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _userManager.Users.ToListAsync(cancellationToken);
+        }
+
+        public async Task<IdentityResult> UpdatePhoneNumberAsync(AppUser user, string phoneNumber)
+        {
+            try
+            {
+                var result = await _userManager.SetPhoneNumberAsync(user, phoneNumber);
+
+                return result;
+            }
+            catch (Exception)
+            {
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Description = "Unexpected error while updating phone number"
+                });
+            }
         }
     }
 }

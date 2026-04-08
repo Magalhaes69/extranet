@@ -1,4 +1,5 @@
-﻿using WebFrontEnd.Services.Orders.Models;
+﻿using WebFrontEnd.Services.Invoices.Dto;
+using WebFrontEnd.Services.Orders.Models;
 
 namespace WebFrontEnd.Services.Orders
 {
@@ -10,7 +11,7 @@ namespace WebFrontEnd.Services.Orders
         Task<ServiceResponsePost> CreateAsync(OrderDto order);
 
         Task<List<OrderViewDto>> GetOrdersAsync(string cardCode, bool forceRefresh = false);
-
+        Task<DetailsOrdersDto> GetByDocEntryOrdersAsync(string cardCode, int DocEntry, bool forceRefresh = false);
         Action OrderAction { get; set; }
     }
 }

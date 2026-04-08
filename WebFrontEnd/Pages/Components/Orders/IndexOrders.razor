@@ -1,5 +1,6 @@
 ﻿@page "/orders"
 @attribute [Authorize]
+@implements IDisposable
 
 <div class="bg-white mb-4 ">
     <div class="mb-4 position-relative">
@@ -56,117 +57,117 @@
 
 <div class="app-content">
     <div class="container-fluid">
+        <GridOptionsComponent>
+            <TotalFacturas>
+                @DescpTotal (@orders!.Where(x => x.Selected).Count()/@orders!.Count())
+            </TotalFacturas>
 
+            <ButtonOptions>
+                <a href="/add-orders" class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-light" : "")">
+                    @LanGeneral["btnCreateNew"]
+                 </a>
 
-        <!-- Top grid options -->
-        <div class="mb-2 d-flex justify-content-start grid-options">
-            <!-- Right aligned icons -->
-            <div class="ms-auto d-flex">
-                <a href="/add-orders" class="btn btn-link btn-sm custom-btn text-decoration-none">Criar</a>
-                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">Copiar para</button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Opção 1</a></li>
-                    <li><a class="dropdown-item" href="#">Opção 2</a></li>
+                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle  @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-light" : "")"
+                        data-bs-toggle="dropdown" disabled="@(!orders!.Any(s => s.Selected))">
+                    @LanGeneral["preview"]
+                </button>
+                <ul class="dropdown-menu @(ThemeService.CurrentTheme == "dark" ? " dropdown-dark" : "")">
+                    <li>
+                        <a class="dropdown-item" href="https://localhost:7118/api/Attachments2/getattachment?AbsoluteEntry=223">
+                            @LanGeneral["preview"]
+                        </a>
+                    </li>
                 </ul>
-                <button class="btn btn-link btn-sm custom-btn text-decoration-none">Fechar</button>
-                <button class="btn btn-link btn-sm custom-btn text-decoration-none">Cancelar</button>
-                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">Pré-visualização</button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Opção 1</a></li>
-                </ul>
-
-
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-gear"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-table-cells"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-chart-column"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-list"></i></button>
-            </div>
-        </div>
+            </ButtonOptions>
+        </GridOptionsComponent>
 
 
         <!-- Table -->
-        <div class="card">
-            <div class="card-body table-wrapper p-0" style="height: calc(100vh - 300px);min-height: 300px;max-height: 80vh;overflow-y: auto;">
-                @if (isLoading)
-                {
-                    <LoadingPage />
-                }
-                else if (orders!.Count() > 0)
-                {
-                    <table class="table table-head-fixed table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col"><input type="checkbox"></th>
-                                <th scope="col">Nº do documento</th>
-                                <th scope="col">Código do cliente</th>
-                                <th scope="col">Nome do cliente</th>
-                                <th scope="col">Nº referência</th>
-                                <th scope="col" class="text-end">Data de lançamento</th>
-                                <th scope="col" class=" text-end">Data de entrega</th>
-                                <th scope="col" class="text-end">Total do documento</th>
-                                <th scope="col" class="text-end"> Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+        <AppTableComponent TItem="OrderViewDto"
+                           Items="orders"
+                           IsLoading="isLoading"
+                           ColumnCount="10">
 
-                            @foreach (var item in orders!)
-                            {
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>@item.DocNum</td>
-                                    <td>
-                                        <a href="#" class="customer-link">
-                                            <i class="bi bi-chevron-right" style="font-size:1rem!important;"></i> @item.CardCode
-                                        </a>
-                                    </td>
-                                    <td>@item.CardName</td>
-                                    <td>@item.CardCode</td>
-                                    <td class="text-end">@item.DocDate.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end">@item.DocDueDate.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end">@item.DocTotal.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.DocCurrency</td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm custom-btn"><i class="icon-list-custom bi bi-chevron-right"></i></button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="7" class="text-end">Total</td>
-                                <td class="text-end">@total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) MZM</td>
-                                @* <td colspan="1"></td> *@
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
-                else
-                {
-                    <table class="table table-head-fixed table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scopes="col"><input type="checkbox"></th>
-                                <th scope="col">Nº do documento</th>
-                                <th scope="col">Código do cliente</th>
-                                <th scope="col">Nome do cliente</th>
-                                <th scope="col">Nº referência</th>
-                                <th scope="col" class="text-end">Data de lançamento</th>
-                                <th scope="col" class=" text-end">Data de entrega</th>
-                                <th scope="col" class="text-end">Total do documento</th>
-                                <th scope="col" class="text-end"> Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="9" class="text-center">No orders found</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                }
-            </div>
-        </div>
+            <Header>
+            <tr>
+                <th><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                <th>@LanSales["docmentNo"]</th>
+                <th>@LanSales["custumerCode"]</th>
+                <th>@LanSales["customerName"]</th>
+                <th> @LanSales["reference"]</th>
+                <th class="text-end">@LanSales["launchDate"]</th>
+                <th class="text-end"> @LanSales["validUntil"]</th>
+                <th class="text-end">@LanSales["totalLine"]</th>
+                <th>@LanSales["ststusLine"]</th>
+                <th class="text-end">@LanSales["actions"]</th>
+            </tr>
+            </Header>
+
+            <RowTemplate Context="item">
+                <tr>
+                    <td><InputCheckbox @bind-Value="item.Selected" /></td>
+
+                    <td>@item.DocNum</td>
+
+                    <td>
+                        <a href="#" class="customer-link">
+                            <i class="bi bi-chevron-right"></i> @item.CardCode
+                        </a>
+                    </td>
+
+                    <td>@item.CardName</td>
+                    <td>@item.Reference1</td>
+
+                    <td class="text-end">
+                        @(item.DocDate.ToString("dd/MM/yyyy"))
+                    </td>
+
+                    <td class="text-end">
+                        @(item.DocDueDate.ToString("dd/MM/yyyy"))
+                    </td>
+
+                    <td class="text-end">
+                        @(item.DocTotal.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))) @item.DocCurrency
+                    </td>
+
+                    <td>
+                        @UiConverters.ToDocStatus(item.DocumentStatus!, item.Cancelled!)
+                    </td>
+
+                    <td class="text-end">
+                        <button class="btn btn-sm custom-btn"
+                                @onclick="() => SelectOrders(item)">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </td>
+                </tr>
+            </RowTemplate>
+
+            <Footer>
+            <tr>
+                <td colspan="7" class="text-end">@LanSales["totalGrid"]</td>
+                <td class="text-end">
+                    @total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @orders?.FirstOrDefault()?.DocCurrency
+                </td>
+            </tr>
+            </Footer>
+
+            <LoadingTemplate>
+                <LoadingPage />
+            </LoadingTemplate>
+
+            <EmptyTemplate>
+                @LanSales["noRegister"]
+            </EmptyTemplate>
+
+        </AppTableComponent>
     </div>
-
 </div>
+
 
 @code {
     List<OrderViewDto>? orders = new();
@@ -175,19 +176,32 @@
     private bool isLoading;
     private string CardCode = string.Empty;
     private bool isCollapsed = true;
-
+    private string DescpTotal = default!;
+    private bool AllSelected
+    {
+        get => orders!.All(l => l.Selected);
+        set
+        {
+            foreach (var line in orders!)
+            {
+                line.Selected = value;
+            }
+        }
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
             await js.InvokeVoidAsync("preventDropdownClose");
+
+            ThemeService.OnThemeChanged += StateHasChanged;
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-
+        DescpTotal = LanSales["descriptionTotOrder"];
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         CardCode = user.GetCardCode();
@@ -211,6 +225,18 @@
     private void Recalculate()
     {
         total = orders?.Sum(x => x.DocTotal) ?? 0;
+    }
+
+    private void SelectOrders(OrderViewDto item)
+    {
+        nav.NavigateTo($"/orders-details/{item.DocEntry}");
+    }
+
+
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
     }
 
 }

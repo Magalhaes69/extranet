@@ -1,0 +1,98 @@
+﻿.modal-dark {
+    background-color: #0f0f10;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.5);
+}
+
+/* Layout */
+.modal-layout {
+    height: 70vh;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #0f0f10;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Menu items */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #ddd;
+    transition: 0.2s;
+}
+
+    .menu-item:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .menu-item.active {
+        background: #1f5d8f;
+        color: white;
+    }
+
+/* Content */
+.content-area {
+    background: #121212;
+    color: #fff;
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+    color: #bbb;
+    border: none;
+}
+
+    .nav-tabs .nav-link.active {
+        color: #fff;
+        border-bottom: 2px solid #4dabf7;
+        background: transparent;
+    }
+
+/* Theme list */
+.theme-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+    .theme-item:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .theme-item.selected {
+        background: #1f5d8f;
+    }
+
+/* Circles */
+.circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+    .circle.blue {
+        background: linear-gradient(#4dabf7, #1c7ed6);
+    }
+
+    .circle.dark {
+        background: #000;
+        border: 1px solid #555;
+    }
+
+/* Check icon */
+.check {
+    margin-left: auto;
+    color: white;
+}

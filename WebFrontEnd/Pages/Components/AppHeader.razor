@@ -1,54 +1,71 @@
-﻿@using WebFrontEnd.Services.Auth
+﻿@using WebFrontEnd.Pages.Components.Auth
+@using WebFrontEnd.Services.Auth
+@inject IStringLocalizer<NavBarApp> Lan
+@implements IDisposable
+
   <!--begin::Header-->
 <nav class="app-header navbar navbar-expand bg-body">
     <!--begin::Container-->
     <div class="container-fluid">
         <!--begin::Start Navbar Links-->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="sidebar" @onclick="ToggleSidebar" role="button">
-                    <i class="bi bi-list-ul icon-color-default" style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;"></i>
+        <ul class="navbar-nav align-items-center gap-1">
+            <li class="nav-item d-flex align-items-center">
+                <a class="nav-link btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")"
+                   data-lte-toggle="sidebar"
+                   @onclick="ToggleSidebar"
+                   role="button">
+                    <i class="bi bi-list-ul icon-color-default @(ThemeService.CurrentTheme == "dark" ? "text-white" : "")"
+                       style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;">
+                    </i>
                 </a>
             </li>
+
             <li class="nav-item d-none d-md-flex align-items-center">
-                <NavLink href=""><img style="height:1.665rem !important; width: 11.875rem !important;" src="/img/logo@sap_horizon.png" /></NavLink>
+                <a href="" class=" btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")">
+                    <img style="height:1.665rem !important; width: 11.875rem !important;"
+                         src="@(ThemeService.CurrentTheme == "dark" ? "/img/logo@sap_horizon_hcb.png" : "/img/logo@sap_horizon.png")" />
+                </a>
             </li>
-            <li class="nav-item d-none d-md-block pt-1">
-                <span id="AppTilePage" class="nav-link fw-bold">Gerir ordens de compra</span>
+           
+            <li class="nav-item d-none d-md-flex align-items-center">
+                <span id="AppTilePage"
+                      class="nav-link fw-bold @(ThemeService.CurrentTheme == "dark" ? "" : "text-dark-emphasis") " style="@(ThemeService.CurrentTheme == "dark" ? "color: #fff!important;" : "")">
+                    @Lan["navTitle"]
+                </span>
             </li>
         </ul>
         <!--end::Start Navbar Links-->
         <!--begin::End Navbar Links-->
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav ms-auto gap-1">
             <!--begin::Navbar Search-->
             <li class="nav-item">
-                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-widget="navbar-search" href="#" role="button">
                     <i class="bi bi-search"></i>
                 </a>
             </li>
             <!--end::Navbar Search-->
             <!--begin::Notifications Dropdown Menu-->
             <li class="nav-item dropdown" data-bs-auto-close="outside">
-                <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-bs-toggle="dropdown" href="#">
                     <i class="bi bi-bell-fill"></i>
                     <span class="navbar-badge badge text-bg-warning">15</span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 dropdown-menu-principal">
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 dropdown-menu-principal @(ThemeService.CurrentTheme == "dark" ? " shadow-white" : "")">
                     <!-- Tabs -->
                     <ul class="nav nav-tabs px-2 pt-2 tab-text-color" id="notifTabs">
                         <li class="nav-item">
-                            <a class="nav-link active" data-bs-toggle="tab" href="#all">Todos</a>
+                            <a class="nav-link active @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#all">Todos</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="tab" href="#date">Por data</a>
+                            <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#date">Por data</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="tab" href="#priority">Por prioridade</a>
+                            <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#priority">Por prioridade</a>
                         </li>
                     </ul>
 
                     <!-- Tab Content -->
-                    <div class="tab-content text-center p-3">
+                    <div class="tab-content text-center p-3 @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")">
                         <div class="tab-pane fade show active" id="all">
                             Não tem notificações
                         </div>
@@ -66,29 +83,29 @@
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img src="/img/user2-160x160.jpg"
-                         class="user-image rounded-circle shadow"
+                         class="user-image rounded-circle shadow @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white " : "")"
                          alt="" />
                 </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end @(ThemeService.CurrentTheme == "dark" ? " shadow-white" : "")">
                     <AuthorizeView>
                         <Authorized>
                             <span class="dropdown-item fa-bold">Hello, @context.User.Identity?.Name!</span>
                         </Authorized>
                     </AuthorizeView>
                     <a href="#" class="dropdown-item">
-                        <i class="fa-solid fa-user-clock"></i> Atividades recentes
+                        <i class="fa-solid fa-user-clock"></i> @Lan["recentlyUsed"]
                     </a>
 
                     <a href="#" class="dropdown-item">
-                        <i class="bi bi-people-fill me-2"></i> Utilizado frequentemente
+                        <i class="bi bi-people-fill me-2"></i>@Lan["frequentlyUsed"]
                     </a>
 
-                    <a href="#" class="dropdown-item">
-                        <i class="fa-solid fa-gear"></i> Definições
-                    </a>
+                    <button class="dropdown-item" @onclick="OpenSetting">
+                        <i class="fa-solid fa-gear"></i> @Lan["settings"]
+                    </button>
 
                     <button @onclick="logout" class="dropdown-item">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Terminar a sessão
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> @Lan["logout"]
                     </button>
 
                 </div>
@@ -100,9 +117,23 @@
     <!--end::Container-->
 </nav>
 <!--end::Header-->
+
+<SettingUser
+    @ref="Settings"
+    />
+
+<style>
+    .shadow-white {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    }
+</style>
 @inject AuthenticationStateProvider authenticationState
 @code {
+
     private bool isCollapsed = true;
+
+    private SettingUser Settings;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -111,7 +142,10 @@
             await js.InvokeVoidAsync("preventDropdownClose");
         }
     }
-
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += Refresh;
+    }
     private async Task ToggleSidebar()
     {
         isCollapsed = !isCollapsed;
@@ -126,4 +160,26 @@
         nav.NavigateTo("/login");
 
     }
+
+    private async Task SetTheme(string theme)
+    {
+        await js.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+        await js.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-bs-theme','{theme}')");
+    }
+
+    private async Task OpenSetting()
+    {
+        await Settings.ShowModal();
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= Refresh;
+    }
+    
+    
 }

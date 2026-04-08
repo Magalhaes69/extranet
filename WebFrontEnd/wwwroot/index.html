@@ -43,6 +43,9 @@
     <!--begin::Required Plugin(AdminLTE)-->
 
     <link rel="stylesheet" href="adminlte/css/adminlte.css" as="style" />
+    <!--<link href="adminlte/css/litepicker.css" rel="stylesheet" />-->
+
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
     <!--end::Required Plugin(AdminLTE)-->
 
 
@@ -87,6 +90,10 @@
     <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
     <script src="adminlte/js/site.js"></script>
     <script src="adminlte/js/cookies.js"></script>
+    <script src="adminlte/js/litepicker.js"></script>
+    <script src="adminlte/js/dateTime.js"></script>
+    <script src="adminlte/js/Theme.js"></script>
+
     <script>
         const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
         const Default = {
@@ -116,44 +123,45 @@
         });
 
         window.initResizableTable = function () {
-    const table = document.getElementById("resizable-table");
-    if (!table) return;
+            const table = document.getElementById("resizable-table");
+            if (!table) return;
 
-    let th = null, startX = 0, startWidth = 0, colIndex = 0;
+            let th = null, startX = 0, startWidth = 0, colIndex = 0;
 
-    table.querySelectorAll("th .resizer").forEach(resizer => {
-        resizer.addEventListener("mousedown", function (e) {
-            th = e.target.parentElement;
-            startX = e.pageX;
-            startWidth = th.offsetWidth;
-            colIndex = Array.from(th.parentElement.children).indexOf(th);
+            table.querySelectorAll("th .resizer").forEach(resizer => {
+                resizer.addEventListener("mousedown", function (e) {
+                    th = e.target.parentElement;
+                    startX = e.pageX;
+                    startWidth = th.offsetWidth;
+                    colIndex = Array.from(th.parentElement.children).indexOf(th);
 
-            document.addEventListener("mousemove", resize);
-            document.addEventListener("mouseup", stopResize);
-        });
-
-        function resize(e) {
-            if (th) {
-                const newWidth = startWidth + (e.pageX - startX);
-                th.style.width = newWidth + "px";
-
-                // Apply new width to all cells in this column
-                table.querySelectorAll("tr").forEach(row => {
-                    const cell = row.children[colIndex];
-                    if (cell) cell.style.width = newWidth + "px";
+                    document.addEventListener("mousemove", resize);
+                    document.addEventListener("mouseup", stopResize);
                 });
-            }
-        }
 
-        function stopResize() {
-            document.removeEventListener("mousemove", resize);
-            document.removeEventListener("mouseup", stopResize);
-        }
-    });
-};
+                function resize(e) {
+                    if (th) {
+                        const newWidth = startWidth + (e.pageX - startX);
+                        th.style.width = newWidth + "px";
+
+                        // Apply new width to all cells in this column
+                        table.querySelectorAll("tr").forEach(row => {
+                            const cell = row.children[colIndex];
+                            if (cell) cell.style.width = newWidth + "px";
+                        });
+                    }
+                }
+
+                function stopResize() {
+                    document.removeEventListener("mousemove", resize);
+                    document.removeEventListener("mouseup", stopResize);
+                }
+            });
+        };
 
     </script>
     <!--end::OverlayScrollbars Configure-->
+
 </body>
 
 </html>

@@ -19,8 +19,13 @@ namespace Domain.Models
         [Required]
         [Column(TypeName = "nvarchar(20)")]
         public string CardCode { get; set; }
+        [Column(TypeName = "nvarchar(20)")]
+        public string? Theme { get; set; }
+        [Column(TypeName = "nvarchar(10)")]
+        public string? Language { get; set; }
         public DateTimeOffset DateCreated { get; set; }
         public DateTimeOffset DateUpdated { get; set; }
         public DateTimeOffset DateDeleted { get; set; }
+        
     }
 }

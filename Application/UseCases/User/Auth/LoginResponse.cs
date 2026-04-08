@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.UseCases.User.Auth
+﻿namespace Application.UseCases.User.Auth
 {
     public sealed record LoginResponse
     {
@@ -14,5 +8,8 @@ namespace Application.UseCases.User.Auth
         public string UserId { get; set; }
         public string CardCode { get; set; }
         public string UniqueName { get; set; }
+        public bool Requires2FA { get; set; }
+        public string Theme { get; set; } = "light";
+        public string Language { get; set; } = "pt";
     }
 }

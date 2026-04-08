@@ -8,6 +8,7 @@ namespace WebFrontEnd.Services.Orders
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Orders";
         private List<OrderViewDto>? _cache;
+        private DetailsOrdersDto? orders;
         public Action OrderAction { get; set; }
 
         public OrderServices(HttpClient httpClient)
@@ -109,5 +110,20 @@ namespace WebFrontEnd.Services.Orders
         }
 
         private static async Task<string> RedContent(HttpResponseMessage response) => await response.Content.ReadAsStringAsync();
+
+        public async Task<DetailsOrdersDto> GetByDocEntryOrdersAsync(string cardCode, int DocEntry, bool forceRefresh = false)
+        {
+            var response = await _httpClient.GetAsync($"{BaseUrl}/details?CardCode={cardCode}&DocEntry={DocEntry}");
+
+            if ((!response.IsSuccessStatusCode))
+            {
+                return null!;
+            }
+
+            orders = await response.Content.ReadFromJsonAsync<DetailsOrdersDto>()
+                     ?? new DetailsOrdersDto();
+
+            return orders;
+        }
     }
 }

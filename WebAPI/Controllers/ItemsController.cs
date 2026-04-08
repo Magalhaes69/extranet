@@ -16,10 +16,11 @@ namespace WebAPI.Controllers
         }
         // GET
         [HttpGet("list")]
-        public async Task<IActionResult> GetAllItems(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllItems([FromQuery] string Valid, CancellationToken cancellationToken)
         {
-            var request = await _mediator.Send(new GetAllItemsRequest(), cancellationToken);
-            return Ok(request);
+            var request = new GetAllItemsRequest { Valid = Valid };
+            var response = await _mediator.Send(request, cancellationToken);
+            return Ok(response);
         }
 
        

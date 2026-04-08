@@ -1,0 +1,76 @@
+﻿namespace WebFrontEnd.Services.CreditNotes.Dto
+{
+    public sealed record CreditNotesViewDto
+    {
+        public int DocEntry { get; set; }
+        public int DocNum { get; set; }
+        public string? DocType { get; set; }
+        public string? HandWritten { get; set; }
+        public string? Printed { get; set; }
+        public DateTime? DocDate { get; set; }
+        public DateTime? DocDueDate { get; set; }
+        public string? CardCode { get; set; }
+        public string? CardName { get; set; }
+        public string? Address { get; set; }
+        public string? NumAtCard { get; set; }
+        public decimal? DocTotal { get; set; }
+        public string? AttachmentEntry { get; set; }
+        public string? DocCurrency { get; set; }
+        public decimal? DocRate { get; set; }
+        public string? Reference1 { get; set; }
+        public string? Reference2 { get; set; }
+        public string? Comments { get; set; }
+        public int? PaymentGroupCode { get; set; }
+        public string? DocTime { get; set; }
+        public int? SalesPersonCode { get; set; }
+        public int? TransportationCode { get; set; }
+        public string? Confirmed { get; set; }
+        public string? ImportFileNum { get; set; }
+        public string? SummeryType { get; set; }
+        public int? ContactPersonCode { get; set; }
+        public string? ShowSCN { get; set; }
+        public int? Series { get; set; }
+        public DateTime? TaxDate { get; set; }
+        public string? PartialSupply { get; set; }
+        public string? DocObjectCode { get; set; }
+        public string? ShipToCode { get; set; }
+        public string? Indicator { get; set; }
+        public string? FederalTaxID { get; set; }
+        public decimal? DiscountPercent { get; set; }
+        public string? PaymentReference { get; set; }
+        public DateTime? CreationDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
+        public int? UserSign { get; set; }
+        public decimal? VatSum { get; set; }
+        public decimal? VatSumSys { get; set; }
+        public decimal? VatSumFc { get; set; }
+        public string? NetProcedure { get; set; }
+        public decimal? DocTotalFc { get; set; }
+        public decimal? DocTotalSys { get; set; }
+        public string? Reserve { get; set; }
+        public string? Project { get; set; }
+        public string? AgentCode { get; set; }
+        public decimal? WTAppliedSC { get; set; }
+        public decimal? TotalEqualizationTax { get; set; }
+        public decimal? TotalEqualizationTaxFC { get; set; }
+        public decimal? TotalEqualizationTaxSC { get; set; }
+        public int? NumberOfInstallments { get; set; }
+        public decimal? BaseAmount { get; set; }
+        public decimal? BaseAmountSC { get; set; }
+        public decimal? BaseAmountFC { get; set; }
+        public decimal? WTAmount { get; set; }
+        public decimal? WTAmountSC { get; set; }
+        public decimal? WTAmountFC { get; set; }
+        public DateTime? VatDate { get; set; }
+        public int? DocumentsOwner { get; set; }
+        public string? DocumentSubType { get; set; }
+        public string? Address2 { get; set; }
+        public string? DocumentStatus { get; set; }
+        public string? PayToCode { get; set; }
+        public int? ManualNumber { get; set; }
+        public string? UseShpdGoodsAct { get; set; }
+        public string? Cancelled { get; set; }
+        public decimal? TotalDiscountFC { get; set; }
+        public decimal? TotalDiscountSC { get; set; }
+    }
+}

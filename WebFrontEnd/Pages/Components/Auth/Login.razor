@@ -1,21 +1,25 @@
 ﻿@page "/login"
 
+@using System.Globalization
+@using Microsoft.Extensions.Localization
 @using WebFrontEnd.Services.Auth
 @inject AuthenticationStateProvider authenticationState
+@inject IStringLocalizer<UserApp> UserLan
+
 @layout EmptyLayout
 
 
 <div class="login-box">
-    <div class="card card-outline card-primary">
+    <div class="card card-outline card-warning">
         <div class="card-header">
-            <a href="../index2.html"
+            <a href=""
                class="link-dark text-center link-offset-2 link-opacity-100 link-opacity-50-hover">
                 <h1 class="mb-0">Login</h1>
             </a>
         </div>
 
         <div class="card-body login-card-body">
-            <p class="login-box-msg">Sign in to start your session</p>
+            <p class="login-box-msg">@UserLan["titleLogin"]</p>
 
             <!-- API error alert -->
             @if (!string.IsNullOrEmpty(errorMessage))
@@ -33,7 +37,7 @@
                 <div class="input-group  has-validation mb-1">
                     <div class="form-floating">
                         <InputText type="email"  @bind-Value="login.email" id="loginEmail" class="form-control" placeholder="" />
-                        <label for="loginEmail">Email</label>
+                        <label for="loginEmail">@UserLan["email"]</label>
                     </div>
                     <div class="input-group-text">
                         <span class="bi bi-envelope"></span>
@@ -46,7 +50,7 @@
                 <div class="input-group mb-1">
                     <div class="form-floating">
                         <InputText @bind-Value="login.password" id="loginPassword" type="password" class="form-control" placeholder="" />
-                        <label for="loginPassword">Password</label>
+                        <label for="loginPassword">@UserLan["password"]</label>
                     </div>
                     <div class="input-group-text">
                         <span class="bi bi-lock-fill"></span>
@@ -61,31 +65,33 @@
                     <div class="col-8 d-inline-flex align-items-center">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
-                            <label class="form-check-label" for="flexCheckDefault"> Remember Me </label>
+                            <label class="form-check-label" for="flexCheckDefault"> @UserLan["remember"] </label>
                         </div>
                     </div>
-                    <!-- /.col -->
-                    <div class="col-4">
-                        <div class="d-grid gap-2">
-                             @if (MessageDialogService.ShowSaveButton)
-                            {
-                                <button type="submit" class="btn btn-primary">Sign In</button>
-                            }
-                            <BusyButtonComponent ShowBusyButton="@MessageDialogService.ShowBusyButton" />
-                        </div>
-                    </div>
-                    <!-- /.col -->
                 </div>
                 <!--end::Row-->
+
+                <div class="social-auth-links text-center mb-3 d-grid gap-2">
+                    @if (MessageDialogService.ShowSaveButton)
+                    {
+                        <button type="submit" class="btn btn-warning fw-bold">
+                            <i class="bi bi-box-arrow-in-right"></i> @UserLan["btnLogin"]
+                        </button>
+                    }
+                    <BusyButtonComponent cssBtn="btn-warning" ShowBusyButton="@MessageDialogService.ShowBusyButton" />
+                </div>
             </EditForm>
             <p class="mb-1">
-                <a href="forgot-password.html">I forgot my password</a>
+                <a href="forgot-password.html">@UserLan["forgotPassword"]?</a>
             </p>
            
         </div>
         <!-- /.login-card-body -->
     </div>
 </div>
+
+
+
 @code {
     LoginDto login = new();
     private string? errorMessage;
@@ -99,20 +105,33 @@
 
         if (result is not null)
         {
-            var authStateProvider = (CustomAuthStateProvider)authenticationState;
-            authStateProvider.SetUser(result);
-
-            MessageDialogService.ShowSaveButton = true;
-            MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
-            if (!string.IsNullOrWhiteSpace(returnUrl))
+            if (result.Requires2FA)
             {
-                nav.NavigateTo(returnUrl);
-
-
+                MessageDialogService.ShowSaveButton = true;
+                MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+                nav.NavigateTo($"/verify?email={result.Email}&returnUrl={returnUrl}");
             }
             else
             {
-                nav.NavigateTo("/");
+                var authStateProvider = (CustomAuthStateProvider)authenticationState;
+                authStateProvider.SetUser(result);
+
+                MessageDialogService.ShowSaveButton = true;
+                MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+
+                await AddTheme(result.Theme, result.Language!);
+
+                
+                if (!string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    //nav.NavigateTo(returnUrl);
+                    nav.NavigateTo(returnUrl, forceLoad: true);
+                }
+                else
+                {
+                   // nav.NavigateTo("/");
+                    nav.NavigateTo("/", forceLoad: true);
+                }
             }
         }
         else
@@ -121,5 +140,23 @@
             MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
             errorMessage = "Invalid email or password!";
         }
+    }
+
+    private async Task AddTheme(string? theme, string Languege)
+    {
+        var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
+        await js.InvokeVoidAsync("localStorage.setItem", "theme", theme ?? "light");
+        await js.InvokeVoidAsync("localStorage.setItem", "blazorCulture.get", Languege ?? "pt-PT");
+        string themeToApply = theme ?? "";
+        if (storedTheme == "auto")
+        {
+            bool prefersDark = await js.InvokeAsync<bool>("eval",
+                "window.matchMedia('(prefers-color-scheme: dark)').matches");
+            themeToApply = prefersDark ? "dark" : "light";
+        }
+        // Set global theme
+        ThemeService.SetTheme(themeToApply);
+        await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", themeToApply);
+
     }
 }

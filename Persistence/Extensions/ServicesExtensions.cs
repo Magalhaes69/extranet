@@ -26,7 +26,8 @@ namespace Persistence.Extensions
             IConfiguration configuration)
         {
             services.AddIdentityCore<AppUser>()
-                .AddEntityFrameworkStores<AppDbContext>();
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             var connectionString = configuration.GetConnectionString("DevDB");
             services.AddDbContext<AppDbContext>(options =>
@@ -90,6 +91,10 @@ namespace Persistence.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBaseUserRepository, AppUserRepository>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+            services.AddScoped<IEmailService, EmailService>();
         }
     }
 }

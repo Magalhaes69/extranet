@@ -1,32 +1,35 @@
 ﻿@page "/"
 @using WebFrontEnd.Services.Auth
+
 @using WebFrontEnd.Services.Dashboard.Dtos
+@implements IDisposable
 @attribute [Authorize]
 
 
-    <div class="app-content-header bg-white pt-2 pb-1" >
-        <div class="container-fluid">
-            <div class="top-menu sticky-top bg-white">
-                <ul class="nav custom-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link @(activeSection == "home" ? "active" : "")" @onclick="@(() => ScrollTo("home"))">A minha página principal </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(activeSection == "crm" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("crm"))">CRM</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(activeSection == "vendas" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("vendas"))">Vendas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(activeSection == "compras" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("compras"))">Compras</a>
-                    </li>
-                </ul>
-            </div>
+<div class="app-content-header @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-white" : "bg-light text-dark") pt-2 pb-1">
+    <div class="container-fluid">
+        <div class="top-menu sticky-top">
+            <ul class="nav custom-tabs">
+                <li class="nav-item">
+                    <a class="nav-link @(activeSection == "home" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" @onclick="@(() => ScrollTo("home"))">A minha página principal </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeSection == "crm" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
+                       @onclick="@(() => ScrollTo("crm"))">CRM</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeSection == "vendas" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
+                       @onclick="@(() => ScrollTo("vendas"))">Vendas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeSection == "compras" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
+                       @onclick="@(() => ScrollTo("compras"))">Compras</a>
+                </li>
+            
+            </ul>
         </div>
     </div>
+</div>
 
     <div class="app-content">
     <div class="container-fluid">
@@ -370,7 +373,6 @@
     private string activeSection = "home";
     private GetCountDto getCountDto = new();
     private string CardCode = string.Empty;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -389,8 +391,12 @@
       
         getCountDto = await DashboardService.GetCountOrderAsync(CardCode, "");
         
+        ThemeService.OnThemeChanged += Refresh;
     }
-
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
     private async Task ScrollTo(string id)
     {
         activeSection = id;
@@ -402,5 +408,9 @@
     {
         activeSection = section;
         StateHasChanged();
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= Refresh;
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Application.UseCases.Quotations.GetAllQuotations
 {
     public record GetAllQuotationsResponse
@@ -18,6 +13,8 @@ namespace Application.UseCases.Quotations.GetAllQuotations
         public string? CardCode { get; set; }
         public string? CardName { get; set; }
         public string? Address { get; set; }
+        public string? Address2 { get; set; }
+        public string? ShipToCode { get; set; }
         public decimal? DocTotal { get; set; }
         public string? DocCurrency { get; set; }
         public decimal? DocRate { get; set; }
@@ -36,5 +33,8 @@ namespace Application.UseCases.Quotations.GetAllQuotations
         public string? DocumentStatus { get; set; }
         public string? PeriodIndicator { get; set; }
         public string? PayToCode { get; set; }
+        public decimal? TotalDiscount { get; set; }
+        public string? Cancelled { get; set; }
+        public List<GetAllDocumentLinesResponse>? DocumentLines { get; set; }
     }
 }

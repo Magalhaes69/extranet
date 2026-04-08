@@ -30,6 +30,12 @@ namespace WebFrontEnd.Services.Orders.Models
         public string? OwnerCode { get; set; }
         public int? Series { get; set; }
         public string? CntctCode { get; set; }
+        public string? ShipToCode { get; set; }
+        public string? Address2 { get; set; }
+        public string? PayToCode { get; set; }
+        public decimal? TotalDiscount { get; set; }
+        public decimal? DocTotal { get; set; }
+        public decimal? VatSum { get; set; }
         public List<OrderLineDto> DocumentLines { get; set; } = new();
     }
 }

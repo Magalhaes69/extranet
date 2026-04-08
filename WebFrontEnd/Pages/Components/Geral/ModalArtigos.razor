@@ -4,10 +4,14 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-scrollable modal-xl">
-        <div class="modal-content rounded-3">
-
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h5 class="modal-title">
+                        Artigos
+                    </h5>
+                </div>
             <!-- Body -->
-            <div class="modal-body px-3">
+            <div class="modal-body">
 
                 <!-- Filters/Header -->
                 <div class="app-content-header bg-white pt-2 pb-1">
@@ -78,7 +82,7 @@
                                         <td style="cursor:pointer" @onclick="() => ToggleRow(item)">@item.ItemCode</td>
                                         <td style="cursor:pointer" @onclick="() => ToggleRow(item)">@item.ItemName</td>
                                         <td class="text-end" style="cursor:pointer" @onclick="() => ToggleRow(item)">@item.Quatity</td>
-                                        <td class="text-end" style="cursor:pointer" @onclick="() => ToggleRow(item)">@item.ItemPrices!.FirstOrDefault(x => x.PriceList == Tprice)?.Price.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.ItemPrices!.FirstOrDefault(x => x.PriceList == 1)?.Currency</td>
+                                        <td class="text-end" style="cursor:pointer" @onclick="() => ToggleRow(item)">@item.ItemPrices!.FirstOrDefault(x => x.PriceList == Tprice)?.Price?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.ItemPrices!.FirstOrDefault(x => x.PriceList == 1)?.Currency</td>
                                         <td>@item.ItemsGroupCode</td>
                                     </tr>
                                 }

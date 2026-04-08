@@ -50,6 +50,12 @@ namespace Application.UseCases.Orders.GetAllOrders
         public string? ControlAccount { get; set; }
 
         public int? DataVersion { get; set; }
-        public List<GetAllOrdersLineResponse> Lines { get; set; } = new();
+        public string? ShipToCode { get; set; }
+        public string? Address2 { get; set; }
+        public string? PayToCode { get; set; }
+        public string? AgentCode { get; set; }
+        public int? TransportationCode { get; set; }
+        public string? PartialSupply { get; set; }
+        public List<GetAllOrdersLineResponse> DocumentLines { get; set; } = new();
     }
 }

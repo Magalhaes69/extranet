@@ -1,10 +1,9 @@
 ﻿@page "/invoices"
-
 @attribute [Authorize]
 
-<div class="bg-white mb-4 ">
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4 ">
     <div class="mb-4 position-relative">
-        <AppContentHeader Title="As minhas facturas do fornecedor" />
+        <AppContentHeader Title="@Title" />
 
         <div class="app-content">
             <div class="container-fluid">
@@ -12,41 +11,293 @@
                 @if (isOpen)
                 {
                     <div class="pb-4">
-                        <form class="row g-3 align-items-end">
+                        <EditForm Model="@Filter" OnValidSubmit="ExecuteFilter" class="row g-3 align-items-end">
+                            <!-- Filtro por Numero do documento -->
                             <div class="col-md-2">
-                                <label class="form-label">Nº do documento</label>
-                                <input type="text" class="form-control" placeholder="Nº do documento">
+                                <label class="form-label">@LanSales["docmentNo"]:</label>
+                                <div class="position-relative">
+
+                                    <div class="form-control form-control-sm d-flex align-items-center gap-1 pe-5 filter-input-container"
+                                        >
+                                        <!-- Scrollable tags -->
+                                        <div class="d-flex gap-1 flex-nowrap overflow-auto filter-tags">
+                                            @if (Filter.DynamicFilters is not null){
+                                                @foreach (var f in Filter.DynamicFilters!.Where(x => x.Field == "DocNum"))
+                                                {
+                                                    <span class="badge muilt-tag d-flex align-items-center pointer-filter" @onclick="ToggleDocNumDropdown">
+                                                        @RenderFilterTextDynamic(f)
+
+                                                        <span class="ms-1"
+                                                              style="cursor:pointer"
+                                                              @onclick:stopPropagation
+                                                              @onclick="() => RemoveFilterDynamic(f)">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </span>
+                                                    </span>
+                                                }
+                                            }
+                                            <!-- Input -->
+                                            <input class="border-0 filter-input"
+                                                   @bind="InputValue"
+                                                   @onclick="ToggleDocNumDropdown" />
+
+                                            @if (ShowDocNumDropdown)
+                                            {
+                                                <div class="dropdown-filter shadow-sm @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-light" : "bg-light text-dark")">
+
+                                                    @if (Filter.DynamicFilters?.Any(x => x.Field == "DocNum") == true)
+                                                    {
+                                                        @foreach (var f in Filter.DynamicFilters.Where(x => x.Field == "DocNum"))
+                                                        {
+                                                            <div class=" dropdown-item @(ThemeService.CurrentTheme == "dark" ? " dropdown-item-dark" : "") d-flex justify-content-between align-items-center"
+                                                                 @onclick="ToggleDocNumDropdown">
+
+                                                                <span >@RenderFilterTextDynamic(f)</span>
+
+                                                                <i class="bi bi-x-circle text-danger"
+                                                                   style="cursor:pointer"
+                                                                   @onclick="() => RemoveFilterDynamic(f)">
+                                                                </i>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="dropdown-item @(ThemeService.CurrentTheme == "light" ? " text-muted" : "text-light  dropdown-item-dark")">
+                                                            @LanGeneral["noFilter"]
+                                                        </div>
+                                                    }
+
+                                                    <div class="dropdown-divider"></div>
+
+                                                    <!-- Open modal -->
+                                                    <div class="dropdown-item text-primary"
+                                                         style="cursor:pointer"
+                                                         @onclick="OpenDocNumModal">
+                                                        <i class="bi bi-funnel"></i> @LanGeneral["btnAddFilter"]
+                                                    </div>
+
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Button -->
+                                    <button type="button"
+                                            @onclick="OpenDocNumModal"
+                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                            style="border: none; background: transparent;">
+                                        <i class="bi bi-filter"></i>
+                                    </button>
+                                </div>
                             </div>
+                            <!--Fim-->
+                            <!--Filtro por data de validade-->
                             <div class="col-md-2">
-                                <label class="form-label">Código do cliente</label>
-                                <input type="text" class="form-control" placeholder="Código do cliente">
+
+                                <label class="form-label">
+                                    @LanSales["validUntil"]:
+                                </label>
+                                <div class="position-relative">
+
+                                    <div class="form-control form-control-sm d-flex align-items-center gap-1 pe-5 filter-input-container"
+                                         >
+
+                                        <!-- Scrollable tags -->
+                                        <div class="d-flex gap-1 flex-nowrap overflow-auto filter-tags">
+                                            @if (Filter.DynamicFilters is not null){
+                                                @foreach (var f in Filter.DynamicFilters!.Where(x => x.Field == "DocDueDate"))
+                                                {
+                                                    <span class="badge muilt-tag d-flex align-items-center pointer-filter" @onclick="ToggleDocDueDateDropdown">
+                                                        @RenderFilterTextDynamic(f)
+
+                                                        <span class="ms-1"
+                                                              style="cursor:pointer"
+                                                              @onclick:stopPropagation
+                                                              @onclick="() => RemoveFilterDynamic(f)">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </span>
+                                                    </span>
+                                                }
+                                            }
+
+                                            <!-- Input -->
+                                            <input class="border-0 filter-input"
+                                                   @bind="InputValue"
+                                                   @onclick="ToggleDocDueDateDropdown" />
+
+                                            @if (ShowDocDueDateDropdown)
+                                            {
+                                                <div class="dropdown-filter shadow-sm @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-light" : "bg-light text-dark") ">
+
+                                                    @if (Filter.DynamicFilters?.Any(x => x.Field == "DocDueDate") == true)
+                                                    {
+                                                        @foreach (var f in Filter.DynamicFilters.Where(x => x.Field == "DocDueDate"))
+                                                        {
+                                                            <div class=" @(ThemeService.CurrentTheme == "dark" ? " dark " : "") dropdown-item d-flex justify-content-between align-items-center">
+
+                                                                <span>@RenderFilterTextDynamic(f)</span>
+
+                                                                <i class="bi bi-x-circle text-danger"
+                                                                   style="cursor:pointer"
+                                                                   @onclick="() => RemoveFilterDynamic(f)">
+                                                                </i>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="dropdown-item @(ThemeService.CurrentTheme == "light" ? " text-muted" : "text-light  dropdown-item-dark")">
+                                                            @LanGeneral["noFilter"]
+                                                        </div>
+                                                    }
+
+                                                    <div class="dropdown-divider"></div>
+
+                                                    <!-- Open modal -->
+                                                    <div class="dropdown-item text-primary"
+                                                         style="cursor:pointer"
+                                                         @onclick="OpenDocDueDateModal">
+                                                        <i class="bi bi-funnel"></i> @LanGeneral["btnAddFilter"]
+                                                    </div>
+
+                                                </div>
+                                            }
+
+                                        </div>
+                                    </div>
+
+                                    <!-- Button -->
+                                    <button type="button"
+                                            @onclick="OpenDocDueDateModal"
+                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                            style="border: none; background: transparent;">
+                                        <i class="bi bi-filter"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Nome do cliente</label>
-                                <input type="text" class="form-control" placeholder="Nome do cliente">
+                            <!--Fim-->
+
+                            <!-- Filtro por data de lancamento-->
+                            <div class="col-sm-2">
+                                <label class="form-label">@LanSales["launchDate"]:</label>
+                                <div class="position-relative">
+
+                                    <div class="form-control form-control-sm d-flex align-items-center gap-1 pe-5 filter-input-container"
+                                         >
+
+                                        <!-- Scrollable tags -->
+                                        <div class="d-flex gap-1 flex-nowrap overflow-auto filter-tags">
+                                            @if (Filter.DynamicFilters is not null)
+                                            {
+                                                @foreach (var f in Filter.DynamicFilters!.Where(x => x.Field == "DocDate"))
+                                                {
+                                                    <span class="badge muilt-tag d-flex align-items-center">
+                                                        @RenderFilterTextDynamic(f)
+
+                                                        <span class="ms-1"
+                                                              style="cursor:pointer"
+                                                              @onclick:stopPropagation
+                                                              @onclick="() => RemoveFilterDynamic(f)">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </span>
+                                                    </span>
+                                                }
+                                            }
+
+                                            <!-- Input -->
+                                            <input class="border-0 filter-input"
+                                                   @bind="InputValue"
+                                                   @onclick="ToggleDocDateDropdown" />
+
+                                            @if (ShowDocDateDropdown)
+                                            {
+                                                <div class="dropdown-filter shadow-sm @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-light" : "bg-light text-dark") ">
+
+                                                    @if (Filter.DynamicFilters?.Any(x => x.Field == "DocDate") == true)
+                                                    {
+                                                        @foreach (var f in Filter.DynamicFilters.Where(x => x.Field == "DocDate"))
+                                                        {
+                                                            <div class=" @(ThemeService.CurrentTheme == "dark"? " dark ": "") dropdown-item d-flex justify-content-between align-items-center">
+
+                                                                <span>@RenderFilterTextDynamic(f)</span>
+
+                                                                <i class="bi bi-x-circle text-danger"
+                                                                   style="cursor:pointer"
+                                                                   @onclick="() => RemoveFilterDynamic(f)">
+                                                                </i>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="dropdown-item @(ThemeService.CurrentTheme == "light" ? " text-muted" : "text-light  dropdown-item-dark") ">
+                                                            @LanGeneral["noFilter"]
+                                                        </div>
+                                                    }
+
+                                                    <div class="dropdown-divider"></div>
+
+                                                    <!-- Open modal -->
+                                                    <div class="dropdown-item text-primary"
+                                                         style="cursor:pointer"
+                                                         @onclick="OpenDocDateModal">
+                                                        <i class="bi bi-funnel"></i> @LanGeneral["btnAddFilter"]
+                                                    </div>
+
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Button -->
+                                    <button type="button"
+                                            @onclick="OpenDocDateModal"
+                                            class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                            style="border: none; background: transparent;">
+                                        <i class="bi bi-filter"></i>
+                                    </button>
+
+                                </div>
                             </div>
+                            <!--Fim-->
+                            
+                            
                             <div class="col-md-2">
-                                <label class="form-label">Data de entrega</label>
-                                <input type="date" class="form-control">
+                                <label class="form-label">@LanSales["ststusLine"]:</label>
+                                <MultiSelect Items="Items"
+                                             SelectedValues="Filter.DocumentStatuses"
+                                             SelectedValuesChanged="@(v => Filter.DocumentStatuses = v)"
+                                             OnDocumentStatusesChanged="OnDocumentStatusesChanged" />
+
                             </div>
+
                             <div class="col-md-2">
-                                <label class="form-label">Status</label>
-                                <select class="form-select">
-                                    <option selected>Em aberto</option>
-                                    <option>Fechado</option>
-                                    <option>Cancelado</option>
-                                </select>
+                                <label class="form-label">@LanSales["canceled"]:</label>
+                                <MultiSelect Items="StatusCancelled"
+                                             SelectedValues="Filter.Cancelled"
+                                             SelectedValuesChanged="@(v => Filter.Cancelled = v)"
+                                             OnDocumentStatusesChanged="OnCancelledStatusesChanged" />
                             </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">Data de lançamento:</label>
+                                <DatePicker ValueChanged="OnDateChanged" Format="DD/MM/YYYY" />
+                            </div>
+
                             <div class="col-md-1">
-                                <button type="submit" class="btn btn-sm btn-primary">Ir</button>
+                                <button type="submit" class="btn btn-sm @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light" : "btn-primary")">
+                                    @LanGeneral["btnSearch"]
+                                </button>
                             </div>
-                        </form>
+
+                        </EditForm>
                     </div>
                 }
 
                 <!-- Floating toggle button -->
                 <div class="card-floating-btn">
-                    <button type="button" class="btn btn-light shadow" @onclick="ToggleCard">
+                    <button type="button" class="btn @(ThemeService.CurrentTheme == "dark" ? "btn-dark" : "btn-light") shadow" @onclick="ToggleCard">
                         <i class="bi @(isOpen ? "bi-chevron-up" : "bi-chevron-down")"></i>
                     </button>
                 </div>
@@ -57,144 +308,243 @@
 
 <div class="app-content">
     <div class="container-fluid">
+        <GridOptionsComponent>
+            <TotalFacturas>
+                @DescpTotal (@invoicesDtos!.Where(x => x.SelectedInvoices).Count()/@invoicesDtos!.Count())
+            </TotalFacturas>
 
-
-        <!-- Top grid options -->
-        <div class="mb-2 d-flex justify-content-start grid-options">
-            <!-- Right aligned icons -->
-            <div class="ms-auto d-flex">
-                
-                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">Pré-visualização</button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Opção 1</a></li>
+            <ButtonOptions>
+                <button class="btn btn-link btn-sm custom-btn text-decoration-none dropdown-toggle  @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-light" : "")" 
+                data-bs-toggle="dropdown" disabled = "@(!invoicesDtos!.Any(s => s.SelectedInvoices))">@LanGeneral["preview"]
+                </button>
+                <ul class="dropdown-menu @(ThemeService.CurrentTheme == "dark" ? " dropdown-dark" : "")">
+                    <li>
+                        <a class="dropdown-item" href="https://localhost:7118/api/Attachments2/getattachment?AbsoluteEntry=223">
+                            @LanGeneral["preview"]
+                       </a>
+                    </li>
                 </ul>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-gear"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-table-cells"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-chart-column"></i></button>
                 <button class="btn btn-icon btn-link btn-sm custom-btn text-decoration-none"><i class="fa-solid fa-list"></i></button>
-            </div>
-        </div>
+            </ButtonOptions>
+        </GridOptionsComponent>
 
 
         <!-- Table -->
-        <div class="card">
-            <div class="card-body table-wrapper p-0" style="height: calc(100vh - 300px);min-height: 300px;max-height: 80vh;overflow-y: auto;">
-                @if (isLoading)
-                {
-                    <LoadingPage />
-                }
-                else if (orders!.Count() > 0)
-                {
-                    <table class="table table-head-fixed table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col"><input type="checkbox"></th>
-                                <th scope="col">Nº do documento</th>
-                                <th scope="col">Código do cliente</th>
-                                <th scope="col">Nome do cliente</th>
-                                <th scope="col">Nº referência</th>
-                                <th scope="col" class="text-end">Data de lançamento</th>
-                                <th scope="col" class=" text-end">Data de Vencimento</th>
-                                <th scope="col" class="text-end">Total do documento</th>
-                                <th scope="col">Status</th>
-                                <th scope="col" class="text-end"> Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+        <AppTableComponent TItem="GetAllInvoicesDto"
+          Items="invoicesDtos"
+          IsLoading="isLoading"
+          ColumnCount="10">
 
-                            @foreach (var item in orders!)
-                            {
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>@item.DocNum</td>
-                                    <td>
-                                        <a href="#" class="customer-link">
-                                            <i class="bi bi-chevron-right" style="font-size:1rem!important;"></i> @item.CardCode
-                                        </a>
-                                    </td>
-                                    <td>@item.CardName</td>
-                                    <td>@item.CardCode</td>
-                                    <td class="text-end">@(item.DocDate.HasValue ? item.DocDate.Value.ToString("dd/MM/yyyy") : "" )</td>
-                                    <td class="text-end">@(item.DocDueDate.HasValue? item.DocDueDate.Value.ToString("dd/MM/yyyy") : "")</td>
-                                    <td class="text-end">@(item.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) ?? "") @item.DocCurrency</td>
-                                    <td>Fechado</td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm custom-btn"><i class="icon-list-custom bi bi-chevron-right"></i></button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="7" class="text-end">Total</td>
-                                <td class="text-end">@total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) MZM</td>
-                                @* <td colspan="1"></td> *@
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
-                else
-                {
-                    <table class="table table-head-fixed table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scopes="col"><input type="checkbox"></th>
-                                <th scope="col">Nº do documento</th>
-                                <th scope="col">Código do cliente</th>
-                                <th scope="col">Nome do cliente</th>
-                                <th scope="col">Nº referência</th>
-                                <th scope="col" class="text-end">Data de lançamento</th>
-                                <th scope="col" class=" text-end">Data de entrega</th>
-                                <th scope="col" class="text-end">Total do documento</th>
-                                <th scope="col" class="text-end"> Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="9" class="text-center">No Invoices found</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                }
-            </div>
-        </div>
+            <Header>
+                <tr>
+                <th><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                    <th>@LanSales["docmentNo"]</th>
+                <th>@LanSales["custumerCode"]</th>
+                <th>@LanSales["customerName"]</th>
+                <th> @LanSales["reference"]</th>
+                <th class="text-end">@LanSales["launchDate"]</th>
+                <th class="text-end"> @LanSales["validUntil"]</th>
+                <th class="text-end">@LanSales["totalLine"]</th>
+                <th>@LanSales["ststusLine"]</th>
+                    <th class="text-end">@LanSales["actions"]</th>
+                </tr>
+            </Header>
+
+            <RowTemplate Context="item">
+                <tr>
+                    <td><InputCheckbox @bind-Value="item.SelectedInvoices" /></td>
+
+                    <td>@item.DocNum</td>
+
+                    <td>
+                        <a href="#" class="customer-link">
+                            <i class="bi bi-chevron-right"></i> @item.CardCode
+                        </a>
+                    </td>
+
+                    <td>@item.CardName</td>
+                    <td>@item.Reference1</td>
+
+                    <td class="text-end">
+                        @(item.DocDate?.ToString("dd/MM/yyyy"))
+                    </td>
+
+                    <td class="text-end">
+                        @(item.DocDueDate?.ToString("dd/MM/yyyy"))
+                    </td>
+
+                    <td class="text-end">
+                        @(item.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))) @item.DocCurrency
+                    </td>
+
+                    <td>
+                        @UiConverters.ToDocStatus(item.DocumentStatus!, item.Cancelled!)
+                    </td>
+
+                    <td class="text-end">
+                        <button class="btn btn-sm custom-btn"
+                                @onclick="() => SelectInvoices(item)">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </td>
+                </tr>
+            </RowTemplate>
+
+            <Footer>
+                <tr>
+                    <td colspan="7" class="text-end">@LanSales["totalGrid"]</td>
+                    <td class="text-end">
+                    @total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @invoicesDtos?.FirstOrDefault()?.DocCurrency
+                    </td>
+                </tr>
+            </Footer>
+
+    <LoadingTemplate>
+        <LoadingPage />
+    </LoadingTemplate>
+
+    <EmptyTemplate>
+        @LanSales["noRegister"]
+    </EmptyTemplate>
+
+</AppTableComponent>
     </div>
-
 </div>
 
+<ModelToFilter TITem="DynamicFilter"
+               @ref="ModalDynamic"
+               Title="@GetNameOfField(CurrentField)"
+               ITems="@dynamicFilters">
+
+    <Rows Context="item">
+        <div class="d-flex gap-2 mb-2">
+
+            <!-- Field -->
+            <CustomSelect TItem="string"
+                          Items="GetFieldOption(CurrentField!)"
+                          @bind-SelectedValue="item.Field" />
+
+            <!-- Operator -->
+            <CustomSelect TItem="OperatorType"
+                          Items="GetOperators(CurrentField!)"
+                          @bind-SelectedValue="item.Operator" />
+
+            <!-- Value -->
+            @if (RequiresTwoValues(item.Operator))
+            {
+               
+                    <input type="@GetInputType(item.Field)"
+                           class="form-control"
+                           @bind="item.Value1" />
+
+
+                    <input type="@GetInputType(item.Field)"
+                           class="form-control"
+                           @bind="item.Value2" />
+                
+            }
+            else
+            {
+   
+                <input type="@GetInputType(item.Field)"
+                       class="form-control"
+                    @bind="item.Value1" />
+
+              
+            }
+
+            <!-- Logic -->
+           @*  <CustomSelect TItem="LogicalOperator"
+                          Items="LogicOptions"
+                          @bind-SelectedValue="item.Logic" /> *@
+
+            <!-- Remove -->
+            <button class="btn btn-sm"
+                    @onclick="() => RemoveFilterOnDynamic(item)">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    </Rows>
+
+    <AddButton>
+        <button class="btn btn-success btn-sm" @onclick="() => AddFilterDynamic(CurrentField)">
+            @LanGeneral["btnAddFilter"]
+        </button>
+    </AddButton>
+
+    <Footer>
+        <button class="btn btn-secondary btn-sm" @onclick="CloseModalDynamic">@LanGeneral["btnClose"]</button>
+        <button class="btn btn-primary btn-sm" @onclick="ApplyFiltersDynamic">@LanGeneral["btnOkFilter"]</button>
+    </Footer>
+
+</ModelToFilter>
+
 @code {
-    List<GetAllInvoicesDto>? orders = new();
+    List<GetAllInvoicesDto>? invoicesDtos = new();
     private bool isOpen = true;
     private decimal total;
     private bool isLoading;
     private string CardCode = string.Empty;
     private bool isCollapsed = true;
-
+    private int DocNum;
+    private DateTime? SelectedDate { get; set; }= null;
+    private List<string> DocumentStatuses { get; set; } = new();
+    List<MultiSelect.OptionItem> Items = new();
+    List<MultiSelect.OptionItem> StatusCancelled = new();
+    List<string> Cancelled = new();
+    private InvoiceRequest Filter = new();
+    private bool ShowDocDueDateDropdown = false;
+    private bool ShowDocNumDropdown = false;
+    private bool ShowDocDateDropdown = false;
+    private string Title = default!;
+    private string DescpTotal = default!;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
             await js.InvokeVoidAsync("preventDropdownClose");
+
+            ThemeService.OnThemeChanged += StateHasChanged;
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        Title = LanSales["invoices"];
+        DescpTotal = LanSales["descriptionTotSelected"];
+        Items = new()
+        {
+           new() { Value = "bost_Open", Text =  LanGeneral["DocStatus_Open"]},
+            new() { Value = "bost_Close", Text =  LanGeneral["DocStatus_Closed"] }
+        };
+
+        StatusCancelled = new()
+        {
+           new() { Value = "tNO", Text = LanGeneral["status_No"] },
+            new() { Value = "tYES", Text = LanGeneral["status_Yes"] }
+        };
+        Filter = new InvoiceRequest
+        {
+            DocumentStatuses = new List<string> { "bost_Open" },
+            Cancelled = new List<string>(),
+            DynamicFilters = new List<DynamicFilter>()
+        };
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         CardCode = user.GetCardCode();
         isLoading = true;
-        orders = await InvoicesService.GetInvoicesAsync(CardCode);
-        total = orders.Sum(x => x.DocTotal ?? 0);
+        Filter.CardCode = CardCode;
+
+        invoicesDtos = await InvoicesService.GetInvoicesAsync(Filter, false);
+
+        total = invoicesDtos.Sum(x => x.DocTotal ?? 0);
 
         isLoading = false;
-    }
-
-    private async Task Refresh()
-    {
-        orders = await InvoicesService.GetInvoicesAsync(CardCode, true);
     }
 
     private void ToggleCard()
@@ -204,7 +554,389 @@
 
     private void Recalculate()
     {
-        total = orders?.Sum(x => x.DocTotal) ?? 0;
+        total = invoicesDtos?.Sum(x => x.DocTotal) ?? 0;
     }
 
+
+    private void SelectInvoices(GetAllInvoicesDto item)
+    {
+        nav.NavigateTo($"/invoices-details/{item.DocEntry}");
+    }
+
+    private async Task ExecuteFilter()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            CardCode = user.GetCardCode();
+            isLoading = true;
+
+            invoicesDtos = await InvoicesService.GetInvoicesAsync(Filter, true);
+
+
+            total = invoicesDtos.Sum(x => x.DocTotal ?? 0);
+
+            isLoading = false;
+        }
+        catch
+        {
+
+        }
+    }
+
+    public void OnDocumentStatusesChanged(List<string> selectedValues)
+    {
+        Filter.DocumentStatuses = selectedValues;
+    }
+
+    public void OnCancelledStatusesChanged(List<string> selectedValues)
+    {
+        Filter.Cancelled = selectedValues;
+    }
+
+    private bool AllSelected
+    {
+        get => invoicesDtos!.All(l => l.SelectedInvoices);
+        set
+        {
+            foreach (var line in invoicesDtos!)
+            {
+                line.SelectedInvoices = value;
+            }
+        }
+    }
+
+    private void OnDateChanged()
+    {
+        // This method can be used to trigger any additional logic when the date changes, if necessary.
+
+    }
+    private ModelToFilter<DynamicFilter>? ModalDynamic;
+
+    private string? SelectedValue;
+    private string? InputValue;
+    private List<SelectItem<OperatorType>> OperatorNumber = new()
+    {
+        new SelectItem<OperatorType> { Value = OperatorType.Iqual, Text = "Igual a" },
+        new SelectItem<OperatorType> { Value = OperatorType.NotIqual, Text = "Não Igual a" },
+        new SelectItem<OperatorType> { Value = OperatorType.Between, Text = "No intervalo" },
+        new SelectItem<OperatorType> { Value = OperatorType.LessThan, Text = "Menor que" },
+        new SelectItem<OperatorType> { Value = OperatorType.LessThanOrEqual, Text = "Menor do que ou igual a" },
+        new SelectItem<OperatorType> { Value = OperatorType.GreaterThan, Text = "Maior que" },
+        new SelectItem<OperatorType> { Value = OperatorType.GreaterThanOrEqual, Text = "Maior do que ou igual a" },
+    };
+
+
+    private string? CurrentField;
+    private List<DynamicFilter> dynamicFilters = new()
+        {
+            new DynamicFilter()
+        };
+    private List<FilterField> AvailableFields = new()
+    {
+        new()
+        {
+            Name = "DocNum",
+            Label = "Nº Documento",
+            DataType = typeof(int),
+            AllowedOperators = new()
+            {
+                OperatorType.Iqual,
+                OperatorType.NotIqual,
+                OperatorType.GreaterThan,
+                OperatorType.GreaterThanOrEqual,
+                OperatorType.LessThan,
+                OperatorType.LessThanOrEqual,
+                OperatorType.Between
+            }
+        },
+        new()
+        {
+            Name = "DocDueDate",
+            Label = "Válido até",
+            DataType = typeof(DateTime),
+            AllowedOperators = new()
+            {
+                OperatorType.Iqual,
+                OperatorType.Between
+            }
+        },
+        new()
+        {
+            Name = "DocDate",
+            Label = "Data de lançamento",
+            DataType = typeof(DateTime),
+            AllowedOperators = new()
+            {
+                OperatorType.Iqual,
+                OperatorType.Between
+            }
+        }
+    };
+
+    private string GetInputType(string field)
+    {
+        return field switch
+        {
+            "DocNum" => "number",
+            "DocDueDate" => "date",
+            "DocDate" => "date",
+            _ => "text"
+        };
+    }
+
+
+    private bool IsBetween(DynamicFilter f)
+    {
+        return f.Operator == OperatorType.Between;
+    }
+
+    private bool RequiresTwoValues(OperatorType op)
+    {
+        return op == OperatorType.Between;
+    }
+
+    private List<SelectItem<string>> FieldOptions =>
+    AvailableFields
+        .Select(f => new SelectItem<string>
+        {
+            Value = f.Name,
+            Text = f.Label
+        })
+        .ToList();
+
+    private List<SelectItem<LogicalOperator>> LogicOptions = new()
+{
+    new() { Value = LogicalOperator.And, Text = "E" },
+    new() { Value = LogicalOperator.Or, Text = "OU" }
+};
+
+
+    private void OpenDocDateModal()
+    {
+        CurrentField = "DocDate";
+
+        dynamicFilters = Filter.DynamicFilters!
+        .Where(f => f.Field == CurrentField)
+            .Select(f => new DynamicFilter
+            {
+                Field = f.Field,
+                Operator = f.Operator,
+                Value1 = f.Value1,
+                Value2 = f.Value2,
+                Logic = f.Logic
+            })
+            .ToList();
+
+        if (!dynamicFilters.Any())
+            dynamicFilters.Add(new DynamicFilter { Field = CurrentField });
+
+        ShowDocDateDropdown = false;
+        ModalDynamic!.Show();
+    }
+
+    private void OpenDocNumModal()
+    {
+        CurrentField = "DocNum";
+
+        dynamicFilters = Filter.DynamicFilters!
+        .Where(f => f.Field == CurrentField)
+            .Select(f => new DynamicFilter
+            {
+                Field = f.Field,
+                Operator = f.Operator,
+                Value1 = f.Value1,
+                Value2 = f.Value2,
+                Logic = f.Logic
+            })
+            .ToList();
+
+        if (!dynamicFilters.Any())
+            dynamicFilters.Add(new DynamicFilter { Field = CurrentField });
+
+            ShowDocNumDropdown = false;
+        ModalDynamic!.Show();
+    }
+
+    private void OpenDocDueDateModal()
+    {
+        CurrentField = "DocDueDate";
+
+        dynamicFilters = Filter.DynamicFilters!
+        .Where(f => f.Field == CurrentField)
+            .Select(f => new DynamicFilter
+            {
+                Field = f.Field,
+                Operator = f.Operator,
+                Value1 = f.Value1,
+                Value2 = f.Value2,
+                Logic = f.Logic
+            })
+            .ToList();
+
+        if (!dynamicFilters.Any())
+            dynamicFilters.Add(new DynamicFilter { Field = CurrentField });
+
+        ShowDocDueDateDropdown = false;
+        ModalDynamic!.Show();
+    }
+
+
+    private void AddFilterDynamic(string? field)
+    {
+        dynamicFilters.Add(new DynamicFilter { Field = field! });
+    }
+
+    private void ApplyFiltersDynamic()
+    {
+        // remove old filters of this field
+        Filter.DynamicFilters!.RemoveAll(f => f.Field == CurrentField);
+
+        // add new ones
+        foreach (var f in dynamicFilters)
+        {
+            f.Field = CurrentField!;
+            Filter.DynamicFilters.Add(f);
+        }
+
+        ModalDynamic!.CloseModal();
+    }
+
+    private string RenderFilterTextDynamic(DynamicFilter f)
+    {
+        var fieldLabel = AvailableFields
+            .FirstOrDefault(x => x.Name == f.Field)?.Label ?? f.Field;
+
+        return f.Operator switch
+        {
+            OperatorType.Iqual => $"{fieldLabel} = {f.Value1}",
+            OperatorType.NotIqual => $"{fieldLabel} ≠ {f.Value1}",
+            OperatorType.GreaterThan => $"{fieldLabel} > {f.Value1}",
+            OperatorType.GreaterThanOrEqual => $"{fieldLabel} >= {f.Value1}",
+            OperatorType.LessThan => $"{fieldLabel} < {f.Value1}",
+            OperatorType.LessThanOrEqual => $"{fieldLabel} <= {f.Value1}",
+
+            OperatorType.Between => $"{fieldLabel}: {f.Value1} - {f.Value2}",
+
+            _ => $"{fieldLabel}: {f.Value1}"
+        };
+    }
+
+    private List<SelectItem<OperatorType>> GetOperators(string field)
+    {
+        var selectedField = AvailableFields.FirstOrDefault(f => f.Name == field);
+
+        if (selectedField == null)
+            return new();
+
+        return selectedField.AllowedOperators
+            .Select(op => new SelectItem<OperatorType>
+            {
+                Value = op,
+                Text = GetOperatorText(op)
+            })
+            .ToList();
+    }
+
+    private List<SelectItem<string>> GetFieldOption(string field)
+    {
+        var f = AvailableFields.FirstOrDefault(x => x.Name == field);
+
+        if (f == null)
+            return new();
+
+        return new List<SelectItem<string>>
+    {
+        new SelectItem<string>
+        {
+            Value = f.Name,
+            Text = f.Label
+        }
+    };
+    }
+    private string GetOperatorText(OperatorType op)
+    {
+        return op switch
+        {
+            OperatorType.Iqual => "Igual",
+            OperatorType.NotIqual => "Diferente",
+            OperatorType.GreaterThan => "Maior",
+            OperatorType.GreaterThanOrEqual => "Maior ou igual",
+            OperatorType.LessThan => "Menor",
+            OperatorType.LessThanOrEqual => "Menor ou igual",
+            OperatorType.Between => "Intervalo",
+            _ => op.ToString()
+        };
+    }
+
+    private void RemoveFilterDynamic(DynamicFilter item)
+    {
+        Filter.DynamicFilters!.Remove(item);
+
+        if (!Filter.DynamicFilters.Any(x => x.Field == "DocDueDate"))
+            ShowDocDueDateDropdown = false;
+
+        StateHasChanged();
+    }
+    private void RemoveFilterOnDynamic(DynamicFilter f)
+    {
+        dynamicFilters.Remove(f);
+    }
+    private void CloseModalDynamic()
+    {
+        ModalDynamic!.CloseModal();
+    }
+
+    private void ToggleDocDueDateDropdown()
+    {
+        ShowDocDueDateDropdown = !ShowDocDueDateDropdown;
+    }
+    private void ToggleDocNumDropdown()
+    {
+        ShowDocNumDropdown = !ShowDocNumDropdown;
+    }
+
+    private void ToggleDocDateDropdown()
+    {
+        ShowDocDateDropdown = !ShowDocDateDropdown;
+    }
+    private string GetNameOfField(string? field)
+    {
+        if(string.IsNullOrEmpty(field))
+        return string.Empty;
+
+        var selectedField = AvailableFields.FirstOrDefault(f => f.Name == field);
+
+        if (selectedField == null)
+            return string.Empty;
+
+        return selectedField.Label;
+    }
+
+
+
+    void Download()
+    {
+        var url = $"https://localhost:7118/api/Attachments2/getattachment?AbsoluteEntry=223";
+        nav.NavigateTo(url, true);
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+    private DateTime? GetDate(string? value)
+    {
+        if (DateTime.TryParse(value, out var date))
+            return date;
+
+        return null;
+    }
+
+    private void OnDateChanged(dynamic item, DateTime? date)
+    {
+        //item.Value1 = date?.ToString("yyyy-MM-dd"); // API-friendly format
+    }
+   
 }

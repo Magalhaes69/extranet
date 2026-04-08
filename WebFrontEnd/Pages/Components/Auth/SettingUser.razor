@@ -1,0 +1,333 @@
+﻿@using WebFrontEnd.Services.CultureServices
+@using WebFrontEnd.Services.Enums
+@inject IStringLocalizer<UserApp> UserLan
+@inject IStringLocalizer<App> Lan
+@implements IDisposable
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1"  style="@(ThemeService.CurrentTheme == "dark"? "background: rgba(0,0,0,0.5);" : "")">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h5 class="modal-title">
+                        @UserLan["userSettings"]
+                    </h5>
+                </div>
+                <EditForm Model="appUser" Enhance OnValidSubmit="HandleUpdateUser">
+                    <!-- Body -->
+                    <div class="modal-body p-0">
+                        <div class="container-fluid">
+                            <div class="row g-0 modal-layout">
+
+                                <!-- LEFT SIDEBAR -->
+                                <div class="col-12 col-md-4 col-lg-3 @(ThemeService.CurrentTheme == "dark" ? "sidebar" : "")">
+                                    <div class="p-1">
+                                        <div class="menu-item  @(selectedMenu == MenuItem.Perfil ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Perfil))">
+                                            <i class="bi bi-person"></i>
+                                            <div>
+                                                <div>@UserLan["perfilGroup"]</div>
+                                                <small>
+                                                    <span class="dropdown-item fa-bold">@appUser.FirstName</span>
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <div class="menu-item  @(selectedMenu == MenuItem.Aspeto ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Aspeto))">
+                                            <i class="bi bi-palette"></i>
+                                            <div>
+                                                <div>@UserLan["appearance"]</div>
+                                                <small>@appUser.Theme</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="menu-item  @(selectedMenu == MenuItem.PaginaPrincipal ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.PaginaPrincipal))">
+                                            <i class="bi bi-house"></i>
+                                            <span>
+                                               @UserLan["homePage"]
+                                               </span>
+                                        </div>
+
+                                        <div class="menu-item  @(selectedMenu == MenuItem.Atividades ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Atividades))">
+                                            <i class="bi bi-activity"></i>
+                                            <span>@UserLan["userActivities"]</span>
+                                        </div>
+
+                                        <div class="menu-item  @(selectedMenu == MenuItem.Idioma ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Idioma))">
+                                            <i class="bi bi-globe"></i>
+                                            <div>
+                                                <div>@UserLan["languageRegion"]</div>
+                                                <small>@appUser.Language</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- RIGHT CONTENT -->
+                                <div class="col-12 col-md-8 col-lg-9 @(ThemeService.CurrentTheme == "dark" ? "content-area" : "")">
+                                    <div class="p-3">
+                                        @if (selectedMenu == MenuItem.Aspeto)
+                                        {
+                                            <h4 class="mb-3">@UserLan["appearance"]</h4>
+
+                                            <ul class="nav nav-tabs mb-3">
+                                                <li class="nav-item">
+                                                    <button class="nav-link active @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">Tema</button>
+                                                </li>
+                                                <li class="nav-item @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">
+                                                    <button class="nav-link">Definições de visualização</button>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Theme list -->
+                                            <div class="theme-item @(appUser.Theme == ThemeType.light.ToString() ? "selected text-light" : "")" @onclick="() => ChooseTheme(ThemeType.light)">
+                                                <div class="circle"></div>
+                                                <span>Light</span>
+                                                @if (appUser.Theme == ThemeType.light.ToString())
+                                                {
+                                                    <i class="bi bi-check-circle-fill check"></i>
+                                                }
+                                            </div>
+
+                                            <div class="theme-item @(appUser.Theme == ThemeType.dark.ToString() ? "selected text-light" : "") " @onclick="() => ChooseTheme(ThemeType.dark)">
+                                                <div class="circle dark"></div>
+                                                <span>Dark</span>
+                                                @if (appUser.Theme == ThemeType.dark.ToString())
+                                                {
+                                                    <i class="bi bi-check-circle-fill check"></i>
+                                                }
+                                            </div>
+                                        }
+                                        else if (selectedMenu == MenuItem.Perfil)
+                                        {
+                                            <h4>@UserLan["userData"]</h4>
+
+                                            <div class="card p-3">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="coll-12 col-sm-2 col-form-label">@UserLan["firstName"]<span class="text-danger fw-bold">*</span> </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.FirstName" />
+                                                    </div>
+                                                    <label for="inputEmail3" class="coll-12 col-sm-2 col-form-label">@UserLan["surname"] <span class="text-danger fw-bold">*</span>: </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.LastName" />
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <label for="inputNuit" class="coll-12 col-sm-2 col-form-label">@UserLan["nuit"] <span class="text-danger fw-bold">*</span> </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.Nuit" />
+                                                    </div>
+                                                    <label for="inputCardCode" class="coll-12 col-sm-2 col-form-label">
+                                                        @UserLan["businessPartner"]
+                                                         <span class="text-danger fw-bold">*</span>: </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.CardCode" readonly />
+                                                    </div>
+                                                </div>
+
+
+                                                <div class="row">
+                                                    <label for="inputEmail" class="coll-12 col-sm-2 col-form-label">@UserLan["email"] <span class="text-danger fw-bold">*</span> </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.Email" readonly />
+                                                    </div>
+                                                    <label for="inputCardCode" class="coll-12 col-sm-2 col-form-label">@UserLan["contact"]: </label>
+                                                    <div class="col-12 col-sm-4">
+                                                        <InputText class="form-control form-control-sm" @bind-Value="appUser.PhoneNumber" />
+                                                    </div>
+                                                </div>
+
+
+                                                <div class="row">
+                                                    <div class="col-6 col-sm-4">
+                                                        <span>@UserLan["twoFactorAuth"]</span>
+                                                    </div>
+                                                    <div class="col-6 col-sm-6">
+                                                        <div class="form-check form-switch m-0">
+                                                            <input class="form-check-input"
+                                                                   type="checkbox"
+                                                                   id="verify2FA"
+                                                                   @bind="appUser.TwoFactorEnabled" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <small class="text-muted">
+                                                            @(appUser.TwoFactorEnabled? UserLan["twoFactorMessage1"] : UserLan["twoFactorMessage2"])
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                    </div>
+                                        }
+                                        else if (selectedMenu == MenuItem.Atividades)
+                                        {
+                                            <h4>
+                                                @UserLan["userActivities"]</h4>
+                                            <div class="card p-3">
+                                                <p>@UserLan["userActivitiesDesc"]</p>
+                                            </div>
+                                        }
+                                        else if (selectedMenu == MenuItem.PaginaPrincipal)
+                                        {
+                                            <h4>@UserLan["homePage"]</h4>
+                                            <div class="card p-3">
+                                                <p>Configurações da página inicial.</p>
+                                            </div>
+                                        }
+                                        else if (selectedMenu == MenuItem.Idioma)
+                                        {
+                                            <h4>@UserLan["languageRegion"]</h4>
+                                            <div class="card p-3">
+                                                <p>@UserLan["languageRegionDesc"].</p>
+                                                <div class="row mb-3">
+                                                    <label for="inputIdiomaRegion" class="col-sm-2 col-form-label">@UserLan["idiomaRegion"]: </label>
+                                                   
+                                                    <div class="col-sm-8">
+                                                        <InputSelect id="inputIdiomaRegion" class="form-select form-select-sm" @bind-Value="appUser.Language">
+                                                            @foreach (var culture in LocalizerSettings.SupportedCultureWithName)
+                                                            {
+                                                                @if (appUser.Language != null && culture == SelectedCulture)
+                                                                {
+                                                                    <option value="@culture.Culture" selected>@culture.Name</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@culture.Culture">@culture.Name</option>
+                                                                }
+                                                            }
+                                                        </InputSelect>
+                                                        <small class="form-text text-muted">@UserLan["languageRegionNote"]</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="modal-footer py-1">
+                        <button class="btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : "btn-secondary")  btn-sm rounded-1" @onclick="ShowFechar">@Lan["btnClose"]</button>
+                        @if (ToastService.ShowSaveButton)
+                        {
+                            <button class="btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : "btn-select-modal")  btn-sm rounded-1 ">@Lan["btnSave"]</button>
+                        }
+                        <BusyButtonComponent cssBtn="btn-warning" ShowBusyButton="@ToastService.ShowBusyButton" />
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool IsVisible = false;
+
+    private AppUserCreateDto appUser = new();
+    CultureWithName SelectedCulture = null!;
+    private MenuItem selectedMenu = MenuItem.Perfil;
+
+    public enum MenuItem
+    {
+        Aspeto,
+        PaginaPrincipal,
+        Atividades,
+        Idioma,
+        Perfil
+    }
+
+
+    private void SelectMenu(MenuItem menu)
+    {
+        selectedMenu = menu;
+    }
+
+    public async Task ShowModal()
+    {
+        IsVisible = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        appUser.Email = user.GetEmail();
+
+        var result = await authService.Profile(appUser.Email);
+
+        if (result is not null)
+        {
+            appUser.FirstName = result.FirstName;
+            appUser.LastName = result.LastName;
+            appUser.Nuit = result.Nuit;
+            appUser.CardCode = result.CardCode;
+            appUser.PhoneNumber = result.PhoneNumber;
+            appUser.Theme = result.Theme;
+            appUser.Language = result.Language;
+            appUser.TwoFactorEnabled = result.TwoFactorEnabled;
+            appUser.Id = result.Id;
+        }
+        StateHasChanged();
+    }
+
+    private void ShowFechar()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        ToastService.OnChange += StateHasChanged;
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+    private void ChooseTheme(ThemeType theme)
+    {
+        appUser.Theme = theme.ToString();
+    }
+
+    private async Task HandleUpdateUser()
+    {
+        ToastService.ShowSaveButton = false;
+        ToastService.ShowBusyButton = !ToastService.ShowSaveButton;
+
+        var response = await AuthService.UpdateProfile(appUser);
+        if (response.Flag)
+        {
+            ToastService.ShowSuccess(Lan["successMessage"], ThemeService.CurrentTheme);
+
+            var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
+
+            if (storedTheme != appUser.Theme)
+            {
+                string themeToApply = appUser.Theme ?? "";
+                await js.InvokeVoidAsync("localStorage.setItem", "theme", appUser.Theme ?? "light");
+                ThemeService.SetTheme(themeToApply);
+                await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", themeToApply);
+
+                StateHasChanged();
+            }
+
+            var culture = await js.InvokeAsync<string>("localStorage.getItem", "blazorCulture.get");
+            if (culture != appUser.Language)
+            {
+                await js.InvokeAsync<string>("localStorage.setItem", "blazorCulture.get", appUser.Language);
+                nav.NavigateTo(nav.Uri, forceLoad: true);
+            }
+        }
+        else
+            ToastService.ShowError(Lan["errorMessage"], ThemeService.CurrentTheme);
+        ShowFechar();
+        return;
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= StateHasChanged;
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

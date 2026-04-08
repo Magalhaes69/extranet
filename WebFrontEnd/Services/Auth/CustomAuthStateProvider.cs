@@ -108,7 +108,7 @@ namespace WebFrontEnd.Services.Auth
                 new Claim("CardCode", auth.CardCode),
                 new Claim("UniqueName", auth.Email),
                 new Claim("access_token", auth.token),
-                new Claim("UserId", auth.UserId)
+                new Claim(ClaimTypes.NameIdentifier, auth.UserId)
             };
 
             var identity = new ClaimsIdentity(claims, "jwt");

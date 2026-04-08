@@ -1,0 +1,13 @@
+﻿#resizable-table th {
+    user-select: none;
+}
+
+    #resizable-table th .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 1;
+    }

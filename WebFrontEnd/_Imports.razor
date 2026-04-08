@@ -5,7 +5,9 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.Extensions.Localization
 @using Microsoft.JSInterop
+@using System.Globalization
 @using WebFrontEnd
 @using WebFrontEnd.Layout
 @using WebFrontEnd.Pages.Components
@@ -14,7 +16,9 @@
 
 @using WebFrontEnd.Pages.Components.Geral
 @using WebFrontEnd.Services.BusinessPartners
+@using WebFrontEnd.Services.CreditNotes
 @using WebFrontEnd.Services.Dashboard
+@using WebFrontEnd.Services.DeliveryNotes
 @using WebFrontEnd.Services.IncomingPayments
 @using WebFrontEnd.Services.Invoices
 @using WebFrontEnd.Services.Items
@@ -24,6 +28,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using WebFrontEnd.Helps
+@using WebFrontEnd.Services.Quotations
+@using WebFrontEnd.Services.Toast
 @using WebFrontEnd.Services.VatGroups
 @using WebFrontEnd.Services.Warehouses
 @using WebFrontEnd.Shared.Dtos
@@ -32,9 +38,13 @@
 @using WebFrontEnd.Services.VatGroups.DTO
 @using WebFrontEnd.Services.Warehouses.Dto
 @using WebFrontEnd.Services.Invoices.Dto
+@using WebFrontEnd.Services.CreditNotes.Dto
+@using WebFrontEnd.Services.Enums
+@using WebFrontEnd.Services.Filter
+
+@inject ToastService ToastService
 
 @inject IJSRuntime js
-
 @inject IOrderService OrderService;
 @inject IItemsService ItemsService;
 @inject IVatGroupsService VatGroupsService;
@@ -43,6 +53,9 @@
 @inject IDashboardService DashboardService;
 @inject IInvoicesService InvoicesService;
 @inject IIncomingPaymentsService IncomingPaymentsService;
+@inject IQuotationsService QuotationsService;
+@inject IDeliveryNotesService DeliveryNotesService;
+@inject ICreditNotesService CreditNotesService;
 
 @inject AuthService AuthService
 @inject NavigationManager nav
@@ -50,3 +63,8 @@
 @inject MessageDialogService MessageDialogService
 @inject AuthService authService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ThemeService ThemeService
+@inject UiConverters UiConverters
+
+@inject IStringLocalizer<App> LanGeneral
+@inject IStringLocalizer<SalesGeneralApp> LanSales

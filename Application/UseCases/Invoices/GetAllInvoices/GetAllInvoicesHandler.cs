@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Application.UseCases.Invoices.Helps;
+using Domain.Interfaces;
 using MediatR;
 
 namespace Application.UseCases.Invoices.GetAllInvoices
@@ -13,41 +14,20 @@ namespace Application.UseCases.Invoices.GetAllInvoices
 
         public async Task<List<GetAllInvoicesResponse>> Handle(GetAllInvoicesRequest request, CancellationToken cancellationToken)
         {
-            string? filter = null;
-            if (!string.IsNullOrEmpty(request.CardCode))
-                filter = $"CardCode eq '{request.CardCode}' &$orderby=DocEntry desc";
-
-            var sapOrders = await _sapClient.GetAllAsync<GetAllInvoicesResponse>("Invoices", filter, cancellationToken);
-
-            return sapOrders.Select(o => new GetAllInvoicesResponse
+            var filter = ODataFilterBuilder.Build(request);
+            var queryParams = new Dictionary<string, string>
             {
-                DocEntry = o.DocEntry,
-                DocNum = o.DocNum,
-                DocType = o.DocType,
-                DocDate = o.DocDate,
-                DocDueDate = o.DocDueDate,
-                CardCode = o.CardCode,
-                CardName = o.CardName,
-                Address = o.Address,
-                DocTotal = o.DocTotal,
-                DocCurrency = o.DocCurrency,
-                Comments = o.Comments,
-                DocumentLines = o.DocumentLines!.Select(l => new GetAllDocumentLinesResponse
-                {
-                    LineNum = l.LineNum,
-                    ItemCode = l.ItemCode,
-                    ItemDescription = l.ItemDescription,
-                    Quantity = l.Quantity,
-                    Price = l.Price,
-                    PriceAfterVAT = l.PriceAfterVAT,
-                    Currency = l.Currency,
-                    DiscountPercent = l.DiscountPercent,
-                    SerialNum = l.SerialNum,
-                    WarehouseCode = l.WarehouseCode,
-                    UnitPrice = l.UnitPrice,
-                    LineTotal = l.LineTotal,
-                }).ToList()
-            }).ToList();
+                ["$select"] = "DocEntry,DocNum,DocType,Series,DocDate,DocDueDate,CardCode,CardName,Address,DocTotal,DocCurrency,Reference1,Reference2,Comments,TotalDiscount,DocumentStatus,Cancelled,DiscountPercent,VatSum,ShipToCode,PayToCode,Address2",
+                ["$orderby"] = "DocEntry desc"
+            };
+
+            var sapOrders = await _sapClient.GetAllB1Async<GetAllInvoicesResponse>(
+                "Invoices", 
+                filter,
+                queryParams,
+                cancellationToken);
+
+            return sapOrders;
         }
     }
 }

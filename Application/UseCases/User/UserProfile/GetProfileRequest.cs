@@ -5,6 +5,6 @@ namespace Application.UseCases.User.UserProfile
 {
     public class GetProfileRequest : IRequest<UserDto>
     {
-        public Guid userId { get; set; }
+        public string Email { get; set; }
     }
 }

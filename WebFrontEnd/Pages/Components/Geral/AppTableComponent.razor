@@ -1,0 +1,63 @@
+﻿@typeparam TItem
+
+<div class="card">
+    <div class="card-body table-wrapper p-0" style="height: @Height;min-height: 300px;max-height: 80vh;overflow-y: auto;">
+        @if (IsLoading)
+        {
+            @LoadingTemplate
+        }
+        else if (Items != null && Items.Any())
+        {
+            <table class="table table-head-fixed table-hover align-middle">
+
+                <thead class="table-light">
+                    @Header
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Items)
+                    {
+                        @RowTemplate(item)
+                    }
+                </tbody>
+
+                @if (Footer != null)
+                {
+                    <tfoot>
+                        @Footer
+                    </tfoot>
+                }
+            </table>
+        }
+        else
+        {
+            <table class="table table-head-fixed table-hover align-middle">
+                <thead class="table-light">
+                    @Header
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="@ColumnCount" class="text-center">
+                            @EmptyTemplate
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public IEnumerable<TItem>? Items{ get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    [Parameter] public int ColumnCount { get; set; } = 1;
+    [Parameter] public string Height { get; set; } = "calc(100vh - 300px)";
+
+}

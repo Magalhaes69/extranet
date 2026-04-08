@@ -25,7 +25,12 @@ namespace WebFrontEnd.Services.Items
             if (_cache is not null)
                 return _cache;
 
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?");
+            var valid = "tYES";
+            var queryParams = new List<string>();
+            queryParams.Add($"Valid={valid}");
+
+            var query = string.Join("&", queryParams);
+            var response = await _httpClient.GetAsync($"{BaseUrl}/list?{query}");
 
             if (!response.IsSuccessStatusCode)
                 return new List<ItemsDto>();

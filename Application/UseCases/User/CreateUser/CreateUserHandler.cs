@@ -32,7 +32,8 @@ namespace Application.UseCases.User.CreateUser
                 CardCode = request.CardCode,
                 DateCreated = DateTime.UtcNow,
                 DateUpdated = DateTime.UtcNow,
-                UserName = request.Email
+                UserName = request.Email,
+                TwoFactorEnabled = true
             };
 
             var user = _mapper.Map<AppUser>(appUser);

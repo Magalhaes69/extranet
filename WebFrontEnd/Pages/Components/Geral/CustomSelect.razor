@@ -1,0 +1,37 @@
+﻿@typeparam TItem
+
+<select class="form-select form-select-sm"
+        @bind="SelectedValueInternal">
+    
+    @foreach (var item in Items)
+    {
+        <option value="@item.Value">@item.Text</option>
+    }
+</select>
+
+@code {
+    [Parameter]
+    public List<SelectItem<TItem>> Items { get; set; } = new();
+
+    [Parameter]
+    public TItem SelectedValue { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TItem> SelectedValueChanged { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+   
+    private TItem SelectedValueInternal
+    {
+        get => SelectedValue;
+        set
+        {
+            if (!EqualityComparer<TItem>.Default.Equals(value, SelectedValue))
+            {
+                SelectedValue = value;
+                SelectedValueChanged.InvokeAsync(value);
+            }
+        }
+    }
+}

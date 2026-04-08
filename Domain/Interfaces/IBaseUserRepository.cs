@@ -8,7 +8,8 @@ namespace Domain.Interfaces
     {
         Task<IdentityResult> CreateAsync(AppUser user, string password);
 
-        Task<IdentityResult> UpdateAsync(AppUser user);
+        Task<IdentityResult> UpdateAsync(AppUser user, string phoneNumber);
+        Task<IdentityResult> UpdatePhoneNumberAsync(AppUser user, string phoneNumber);
 
         Task<IdentityResult> DeleteAsync(AppUser user);
 
