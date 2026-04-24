@@ -1,0 +1,51 @@
+﻿@implements IDisposable
+
+<div class="app-content-header pt-2 pb-1 mb-2">
+    <div class="container-fluid">
+        <div class="top-menu-bar ">
+            <ul class="nav custom-tabs">
+                @foreach (var tab in Tabs)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold @(ActiveTab == tab.Id ? "active" : "")"
+                           @onclick="() => OnTabClick(tab.Id)">
+                            @tab.Label
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<style>
+    .top-menu-bar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--bs-body-bg);
+    }
+</style>
+@code {
+    [Parameter] public List<TabItem> Tabs { get; set; } = new();
+    [Parameter] public string ActiveTab { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ActiveTabChanged { get; set; }
+
+    private async Task OnTabClick(string id)
+    {
+        ActiveTab = id;
+        await ActiveTabChanged.InvokeAsync(id);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+    public class TabItem
+    {
+        public string Id { get; set; } = "";
+        public string Label { get; set; } = "";
+    }
+}

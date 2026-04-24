@@ -1,11 +1,16 @@
-﻿namespace WebFrontEnd.Services.IncomingPayments.Dto
+﻿using WebFrontEnd.Shared.Dtos;
+
+namespace WebFrontEnd.Services.IncomingPayments.Dto
 {
     public record GetAllIncomingPaymentsDto
     {
+        public bool Selected { get; set; }
+        [Filterable(LabelKey = "docmentNo")]
         public int DocNum { get; set; }
         public string? DocType { get; set; }
         public string? HandWritten { get; set; }
         public string? Printed { get; set; }
+        [Filterable(LabelKey = "launchDate")]
         public DateTime? DocDate { get; set; }
         public string? CardCode { get; set; }
         public string? CardName { get; set; }

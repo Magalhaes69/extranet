@@ -11,9 +11,14 @@
     </div>
 </div>
 
+<style>
+    .dropdown-menu {
+        z-index: 2000 !important;
+    }
+</style>
 @code {
     [Parameter]
-    public RenderFragment TotalFacturas { get; set; }
+    public RenderFragment? TotalFacturas { get; set; }
 
-    [Parameter] public RenderFragment ButtonOptions { get; set; }
+    [Parameter] public RenderFragment? ButtonOptions { get; set; }
 }

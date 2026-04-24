@@ -192,7 +192,7 @@
                                             {
                                                 @foreach (var f in Filter.DynamicFilters!.Where(x => x.Field == "DocDate"))
                                                 {
-                                                    <span class="badge muilt-tag d-flex align-items-center">
+                                                    <span class="badge muilt-tag d-flex align-items-center" @onclick="ToggleDocDateDropdown">
                                                         @RenderFilterTextDynamic(f)
 
                                                         <span class="ms-1"
@@ -266,8 +266,8 @@
                             <div class="col-md-2">
                                 <label class="form-label">@LanSales["ststusLine"]:</label>
                                 <MultiSelect Items="Items"
-                                             SelectedValues="Filter.DocumentStatuses"
-                                             SelectedValuesChanged="@(v => Filter.DocumentStatuses = v)"
+                                             SelectedValues="Filter.DocumentStatus"
+                                             SelectedValuesChanged="@(v => Filter.DocumentStatus = v)"
                                              OnDocumentStatusesChanged="OnDocumentStatusesChanged" />
 
                             </div>
@@ -340,16 +340,16 @@
 
             <Header>
                 <tr>
-                <th><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
-                    <th>@LanSales["docmentNo"]</th>
-                <th>@LanSales["custumerCode"]</th>
-                <th>@LanSales["customerName"]</th>
-                <th> @LanSales["reference"]</th>
-                <th class="text-end">@LanSales["launchDate"]</th>
-                <th class="text-end"> @LanSales["validUntil"]</th>
-                <th class="text-end">@LanSales["totalLine"]</th>
-                <th>@LanSales["ststusLine"]</th>
-                    <th class="text-end">@LanSales["actions"]</th>
+                <th class="border-end"><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                <th class ="border-end">@LanSales["docmentNo"]</th>
+                <th class="border-end">@LanSales["custumerCode"]</th>
+                <th class="border-end">@LanSales["customerName"]</th>
+                <th class="border-end"> @LanSales["reference"]</th>
+                <th class="border-end text-end">@LanSales["launchDate"]</th>
+                <th class="border-end text-end"> @LanSales["validUntil"]</th>
+                <th class="border-end text-end">@LanSales["totalLine"]</th>
+                <th class="border-end">@LanSales["ststusLine"]</th>
+                <th class="border-end text-end">@LanSales["actions"]</th>
                 </tr>
             </Header>
 
@@ -470,14 +470,14 @@
     </Rows>
 
     <AddButton>
-        <button class="btn btn-success btn-sm" @onclick="() => AddFilterDynamic(CurrentField)">
+        <button class="btn btn-sm py-0  @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-success")" @onclick="() => AddFilterDynamic(CurrentField)">
             @LanGeneral["btnAddFilter"]
         </button>
     </AddButton>
 
     <Footer>
-        <button class="btn btn-secondary btn-sm" @onclick="CloseModalDynamic">@LanGeneral["btnClose"]</button>
-        <button class="btn btn-primary btn-sm" @onclick="ApplyFiltersDynamic">@LanGeneral["btnOkFilter"]</button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-secondary") rounded-1" @onclick="CloseModalDynamic">@LanGeneral["btnClose"]</button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-primary") rounded-1" @onclick="ApplyFiltersDynamic">@LanGeneral["btnOkFilter"]</button>
     </Footer>
 
 </ModelToFilter>
@@ -516,6 +516,7 @@
     {
         Title = LanSales["invoices"];
         DescpTotal = LanSales["descriptionTotSelected"];
+        PageState.SetTitle(LanGeneral["invoiceTitleNavbar"]);
         Items = new()
         {
            new() { Value = "bost_Open", Text =  LanGeneral["DocStatus_Open"]},
@@ -529,7 +530,7 @@
         };
         Filter = new InvoiceRequest
         {
-            DocumentStatuses = new List<string> { "bost_Open" },
+            DocumentStatus = new List<string> { "bost_Open" },
             Cancelled = new List<string>(),
             DynamicFilters = new List<DynamicFilter>()
         };
@@ -587,7 +588,7 @@
 
     public void OnDocumentStatusesChanged(List<string> selectedValues)
     {
-        Filter.DocumentStatuses = selectedValues;
+        Filter.DocumentStatus = selectedValues;
     }
 
     public void OnCancelledStatusesChanged(List<string> selectedValues)

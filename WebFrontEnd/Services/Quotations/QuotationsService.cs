@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Json;
+
 using WebFrontEnd.Services.Quotations.Dto;
+using WebFrontEnd.Shared.Dtos;
 
 namespace WebFrontEnd.Services.Quotations
 {
@@ -12,24 +14,34 @@ namespace WebFrontEnd.Services.Quotations
         private List<QuotationsDto>? _cache;
         private QuotationsDto quotations;
 
-        public QuotationsService(HttpClient httpClient)
+        public QuotationsService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
-        public async Task<List<QuotationsDto>> GetQuotationsAsync(string cardCode, bool forceRefresh = false)
+        public async Task<List<QuotationsDto>> GetQuotationsAsync(
+            QuotationRequest quotation, 
+            bool forceRefresh = false)
         {
-            if (_cache is not null && !forceRefresh)
+            try
+            {
+                if (_cache is not null && !forceRefresh)
+                    return _cache;
+
+                var serialized = General.GennerateStringContent(General.SerializeObject(quotation));
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+
+                if (!response.IsSuccessStatusCode)
+                    return new List<QuotationsDto>();
+
+                _cache = await response.Content.ReadFromJsonAsync<List<QuotationsDto>>()
+                         ?? new List<QuotationsDto>();
+
                 return _cache;
-
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?CardCode={cardCode}");
-
-            if (!response.IsSuccessStatusCode)
+            }
+            catch
+            {
                 return new List<QuotationsDto>();
-
-            _cache = await response.Content.ReadFromJsonAsync<List<QuotationsDto>>()
-                     ?? new List<QuotationsDto>();
-
-            return _cache;
+            }
         }
 
         public async Task<QuotationsDto> GetByDocEntryQuotationsAsync(string cardCode, int DocEntry, bool forceRefresh = false)

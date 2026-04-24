@@ -1,16 +1,20 @@
 ﻿@typeparam TItem
+@implements IDisposable
 
 <div class="card">
-    <div class="card-body table-wrapper p-0" style="height: @Height;min-height: 300px;max-height: 80vh;overflow-y: auto;">
+    <div class="card-body table-wrapper p-0" style="height: @Height;m-height: 300px;max-height: 80vh;overflow-y: auto;"
+        @ref="ScrollContainer"
+        @onscroll="HandleScroll">
         @if (IsLoading)
         {
             @LoadingTemplate
         }
         else if (Items != null && Items.Any())
         {
-            <table class="table table-head-fixed table-hover align-middle">
 
-                <thead class="table-light">
+            <table class="table table-hover align-middle @(ThemeService.CurrentTheme == "dark" ? "table-dark" : "table-light")" id="resizable-table">
+                @HeaderGroup
+                <thead class="sticky-sm-top border-bottom ">
                     @Header
                 </thead>
 
@@ -31,8 +35,8 @@
         }
         else
         {
-            <table class="table table-head-fixed table-hover align-middle">
-                <thead class="table-light">
+            <table class="table table-hover align-middle @(ThemeService.CurrentTheme == "dark" ? "table-dark" : "table-light")">
+                <thead class="sticky-sm-top border-bottom">
                     @Header
                 </thead>
                 <tbody>
@@ -47,11 +51,104 @@
     </div>
 </div>
 
+<style>
+    #resizable-table th,
+    #resizable-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #resizable-table {
+        table-layout: auto;
+        width: max-content; 
+        min-width: 100%;
+    }
+    #resizable-table th {
+    position: relative;
+    min-width: 20px;
+        user-select: none;
+}
+
+    
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+       
+    #resizable-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        min-width: 20px;
+        max-width: 20px;
+        background-color: var(--bs-body-bg) !important;
+       
+    }
+
+    #resizable-table th:first-child{
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        min-width: 20px;
+        max-width: 20px;
+        background-color: var(--bs-body-bg)!important;
+    }
+
+    #resizable-table th:last-child,
+    #resizable-table td:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        min-width: 20px;
+        max-width: 20px;
+        background-color: var(--bs-body-bg) !important;
+        
+    }
+
+    #resizable-table th,
+    #resizable-table td {
+        background: var(--bs-body-bg); /* or fallback */
+    }
+
+        /* left fixed column shadow */
+        #resizable-table th:first-child,
+        #resizable-table td:first-child {
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* right fixed column shadow */
+        #resizable-table th:last-child,
+        #resizable-table td:last-child {
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        }
+
+
+        #resizable-table th:first-child .resizer {
+            right: 0;
+        }
+
+    #resizable-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+
+    #resizable-table tfoot td {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        background: var(--bs-body-bg);
+        border-top: 2px solid #adb5bd;
+        font-weight: 600;
+    }
+</style>
 @code {
 
-    [Parameter] public IEnumerable<TItem>? Items{ get; set; }
+    [Parameter] public List<TItem>? Items{ get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? HeaderGroup { get; set; }
     [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
     [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
@@ -60,4 +157,38 @@
     [Parameter] public int ColumnCount { get; set; } = 1;
     [Parameter] public string Height { get; set; } = "calc(100vh - 300px)";
 
+    [Parameter] public EventCallback OnLoadMore { get; set; }
+    [Parameter] public bool HasMore { get; set; }
+    [Parameter] public bool IsLoadingMore { get; set; }
+    private ElementReference ScrollContainer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await js.InvokeVoidAsync("initResizableTable", "resizable-table");
+        if (firstRender)
+        {
+            ThemeService.OnThemeChanged += StateHasChanged;
+        }
+    }
+    private async Task HandleScroll()
+    {
+        if (IsLoadingMore || !HasMore)
+            return;
+
+        var isNearBottom = await js.InvokeAsync<bool>("isNearBottom", ScrollContainer);
+
+        if (isNearBottom)
+        {
+            await OnLoadMore.InvokeAsync();
+        }
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
 }

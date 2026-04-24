@@ -9,6 +9,9 @@ namespace Persistence.Context
         {}
 
         public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<OrdersCart> OrdersCart { get; set; }
+        public DbSet<OrderLineCart> OrderLineCart { get; set; }
+        public DbSet<ItemExtension> ItemExtension { get; set; }
 
     }
 }

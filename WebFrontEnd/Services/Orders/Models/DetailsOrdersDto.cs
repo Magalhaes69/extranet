@@ -21,7 +21,6 @@
         public double DocRate { get; set; }
 
         public string? Comments { get; set; }
-        public string? JournalMemo { get; set; }
 
         public int? SalesPersonCode { get; set; }
 
@@ -51,6 +50,7 @@
         public string? AgentCode { get; set; }
         public int? TransportationCode { get; set; }
         public string? PartialSupply { get; set; }
+        public string? NumAtCard { get; set; }
         public IEnumerable<DocumentLineDetailsDto>? DocumentLines { get; set; }
     }
 }

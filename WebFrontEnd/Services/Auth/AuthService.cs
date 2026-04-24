@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 
 namespace WebFrontEnd.Services.Auth
@@ -66,25 +67,73 @@ namespace WebFrontEnd.Services.Auth
             }
         }
 
-        public async Task<ServiceResponsePost> UpdateProfile(AppUserCreateDto appUserCreateDto)
+        public async Task<ServiceResponsePost> UpdateProfile(
+            AppUserCreateDto appUserCreateDto, 
+            IBrowserFile? file)
         {
-            var response = await _httpClient.PutAsync($"{BaseUrl}/updateprofile", General.GennerateStringContent(General.SerializeObject(appUserCreateDto)));
+            try
+            {
+                var content = new MultipartFormDataContent();
+
+                content.Add(new StringContent(appUserCreateDto.Email ?? ""), "Email");
+                content.Add(new StringContent(appUserCreateDto.Id ?? ""), "Id");
+                content.Add(new StringContent(appUserCreateDto.FirstName ?? ""), "FirstName");
+                content.Add(new StringContent(appUserCreateDto.LastName ?? ""), "LastName");
+                content.Add(new StringContent(appUserCreateDto.Nuit ?? ""), "Nuit");
+                content.Add(new StringContent(appUserCreateDto.CardCode ?? ""), "CardCode");
+                content.Add(new StringContent(appUserCreateDto.Theme ?? ""), "Theme");
+                content.Add(new StringContent(appUserCreateDto.PhoneNumber ?? ""), "PhoneNumber");
+                content.Add(new StringContent(appUserCreateDto.Language ?? ""), "Language");
+                content.Add(new StringContent(appUserCreateDto.ImageUrl ?? ""), "ImageUrl");
+                content.Add(new StringContent(appUserCreateDto.TwoFactorEnabled.ToString() ?? "false"), "TwoFactorEnabled");
+
+                if (file != null)
+                {
+                    var fileContent = new StreamContent(file.OpenReadStream(5 * 1024 * 1024));
+
+                    fileContent.Headers.ContentType =
+                        new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+                    content.Add(fileContent, "file", file.Name);
+                }
+
+                var response = await _httpClient.PutAsync($"{BaseUrl}/updateprofile", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var token = await response.Content.ReadAsStringAsync();
+                    var result = CheckResponsePost(response);
+                    if (!result.Flag) return result;
+                    var apiResponse = await RedContent(response);
+
+                    return General.DeserialzeJsonString<ServiceResponsePost>(apiResponse);
+                }
+                else
+                {
+                    return null!;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null!;
+            }
+        }
+
+        public async Task<AppUserViewDto> GetUserById(string Id)
+        {
+            var response = await _httpClient.GetAsync($"{BaseUrl}/getbyid?Id={Id}");
+
             if (response.IsSuccessStatusCode)
             {
                 var token = await response.Content.ReadAsStringAsync();
-                var result = CheckResponsePost(response);
-                if (!result.Flag) return result;
-                var apiResponse = await RedContent(response);
+                var result = General.DeserialzeJsonString<AppUserViewDto>(token);
 
-                return General.DeserialzeJsonString<ServiceResponsePost>(apiResponse);
+                return result;
             }
             else
             {
                 return null!;
             }
-
         }
-
         private ServiceResponsePost CheckResponsePost(HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

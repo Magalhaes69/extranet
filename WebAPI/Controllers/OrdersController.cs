@@ -32,13 +32,10 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllOrder ([FromQuery] string CardCode, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllOrder ([FromBody] GetAllOrdersRequest ordersRequest, CancellationToken cancellationToken)
         { 
-            var request = new GetAllOrdersRequest { CardCode = CardCode };
-
-            var orders = await _mediator.Send(request, cancellationToken);
-
+            var orders = await _mediator.Send(ordersRequest, cancellationToken);
             return Ok(orders);
         }
 

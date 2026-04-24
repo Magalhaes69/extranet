@@ -135,6 +135,9 @@
   <data name="menuDeliveries" xml:space="preserve">
     <value>Deliveries</value>
   </data>
+  <data name="menuItemExtension" xml:space="preserve">
+    <value>Item management</value>
+  </data>
   <data name="menuOrder" xml:space="preserve">
     <value>Purchase orders</value>
   </data>
@@ -158,5 +161,14 @@
   </data>
   <data name="menuVendasGroup" xml:space="preserve">
     <value>A/P invoices</value>
+  </data>
+  <data name="menuCreateItemExtension" xml:space="preserve">
+    <value>Create extension</value>
+  </data>
+  <data name="menuListItemExtension" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="searchMenu" xml:space="preserve">
+    <value>Search menu...</value>
   </data>
 </root>

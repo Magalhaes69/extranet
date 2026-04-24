@@ -1,0 +1,5 @@
+{
+  "SqlCode": "GetSeriesDynamic",
+  "SqlName": "Series Dynamic",
+  "SqlText": "SELECT \"Series\", \"SeriesName\" FROM \"NNM1\" WHERE \"ObjectCode\" = :ObjectCode"
+}

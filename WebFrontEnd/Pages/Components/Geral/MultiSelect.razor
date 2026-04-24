@@ -165,6 +165,7 @@
         if (OnCancelledStatusesChanged.HasDelegate)
             await OnCancelledStatusesChanged.InvokeAsync(SelectedValues);
 
+        IsOpen = !IsOpen;
     }
 
     private async Task Remove(string value)

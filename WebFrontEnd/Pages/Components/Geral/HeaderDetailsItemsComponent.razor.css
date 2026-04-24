@@ -1,0 +1,19 @@
+﻿.summary-flex {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.summary-item {
+    flex: 0 0 auto;
+    min-width: 140px;
+}
+
+    .summary-item:last-child {
+        flex: 1;
+    }
+
+.summary-flex small {
+    font-size: 14px;
+}

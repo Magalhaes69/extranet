@@ -153,7 +153,19 @@
   <data name="errorMessage" xml:space="preserve">
     <value />
   </data>
+  <data name="homePageTitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="invoiceTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
   <data name="noFilter" xml:space="preserve">
+    <value />
+  </data>
+  <data name="orderTitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="orderIndexTitleNavbar" xml:space="preserve">
     <value />
   </data>
   <data name="placeholderFilterInput" xml:space="preserve">
@@ -173,5 +185,107 @@
   </data>
   <data name="TitleMenu" xml:space="preserve">
     <value>Vendas</value>
+  </data>
+  <data name="orderCreateNavBarTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="quotationIndexTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="iqual" xml:space="preserve">
+    <value />
+  </data>
+  <data name="notIqual" xml:space="preserve">
+    <value />
+  </data>
+  <data name="greaterThan" xml:space="preserve">
+    <value />
+  </data>
+  <data name="greaterThanOrEqual" xml:space="preserve">
+    <value />
+  </data>
+  <data name="lessThan" xml:space="preserve">
+    <value />
+  </data>
+  <data name="lessThanOrEqual" xml:space="preserve">
+    <value />
+  </data>
+  <data name="between" xml:space="preserve">
+    <value />
+  </data>
+  <data name="contains" xml:space="preserve">
+    <value />
+  </data>
+  <data name="startsWith" xml:space="preserve">
+    <value />
+  </data>
+  <data name="endsWith" xml:space="preserve">
+    <value />
+  </data>
+  <data name="creditIndexTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="dDocument_Service" xml:space="preserve">
+    <value />
+  </data>
+  <data name="dDocument_Items" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rCustomer" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rSupplier" xml:space="preserve">
+    <value />
+  </data>
+  <data name="deliverNotesIndexTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="catalogTitleNavBar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="dashboardTitlePrincipalPage" xml:space="preserve">
+    <value />
+  </data>
+  <data name="dashboardPurchaseOrers" xml:space="preserve">
+    <value />
+  </data>
+  <data name="dashboardQuotations" xml:space="preserve">
+    <value />
+  </data>
+  <data name="itemExtensionCreateNavBarTitleNavbar" xml:space="preserve">
+    <value />
+  </data>
+  <data name="existItemMessage" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnAddCart" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnRemove" xml:space="preserve">
+    <value />
+  </data>
+  <data name="confirmDeleteItemExtension" xml:space="preserve">
+    <value />
+  </data>
+  <data name="confirmationTitleItem" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnConfirm" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnEdit" xml:space="preserve">
+    <value />
+  </data>
+  <data name="confirmCancel" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnConfirmYes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnConfirmNo" xml:space="preserve">
+    <value />
+  </data>
+  <data name="IncomingPaymentIndexTitleNavbar" xml:space="preserve">
+    <value />
   </data>
 </root>

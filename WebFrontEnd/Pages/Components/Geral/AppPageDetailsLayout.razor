@@ -1,0 +1,36 @@
+﻿<div class="mb-4 position-relative">
+    <AppContentHeader Title="@Title">
+        <ButtonList>
+            @ButtonList
+        </ButtonList>
+    </AppContentHeader>
+
+    <div class="app-content">
+        <div class="container-fluid">
+
+            @if (IsOpen)
+            {
+                @HeaderContent
+            }
+
+            <div class="card-floating-btn">
+                <button type="button" class="btn shadow" @onclick="Toggle">
+                    <i class="bi @(IsOpen ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Body
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment? ButtonList { get; set; }
+
+    private bool IsOpen = true;
+
+    private void Toggle() => IsOpen = !IsOpen;
+}

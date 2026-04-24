@@ -1,0 +1,49 @@
+﻿@implements IDisposable
+
+@if(IsVisible)
+{
+    <!-- Modal -->
+    <div class="modal fade show d-block" id="staticBackdrop" 
+        data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1 @BorderColor">
+                    @ModalHeader
+                </div>
+                <div class="modal-body pt-1 pb-0 text-center">
+                    @ModalBody
+                </div>
+                <div class="modal-footer py-1">
+                    @ModalFooter
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+
+    [Parameter] public RenderFragment ModalFooter {get; set; }
+    [Parameter] public RenderFragment ModalBody { get; set; }
+    [Parameter] public RenderFragment ModalHeader { get; set; }
+    [Parameter] public string ModalTitle { get; set; }
+    [Parameter] public string BorderColor { get; set; }
+
+    private bool IsVisible = false;
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+     public void Show()
+    {
+        IsVisible = true;
+    }
+     public void Hide()
+    {
+        IsVisible = false;
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

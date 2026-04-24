@@ -1,6 +1,5 @@
 ﻿@page "/"
 @using WebFrontEnd.Services.Auth
-
 @using WebFrontEnd.Services.Dashboard.Dtos
 @implements IDisposable
 @attribute [Authorize]
@@ -11,21 +10,25 @@
         <div class="top-menu sticky-top">
             <ul class="nav custom-tabs">
                 <li class="nav-item">
-                    <a class="nav-link @(activeSection == "home" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" @onclick="@(() => ScrollTo("home"))">A minha página principal </a>
+                    <a class="nav-link @(activeSection == "home" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" @onclick="@(() => ScrollTo("home"))">@LanGeneral["dashboardTitlePrincipalPage"]</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @(activeSection == "crm" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("crm"))">CRM</a>
+                       @onclick="@(() => ScrollTo("crm"))">@LanGeneral["dashboardPurchaseOrers"]</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @(activeSection == "vendas" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("vendas"))">Vendas</a>
+                       @onclick="@(() => ScrollTo("vendas"))">@LanGeneral["dashboardQuotations"]</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link @(activeSection == "compras" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
+                       @onclick="@(() => ScrollTo("compras"))">Notas de crédito</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @(activeSection == "compras" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("compras"))">Compras</a>
+                       @onclick="@(() => ScrollTo("compras"))">Guias de entrega</a>
                 </li>
-            
             </ul>
         </div>
     </div>
@@ -143,7 +146,7 @@
             </div>
         </div>
 
-        <h2 class="m-3">CRM</h2>
+        <h2 class="m-3">Orders de compra</h2>
         <div id="crm" class="d-flex gap-3 flex-wrap">
             <!-- Card 1 -->
             <div class="card custom-tile d-flex flex-column">
@@ -197,7 +200,7 @@
         </div>
 
 
-        <h2 class="m-3">Vendas</h2>
+        <h2 class="m-3">Cotações</h2>
         <div id="vendas" class="d-flex gap-3 flex-wrap">
             <!-- Card 1 -->
             <div class="card custom-tile d-flex flex-column">
@@ -390,7 +393,7 @@
         CardCode = user.GetCardCode();
       
         getCountDto = await DashboardService.GetCountOrderAsync(CardCode, "");
-        
+        PageState.SetTitle(LanGeneral["homePageTitle"]);
         ThemeService.OnThemeChanged += Refresh;
     }
     private void Refresh()

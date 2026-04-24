@@ -1,13 +1,19 @@
-﻿namespace WebFrontEnd.Services.CreditNotes.Dto
+﻿using WebFrontEnd.Shared.Dtos;
+
+namespace WebFrontEnd.Services.CreditNotes.Dto
 {
     public sealed record CreditNotesViewDto
     {
+        public bool Selected { get; set; }
         public int DocEntry { get; set; }
+        [Filterable(LabelKey = "docmentNo")]
         public int DocNum { get; set; }
         public string? DocType { get; set; }
         public string? HandWritten { get; set; }
         public string? Printed { get; set; }
+        [Filterable(LabelKey = "launchDate")]
         public DateTime? DocDate { get; set; }
+        [Filterable(LabelKey = "validUntil")]
         public DateTime? DocDueDate { get; set; }
         public string? CardCode { get; set; }
         public string? CardName { get; set; }

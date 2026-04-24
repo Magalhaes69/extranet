@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Description" xml:space="preserve">
+    <value>Descrição</value>
+  </data>
+  <data name="descriptionTotItemExtension" xml:space="preserve">
+    <value>Extensões dos artigos</value>
+  </data>
+  <data name="img" xml:space="preserve">
+    <value>Selecione imagem</value>
+  </data>
   <data name="itemCode" xml:space="preserve">
     <value>Nº do artigo</value>
   </data>
@@ -126,10 +135,16 @@
   <data name="itemGroup" xml:space="preserve">
     <value>Grupo de artigos</value>
   </data>
+  <data name="itemImg" xml:space="preserve">
+    <value>Imagem</value>
+  </data>
   <data name="itemPrice" xml:space="preserve">
     <value>Preço do artigo</value>
   </data>
   <data name="itemStock" xml:space="preserve">
     <value>Em stock</value>
+  </data>
+  <data name="itemTitle" xml:space="preserve">
+    <value>Artigos</value>
   </data>
 </root>

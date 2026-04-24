@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.CreditNotes.Dto;
+using WebFrontEnd.Services.Quotations.Dto;
+using WebFrontEnd.Shared.Dtos;
 
 namespace WebFrontEnd.Services.CreditNotes
 {
@@ -12,9 +14,9 @@ namespace WebFrontEnd.Services.CreditNotes
 
         public Action CreditNotesAction { get; set; }
 
-        public CreditNotesService(HttpClient httpClient)
+        public CreditNotesService(IHttpClientFactory factory)
         {
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("API");
         }
         public async Task<CreditNotesDetailsDto> GetByDocEntryCreditNotesAsync(string cardCode, int DocEntry, bool forceRefresh = false)
         {
@@ -31,14 +33,15 @@ namespace WebFrontEnd.Services.CreditNotes
             return credit;
         }
 
-        public async Task<List<CreditNotesViewDto>> GetCreditNotesAsync(string cardCode, bool forceRefresh = false)
+        public async Task<List<CreditNotesViewDto>> GetCreditNotesAsync(CreditRequest request, bool forceRefresh = false)
         {
             try
             {
                 if (_cache is not null && !forceRefresh)
                     return _cache;
 
-                var response = await _httpClient.GetAsync($"{BaseUrl}/list?CardCode={cardCode}");
+                var serialized = General.GennerateStringContent(General.SerializeObject(request));
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
 
                 if (!response.IsSuccessStatusCode)
                     return new List<CreditNotesViewDto>();
@@ -48,10 +51,8 @@ namespace WebFrontEnd.Services.CreditNotes
 
                 return _cache;
             }
-            catch (Exception ex)
+            catch
             {
-                _httpClient.Dispose();
-
                 return new List<CreditNotesViewDto>();
             }
         }

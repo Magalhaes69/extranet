@@ -1,5 +1,7 @@
 ﻿@using System.Globalization
 @using WebFrontEnd.Services.Auth
+@using WebFrontEnd.Services.Help
+@inject NavigationHistoryService History
 
 @inherits LayoutComponentBase
 <div class="app-wrapper">
@@ -47,5 +49,8 @@
 
         ThemeService.SetTheme(storedTheme);
         await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", storedTheme);
+
+
+        History.Init(nav);
     }
 }

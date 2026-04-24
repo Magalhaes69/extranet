@@ -31,7 +31,8 @@ namespace Application.UseCases.User.UserProfile
                 Theme = user.Theme!,
                 PhoneNumber = user.PhoneNumber,
                 Language = user.Language,
-                TwoFactorEnabled = user.TwoFactorEnabled
+                TwoFactorEnabled = user.TwoFactorEnabled,
+                ImageUrl = user.ImageUrl,
             };
            
         }

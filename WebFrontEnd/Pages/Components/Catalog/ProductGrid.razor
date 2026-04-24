@@ -1,0 +1,16 @@
+﻿<div class="row">
+    @foreach (var product in Products)
+    {
+        <div class="col-md-4 mb-3">
+            <ProductCard Product="product"
+                         TPriceBusiness="TPriceBusiness"
+                         OnAddToCart="OnAddToCart" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<CatalogItemDto> Products { get; set; }
+    [Parameter] public EventCallback<CatalogItemDto> OnAddToCart { get; set; }
+    [Parameter] public int TPriceBusiness { get; set; }
+}

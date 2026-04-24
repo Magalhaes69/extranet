@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.Orders.Models;
+using WebFrontEnd.Shared.Dtos;
 
 namespace WebFrontEnd.Services.Orders
 {
@@ -11,12 +12,10 @@ namespace WebFrontEnd.Services.Orders
         private DetailsOrdersDto? orders;
         public Action OrderAction { get; set; }
 
-        public OrderServices(HttpClient httpClient)
+        public OrderServices(IHttpClientFactory factory)
         {
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("API");
         }
-
-       
 
         public async Task<OrderDto> GetByIdAsync(int id)
         {
@@ -24,27 +23,28 @@ namespace WebFrontEnd.Services.Orders
             
         }
 
-        public async Task<List<OrderViewDto>> GetOrdersAsync(string cardCode, bool forceRefresh = false)
+        public async Task<List<OrderViewDto>> GetOrdersAsync(OrdersRequest request, bool forceRefresh = false)
         {
-            if (_cache is not null && !forceRefresh)
+            try
+            {
+                if (_cache is not null && !forceRefresh)
+                    return _cache;
+
+                var serialized = General.GennerateStringContent(General.SerializeObject(request));
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+
+                if (!response.IsSuccessStatusCode)
+                    return new List<OrderViewDto>();
+
+                _cache = await response.Content.ReadFromJsonAsync<List<OrderViewDto>>()
+                         ?? new List<OrderViewDto>();
+
                 return _cache;
-
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?CardCode={cardCode}");
-
-            if (!response.IsSuccessStatusCode)
+            }
+            catch
+            {
                 return new List<OrderViewDto>();
-
-            _cache = await response.Content.ReadFromJsonAsync<List<OrderViewDto>>()
-                     ?? new List<OrderViewDto>();
-
-            return _cache;
-        }
-
-        private ServiceResponse CheckResponse(HttpResponseMessage response)
-        {
-            if (!response.IsSuccessStatusCode)
-                return new ServiceResponse(false, "Error occured. Try again later...");
-            return new ServiceResponse(true, null!);
+            }
         }
 
         private ServiceResponsePost CheckResponsePost(HttpResponseMessage response)

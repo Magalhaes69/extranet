@@ -91,6 +91,11 @@ namespace Persistence.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBaseUserRepository, AppUserRepository>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            
+            services.AddScoped<IOrdersCartRepository, OrdersCartRepository>();
+            services.AddScoped<IOrderLineCartRepository, OrderLineCartRepository>();
+            services.AddScoped<IItemExtensionRepository, ItemExtensionRepository>();
+            services.AddScoped<IFileService, FileService>();
 
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 

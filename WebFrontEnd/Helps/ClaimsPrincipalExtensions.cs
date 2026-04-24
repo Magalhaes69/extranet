@@ -18,5 +18,10 @@ namespace WebFrontEnd.Helps
         {
             return user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         }
+
+        public static string GetUserGuid(this ClaimsPrincipal user)
+        {
+            return user.FindFirst("UserId")?.Value ?? string.Empty;
+        }
     }
 }

@@ -14,11 +14,9 @@ namespace WebAPI.Controllers
         private readonly IMediator _mediator;
         public QuotationsController(IMediator mediator) => _mediator = mediator;
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllQuotations([FromQuery] string CardCode, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllQuotations([FromBody] GetAllQuotationsRequest request, CancellationToken cancellationToken)
         {
-            var request = new GetAllQuotationsRequest { CardCode = CardCode };
-
             var orders = await _mediator.Send(request, cancellationToken);
 
             return Ok(orders);

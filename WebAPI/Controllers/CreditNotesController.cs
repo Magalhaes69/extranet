@@ -17,12 +17,10 @@ namespace WebAPI.Controllers
             this._mediator = mediator;
         }
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllCreditNotes([FromQuery] string CardCode, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllCreditNotes([FromBody] GetAllCreditNotesRequest request, CancellationToken cancellationToken)
         {
-            var request = new GetAllCreditNotesRequest { CardCode = CardCode };
             var credit = await _mediator.Send(request, cancellationToken);
-
             return Ok(credit);
         }
 

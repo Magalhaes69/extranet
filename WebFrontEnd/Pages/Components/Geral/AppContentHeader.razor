@@ -1,4 +1,4 @@
-﻿
+﻿@implements IDisposable
     <!--begin::App Content Header-->
 <div class="app-content-header pt-2 pb-1">
     <!--begin::Container-->
@@ -6,16 +6,19 @@
         <!--begin::Row-->
         <div class="row">
             <div class="col-sm-6">
-                <h3 class="mb-0" >@Title</h3>
+                <h3 class="mb-0 @(ThemeService.CurrentTheme == "dark" ? "text-light" : "")" >@Title</h3>
             </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-end">
+            <div class="col-sm-6 d-flex justify-content-end align-items-center gap-2">
+                @ButtonList
+                <!-- Breadcrumb -->
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="#">
+                        <a href="#" class="@(ThemeService.CurrentTheme == "dark" ? "text-light" : "")">
                             <i class="fa-regular fa-share-from-square"></i>
                         </a>
                     </li>
                 </ol>
+
             </div>
         </div>
         <!--end::Row-->
@@ -25,6 +28,15 @@
 <!--end::App Content Header-->
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ButtonList { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
 
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
 }

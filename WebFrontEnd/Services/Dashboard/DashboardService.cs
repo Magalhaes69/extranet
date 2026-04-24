@@ -10,9 +10,9 @@ namespace WebFrontEnd.Services.Dashboard
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Dashboard";
 
-        public DashboardService(HttpClient httpClient)
+        public DashboardService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
         public async Task<GetCountDto> GetCountOrderAsync(string CardCode, string Status)
         {

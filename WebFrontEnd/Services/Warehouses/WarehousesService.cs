@@ -12,9 +12,9 @@ namespace WebFrontEnd.Services.Warehouses
         private List<WarehousesDto> _cache;
         public Action WarehousesDtoAction { get; set; }
 
-        public WarehousesService(HttpClient httpClient)
+        public WarehousesService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
         public Task<WarehousesDto> GetByCodeAsync(string id)
         {

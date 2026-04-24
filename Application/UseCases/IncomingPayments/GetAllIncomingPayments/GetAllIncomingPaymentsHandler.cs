@@ -1,30 +1,104 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.UseCases.Invoices.GetAllInvoices;
+﻿using System.Net.Http;
+using Application.Dtos.Orders;
+using Application.UseCases.Invoices.Helps;
 using Domain.Interfaces;
 using MediatR;
 
 namespace Application.UseCases.IncomingPayments.GetAllIncomingPayments
 {
-    public class GetAllIncomingPaymentsHandler : IRequestHandler<GetAllIncomingPaymentsRequest, List<GetAllIncomingPaymentsResponse>>
+    public class GetAllIncomingPaymentsHandler : IRequestHandler<GetAllIncomingPaymentsRequest, GetAllIncomingPaymentsResult>
     {
         private readonly ISapClient _sapClient;
         public GetAllIncomingPaymentsHandler(ISapClient sapClient)
         {
             _sapClient = sapClient;
         }
-        public async Task<List<GetAllIncomingPaymentsResponse>> Handle(GetAllIncomingPaymentsRequest request, CancellationToken cancellationToken)
+        public async Task<GetAllIncomingPaymentsResult> Handle(GetAllIncomingPaymentsRequest request, CancellationToken cancellationToken)
         {
-            string? filter = null;
-            if (!string.IsNullOrEmpty(request.CardCode))
-                filter = $"CardCode eq '{request.CardCode}' &$orderby=DocEntry desc";
+            try
+            {
+                var filter = ODataFilterBuilder.Build(request);
+                var queryParams = new Dictionary<string, string>
+                {
+                    ["$select"] = "DocEntry," +
+                    "DocNum," +
+                    "DocType," +
+                    "Series," +
+                    "DocDate," +
+                    "CardCode," +
+                    "CardName," +
+                    "Address," +
+                    "CashSum," +
+                    "DocCurrency," +
+                    "Reference1," +
+                    "Reference2," +
+                    "Remarks," +
+                    "CheckAccount," +
+                    "TransferAccount," +
+                    "TransferSum," +
+                    "TransferDate," +
+                    "LocalCurrency," +
+                    "TaxDate," +
+                    "ProjectCode," +
+                    "DeductionPercent," +
+                    "DeductionSum," +
+                    "CashSumFC," +
+                    "CashSumSys," +
+                    "DueDate," +
+                    "PaymentChecks," +
+                    "Cancelled",
+                    
+                    ["$orderby"] = "DocEntry desc"
+                };
+                var (data, total) = await _sapClient.GetPagedBL1Async<GetAllIncomingPaymentsResponse>(
+                    "IncomingPayments",
+                    request.Page,
+                    request.PageSize,
+                    filter,
+                    queryParams,
+                    cancellationToken);
 
-            var sapOrders = await _sapClient.GetAllAsync<GetAllIncomingPaymentsResponse>("IncomingPayments", filter, cancellationToken);
-            
-            return sapOrders.ToList();
+                // Get total Of Checks and Transfers
+                queryParams = new Dictionary<string, string>
+                {
+                    ["$select"] = "PaymentChecks",
+                    ["$orderby"] = "DocEntry desc"
+                };
+
+                var getResults = await _sapClient.GetAllB1Async<GetAllIncomingPaymentsPayChecksResponse>(
+                    "IncomingPayments",
+                    filter,
+                    queryParams,
+                    cancellationToken);
+
+
+                var result = new GetAllIncomingPaymentsResult
+                {
+                    Items = data ?? new List<GetAllIncomingPaymentsResponse>(),
+                    TotalCount = total,
+                };
+
+
+                result.Total = await _sapClient.GetTotalsAsync<GetAllIncomingPaymentsTotalResult>(
+                    "IncomingPayments",
+                    filter,
+                    cancellationToken);
+
+
+
+
+                result.Total.TotalPaymentChecks = getResults
+                    .SelectMany(x => x.PaymentChecks ?? Enumerable.Empty<GetAllPaymentChecksResponse>())
+                    .Sum(x => x.CheckSum);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return null!;
+            }
         }
+
+        
     }
 }

@@ -1,0 +1,49 @@
+﻿@using WebFrontEnd.Services.ItemGroups.Dto
+<div class="card">
+    <div class="card-header">
+        <h6 class="card-title">Groups</h6>
+    </div>
+
+    <div class="card-body p-0 group-scroll">
+        <ul class="list-group list-group-flush">
+            @foreach (var group in Groups)
+            {
+                <li class="list-group-item d-flex align-items-center"
+                    style="cursor:pointer"
+                    @onclick="() => SelectGroup(group)">
+
+                    <input type="checkbox"
+                           class="me-2"
+                           checked="@IsSelected(group)" />
+
+                    @group.GroupName
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+<style>
+    .group-scroll {
+        max-height: 400px; /* adjust */
+        overflow-y: auto;
+    }
+</style>
+@code {
+    [Parameter] public List<ItemGroupsDto> Groups { get; set; }
+    [Parameter] public List<ItemGroupsDto> SelectedGroup { get; set; } = new();
+    [Parameter] public EventCallback<ItemGroupsDto> OnGroupSelected { get; set; }
+
+    private bool IsSelected(ItemGroupsDto group)
+        => SelectedGroup?.Any(g => g.Number == group.Number) ?? false;
+
+    protected override void OnParametersSet()
+    {
+        SelectedGroup ??= new List<ItemGroupsDto>();
+    }
+    private async Task SelectGroup(ItemGroupsDto group)
+    {
+        await OnGroupSelected.InvokeAsync(group);
+    }
+
+    
+}

@@ -1,0 +1,63 @@
+﻿@inject IStringLocalizer<MenuApp> Lan
+
+@foreach (var item in Items)
+{
+    <li class="nav-item @(IsOpen(item) ? "menu-open" : "")">
+
+        <!-- Parent -->
+        <a href="javascript:void(0)" class="nav-link"
+           @onclick="() => Toggle(item.Key)">
+            <i class="@item.Icon"></i>
+            <p class="small">
+                @Lan[item.Key]
+                @if (item.Children.Any())
+                {
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                }
+            </p>
+        </a>
+
+        <!-- Children -->
+        @if (item.Children.Any())
+        {
+            <ul class="nav nav-treeview">
+                @foreach (var child in item.Children)
+                {
+                    <li class="nav-item py-0">
+                        <NavLink href="@child.Url" class="nav-link">
+                            <p class="small">@Lan[child.Key]</p>
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        }
+    </li>
+}
+
+@code {
+    [Parameter]
+    public List<SidebarMenuItem> Items { get; set; } = new();
+    private string CurrentUrl => nav.Uri.ToLower();
+    private HashSet<string> OpenMenus = new();
+    protected override void OnInitialized()
+    {
+        nav.LocationChanged += (_, __) =>
+        {
+            InvokeAsync(StateHasChanged);
+        };
+    }
+    private bool IsOpen(SidebarMenuItem item)
+    {
+        return OpenMenus.Contains(item.Key)
+        || item.Children.Any(c =>
+            CurrentUrl.Contains(c.Url?.ToLower() ?? ""));
+    }
+
+    private void Toggle(string key)
+    {
+        if (OpenMenus.Contains(key))
+            OpenMenus.Remove(key);
+        else
+            OpenMenus.Add(key);
+    }
+}

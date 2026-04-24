@@ -14,11 +14,9 @@ namespace WebAPI.Controllers
         private readonly IMediator _mediator;
         public DeliveryNotesController(IMediator mediator) => _mediator = mediator;
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllOrder([FromQuery] string CardCode, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllOrder([FromBody] GetAllDeliveryNotesResquest request, CancellationToken cancellationToken)
         {
-            var request = new GetAllDeliveryNotesResquest { CardCode = CardCode };
-
             var orders = await _mediator.Send(request, cancellationToken);
 
             return Ok(orders);

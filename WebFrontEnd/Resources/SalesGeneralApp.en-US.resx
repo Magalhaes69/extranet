@@ -117,17 +117,56 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="actions" xml:space="preserve">
-    <value>Details</value>
+  <data name="addressSummary" xml:space="preserve">
+    <value>Address summary</value>
+  </data>
+  <data name="bpAddress" xml:space="preserve">
+    <value>BP address</value>
+  </data>
+  <data name="btnNewAddress" xml:space="preserve">
+    <value>Define new</value>
   </data>
   <data name="canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
+  <data name="cashTotalSum" xml:space="preserve">
+    <value>Cash total</value>
+  </data>
+  <data name="checkTotal" xml:space="preserve">
+    <value>Check total</value>
+  </data>
+  <data name="contentsTitle" xml:space="preserve">
+    <value>Contents</value>
+  </data>
+  <data name="credit" xml:space="preserve">
+    <value>My sales credit</value>
+  </data>
+  <data name="creditLimitUt" xml:space="preserve">
+    <value>Credit limit utilization</value>
+  </data>
+  <data name="currency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
   <data name="customerName" xml:space="preserve">
     <value>Customer name</value>
   </data>
+  <data name="customerRefNo" xml:space="preserve">
+    <value>Customer Ref. No.</value>
+  </data>
   <data name="custumerCode" xml:space="preserve">
     <value>Customer code</value>
+  </data>
+  <data name="deliveriesTotSelected" xml:space="preserve">
+    <value>Deliveries</value>
+  </data>
+  <data name="deliveryDate" xml:space="preserve">
+    <value> Delivery Date</value>
+  </data>
+  <data name="deliveryNotes" xml:space="preserve">
+    <value>My purchase deliveries</value>
+  </data>
+  <data name="descriptionTotCreditSelected" xml:space="preserve">
+    <value>A/R Credit</value>
   </data>
   <data name="descriptionTotOrder" xml:space="preserve">
     <value>Orders</value>
@@ -135,11 +174,35 @@
   <data name="descriptionTotSelected" xml:space="preserve">
     <value>A/R Invoices</value>
   </data>
+  <data name="detailsSubTitle" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="discountLine" xml:space="preserve">
+    <value>% Discount</value>
+  </data>
+  <data name="discountPercent" xml:space="preserve">
+    <value>Discount</value>
+  </data>
   <data name="docmentNo" xml:space="preserve">
     <value>Document No</value>
   </data>
+  <data name="docTotal" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="documentDate" xml:space="preserve">
+    <value>Document Date</value>
+  </data>
   <data name="invoices" xml:space="preserve">
     <value>My supplier invoices</value>
+  </data>
+  <data name="itemCode" xml:space="preserve">
+    <value>Item No.</value>
+  </data>
+  <data name="itemDscription" xml:space="preserve">
+    <value>Item description</value>
+  </data>
+  <data name="itemserviceType" xml:space="preserve">
+    <value>Item/Service type</value>
   </data>
   <data name="launchDate" xml:space="preserve">
     <value>Posting date</value>
@@ -147,19 +210,94 @@
   <data name="noRegister" xml:space="preserve">
     <value>No register found</value>
   </data>
+  <data name="numAtCard" xml:space="preserve">
+    <value>Customer ref. No.</value>
+  </data>
+  <data name="ordersTitle" xml:space="preserve">
+    <value>My orders</value>
+  </data>
+  <data name="preferences" xml:space="preserve">
+    <value>Preferences</value>
+  </data>
+  <data name="priceAfterDiscount" xml:space="preserve">
+    <value>Price after discount</value>
+  </data>
+  <data name="quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="quotations" xml:space="preserve">
+    <value>Purchase quotation</value>
+  </data>
   <data name="reference" xml:space="preserve">
     <value>Reference nº</value>
+  </data>
+  <data name="remarks" xml:space="preserve">
+    <value>Remarks</value>
+  </data>
+  <data name="rounding" xml:space="preserve">
+    <value>Rounding</value>
+  </data>
+  <data name="salesSeries" xml:space="preserve">
+    <value>Serie no.</value>
+  </data>
+  <data name="shipToAddress" xml:space="preserve">
+    <value>Ship-to Address</value>
   </data>
   <data name="ststusLine" xml:space="preserve">
     <value>Status</value>
   </data>
+  <data name="tabDetailsAttachments" xml:space="preserve">
+    <value>Attachments</value>
+  </data>
+  <data name="tabDetailsContents" xml:space="preserve">
+    <value>Contents</value>
+  </data>
+  <data name="tabDetailsGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="tabDetailsLogistics" xml:space="preserve">
+    <value>Logistics</value>
+  </data>
+  <data name="taxCode" xml:space="preserve">
+    <value>Tax code</value>
+  </data>
+  <data name="totalBeforeDiscount" xml:space="preserve">
+    <value>Total before discount</value>
+  </data>
   <data name="totalGrid" xml:space="preserve">
     <value>Total</value>
+  </data>
+  <data name="totalLC" xml:space="preserve">
+    <value>Total(LC)</value>
   </data>
   <data name="totalLine" xml:space="preserve">
     <value>Document total</value>
   </data>
+  <data name="totalSubtitle" xml:space="preserve">
+    <value>Total Summary</value>
+  </data>
+  <data name="transferTotal" xml:space="preserve">
+    <value>Transfer total</value>
+  </data>
+  <data name="unitPrice" xml:space="preserve">
+    <value>Unit price</value>
+  </data>
   <data name="validUntil" xml:space="preserve">
     <value>Due Date</value>
+  </data>
+  <data name="vatSum" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="whse" xml:space="preserve">
+    <value>Whse</value>
+  </data>
+  <data name="actions" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="incomingPayment" xml:space="preserve">
+    <value>My payments</value>
+  </data>
+  <data name="descriptionTotPaymentSelected" xml:space="preserve">
+    <value>Payment</value>
   </data>
 </root>

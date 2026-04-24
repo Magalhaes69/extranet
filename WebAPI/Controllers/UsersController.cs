@@ -1,13 +1,11 @@
-﻿using System.Security.Claims;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.UseCases.User.Auth;
 using Application.UseCases.User.CreateUser;
 using Application.UseCases.User.GetAllUser;
+using Application.UseCases.User.GetUserById;
 using Application.UseCases.User.UpdateUser;
 using Application.UseCases.User.UserProfile;
 using Application.UseCases.User.Verify2FA;
-using Azure.Core;
-using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -71,11 +69,21 @@ namespace WebAPI.Controllers
 
         [HttpPut("updateprofile")]
         [Authorize]
-        public async Task<IActionResult> UpdateUser(UpdateUserRequest createUser, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateUser(
+            [FromForm] UpdateUserRequest createUser,
+            [FromForm] IFormFile? file,
+            CancellationToken cancellationToken)
         {
+
+            if (file != null)
+            {
+                createUser.FileName = file.FileName;
+                createUser.ImageStream = file.OpenReadStream();
+            }
+
             var request = await _mediator.Send(createUser);
 
-            if(request == null)
+            if (request == null)
             {
                 return NotFound(new ServiceResponse
                 {
@@ -84,6 +92,7 @@ namespace WebAPI.Controllers
                     DocEntry = 0
                 });
             }
+
             var response = new ServiceResponse
             {
                 Flag = true,
@@ -93,5 +102,16 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
+
+        [HttpGet("getbyid")]
+        [Authorize]
+        public async Task<ActionResult<List<GetUserByIdResponse>>> GetById([FromQuery] string Id, CancellationToken cancellationToken)
+        {
+            var request = new GetUserByIdRequest() { Id =Id };
+
+            var response = await _mediator.Send(request, cancellationToken);
+            return Ok(response);
+        }
+        
     }
 }

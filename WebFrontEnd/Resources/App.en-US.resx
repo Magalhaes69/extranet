@@ -153,8 +153,20 @@
   <data name="errorMessage" xml:space="preserve">
     <value>Unable to update</value>
   </data>
+  <data name="homePageTitle" xml:space="preserve">
+    <value>Home page</value>
+  </data>
+  <data name="invoiceTitleNavbar" xml:space="preserve">
+    <value>Manage invoices</value>
+  </data>
   <data name="noFilter" xml:space="preserve">
     <value>No filter</value>
+  </data>
+  <data name="orderTitle" xml:space="preserve">
+    <value>Purchase order</value>
+  </data>
+  <data name="orderIndexTitleNavbar" xml:space="preserve">
+    <value>Manage purchase orders</value>
   </data>
   <data name="placeholderFilterInput" xml:space="preserve">
     <value>Search</value>
@@ -173,5 +185,107 @@
   </data>
   <data name="TitleMenu" xml:space="preserve">
     <value>Sales</value>
+  </data>
+  <data name="orderCreateNavBarTitleNavbar" xml:space="preserve">
+    <value>Purchase order</value>
+  </data>
+  <data name="quotationIndexTitleNavbar" xml:space="preserve">
+    <value>Manage purchase Quotation</value>
+  </data>
+  <data name="iqual" xml:space="preserve">
+    <value>Equal</value>
+  </data>
+  <data name="notIqual" xml:space="preserve">
+    <value>Not equal</value>
+  </data>
+  <data name="greaterThan" xml:space="preserve">
+    <value>Greater than</value>
+  </data>
+  <data name="greaterThanOrEqual" xml:space="preserve">
+    <value>Greater than or equal</value>
+  </data>
+  <data name="lessThan" xml:space="preserve">
+    <value>Less than</value>
+  </data>
+  <data name="lessThanOrEqual" xml:space="preserve">
+    <value>Less than or equal</value>
+  </data>
+  <data name="between" xml:space="preserve">
+    <value>Between</value>
+  </data>
+  <data name="contains" xml:space="preserve">
+    <value>Contains</value>
+  </data>
+  <data name="startsWith" xml:space="preserve">
+    <value>Starts with</value>
+  </data>
+  <data name="endsWith" xml:space="preserve">
+    <value>Ends with</value>
+  </data>
+  <data name="creditIndexTitleNavbar" xml:space="preserve">
+    <value>Manage A/R Credit</value>
+  </data>
+  <data name="dDocument_Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="dDocument_Items" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="rCustomer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="rSupplier" xml:space="preserve">
+    <value>Supplier</value>
+  </data>
+  <data name="deliverNotesIndexTitleNavbar" xml:space="preserve">
+    <value>Manage purchase delivery</value>
+  </data>
+  <data name="catalogTitleNavBar" xml:space="preserve">
+    <value>Purchases orders</value>
+  </data>
+  <data name="dashboardTitlePrincipalPage" xml:space="preserve">
+    <value>My homepage</value>
+  </data>
+  <data name="dashboardPurchaseOrers" xml:space="preserve">
+    <value>My purchases order</value>
+  </data>
+  <data name="dashboardQuotations" xml:space="preserve">
+    <value>My quotations</value>
+  </data>
+  <data name="itemExtensionCreateNavBarTitleNavbar" xml:space="preserve">
+    <value>Manage images</value>
+  </data>
+  <data name="existItemMessage" xml:space="preserve">
+    <value>The item selected already exists</value>
+  </data>
+  <data name="btnAddCart" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="btnRemove" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="confirmDeleteItemExtension" xml:space="preserve">
+    <value>The selected items will be deleted. Do you want to continue?</value>
+  </data>
+  <data name="confirmationTitleItem" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="btnConfirm" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="btnEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="confirmCancel" xml:space="preserve">
+    <value>Are you sure you want to cancel?</value>
+  </data>
+  <data name="btnConfirmYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="btnConfirmNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="IncomingPaymentIndexTitleNavbar" xml:space="preserve">
+    <value>Manage my payments</value>
   </data>
 </root>

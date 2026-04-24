@@ -10,8 +10,6 @@ namespace Application.UseCases.IncomingPayments.GetAllIncomingPayments
     {
         public int DocNum { get; set; }
         public string? DocType { get; set; }
-        public string? HandWritten { get; set; }
-        public string? Printed { get; set; }
         public string? DocDate { get; set; }
         public string? CardCode { get; set; }
         public string? CardName { get; set; }
@@ -37,5 +35,6 @@ namespace Application.UseCases.IncomingPayments.GetAllIncomingPayments
         public string? Cancelled { get; set; }
 
         public List<GetAllPaymentInvoicesResponse>? PaymentInvoices { get; set; }
+        public List<GetAllPaymentChecksResponse>? PaymentChecks { get; set; }
     }
 }

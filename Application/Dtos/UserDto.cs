@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Application.Dtos
 {
@@ -19,5 +14,6 @@ namespace Application.Dtos
         public string? PhoneNumber { get; set; }
         public string? Language { get; set; }
         public bool TwoFactorEnabled { get; set; } = false;
+        public string? ImageUrl { get; set; } = string.Empty;
     }
 }

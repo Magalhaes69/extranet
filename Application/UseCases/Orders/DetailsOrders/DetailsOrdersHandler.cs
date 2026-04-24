@@ -1,10 +1,9 @@
-﻿using Application.UseCases.Orders.GetAllOrders;
-using Domain.Interfaces;
+﻿using Domain.Interfaces;
 using MediatR;
 
 namespace Application.UseCases.Orders.DetailsOrders
 {
-    public class DetailsOrdersHandler : IRequestHandler<DetailsOrdersRequest, GetAllOrdersResponse>
+    public class DetailsOrdersHandler : IRequestHandler<DetailsOrdersRequest, DetailsOrdersResponse>
     {
         private readonly ISapClient _sapClient;
 
@@ -12,7 +11,7 @@ namespace Application.UseCases.Orders.DetailsOrders
         {
             this._sapClient = sapClient;
         }
-        public async Task<GetAllOrdersResponse> Handle(DetailsOrdersRequest request, CancellationToken cancellationToken)
+        public async Task<DetailsOrdersResponse> Handle(DetailsOrdersRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -26,7 +25,7 @@ namespace Application.UseCases.Orders.DetailsOrders
                     filter = $"DocEntry eq {request.DocEntry}";
                 }
 
-                var response = await _sapClient.GetAsync<GetAllOrdersResponse>("Orders",filter, cancellationToken);
+                var response = await _sapClient.GetAsync<DetailsOrdersResponse>("Orders",filter, cancellationToken);
 
                 return response!;
             }

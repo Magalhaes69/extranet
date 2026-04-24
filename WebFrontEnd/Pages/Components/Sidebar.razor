@@ -30,15 +30,39 @@
                 id="navigation">
                 <AuthorizeView>
                     <Authorized>
-                        <li class="nav-item @(isSalesOpen ? "menu-open" : "")">
+                        <div class="position-relative mb-2">
 
-                            <NavLink href="" @onclick="ToggleSales" class="nav-link active" Match="NavLinkMatch.All">
+                            <!-- 🔍 Search icon (left) -->
+                            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+
+                            <!-- ❌ Clear button (right) -->
+                            @if (!string.IsNullOrEmpty(SearchTerm))
+                            {
+                                <i class="bi bi-x-circle position-absolute top-50 end-0 translate-middle-y me-2 text-muted"
+                                   style="cursor:pointer;"
+                                   @onclick="ClearSearch"></i>
+                            }
+
+                            <!-- 🔤 Input -->
+                            <input type="text"
+                                   class="form-control form-control-sm ps-4 pe-4"
+                                   placeholder="@Lan["searchMenu"]"
+                                   @bind="SearchTerm"
+                                   @bind:event="oninput" />
+                        </div>
+
+                        <!-- Menu -->
+                    <SidebarMenuComponent 
+                        Items="FilteredMenu" />
+                       @*  <li class="nav-item @(isSalesOpen ? "menu-open" : "")">
+
+                            <a href="#" @onclick="ToggleSales" class="nav-link" >
                                 <i class="nav-icon bi bi-cart"></i>
                                 <p>
                                     @Lan["menuVendasGroup"]
                                     <i class="nav-arrow bi bi-chevron-right "></i>
                                 </p>
-                            </NavLink>
+                            </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <NavLink href="/quotations" class="nav-link" Match="NavLinkMatch.All">
@@ -90,32 +114,54 @@
                         </li>
                       
                         <li class="nav-item @(isPaymentOpen ? "menu-open" : "")">
-                            <NavLink href="" @onclick="TogglePayment" class="nav-link" Match="NavLinkMatch.All">
+                            <a @onclick="TogglePayment" class="nav-link">
                                 <i class="nav-icon bi bi-credit-card-2-front"></i>
                                 <p>
                                     @Lan["menuPaymentGroup"]
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
-                            </NavLink>
+                            </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <NavLink href="/payments" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>Pagamentos</p>
+                                        <p>@Lan["menuPayments"]</p>
                                     </NavLink>
                                 </li>
-                                
-                               
+                            </ul>
+                        </li>
+
+                        <li class="nav-item @(isItemsOpen ? "menu-open" : "")">
+                            <a  @onclick="ToggleItemExtensions" class="nav-link">
+                                <i class="bi bi-box-seam"></i>
+                                <p>
+                                    @Lan["menuItemExtension"]
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <NavLink href="/extensions/list-item-extension" class="nav-link" Match="NavLinkMatch.All">
+                                        <p>@Lan["menuListItemExtension"]</p>
+                                    </NavLink>
+                                </li>
+
+                                <li class="nav-item">
+                                    <NavLink href="/extensions/itemextension" class="nav-link" Match="NavLinkMatch.All">
+                                        
+                                        <p>@Lan["menuCreateItemExtension"]</p>
+                                    </NavLink>
+                                </li>
                             </ul>
                         </li>
 
                         <li class="nav-item @(isSettingsOpen ? "menu-open" : "")">
-                            <NavLink href="" @onclick="ToggleSettings" class="nav-link">
+                            <a @onclick="ToggleSettings" class="nav-link">
                                 <i class="nav-icon bi bi-gear"></i>
                                 <p>
                                     @Lan["menuAdministratorGroup"]
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
-                            </NavLink>
+                            </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
@@ -128,7 +174,7 @@
                                     </NavLink>
                                 </li>
                             </ul>
-                        </li>
+                        </li> *@
                     </Authorized>
                 </AuthorizeView>
             </ul>
@@ -143,12 +189,13 @@
 @code {
     private bool isSalesOpen = false;
     private bool isPaymentOpen = false;
+    private bool isItemsOpen = false;
     private bool isSettingsOpen = false;
 
 
     private void OnCultureChanged()
     {
-        InvokeAsync(StateHasChanged); // force re-render
+        InvokeAsync(StateHasChanged);
     }
 
 
@@ -170,10 +217,111 @@
     {
         isPaymentOpen = !isPaymentOpen;
     }
+    private void ToggleItemExtensions()
+    {
+        isItemsOpen = !isItemsOpen;
+    }
     private void ToggleSettings()
     {
         isSettingsOpen = !isSettingsOpen;
     }
+
+    #region Menu
+
+    private List<SidebarMenuItem> Menu = new()
+{
+    new SidebarMenuItem
+    {
+        Key = "menuVendasGroup",
+        Icon = "nav-icon bi bi-cart",
+        Children = new()
+        {
+            new() { Key = "menuQuotation", Url = "/quotations" },
+            new() { Key = "menuOrder", Url = "/orders" },
+            new() { Key = "createOrder", Url = "/add-orders" },
+            new() { Key = "menuARReserve", Url = "/doesnotexist" },
+            new() { Key = "menuDeliveries", Url = "/delivery" },
+            new() { Key = "APInvoices", Url = "/invoices" },
+            new() { Key = "menuReturns", Url = "/doesnotexist" },
+            new() { Key = "menuCredit", Url = "/credits" },
+        }
+    },
+    new SidebarMenuItem
+    {
+        Key = "menuPaymentGroup",
+        Icon = "nav-icon bi bi-credit-card-2-front",
+        Children = new()
+        {
+            new() { Key = "menuPayments", Url = "/payments" }
+        }
+    },
+    new SidebarMenuItem
+    {
+        Key = "menuItemExtension",
+        Icon = "nav-icon bi bi-box-seam",
+        Children = new()
+        {
+            new() { Key = "menuListItemExtension", Url = "/extensions/list-item-extension" },
+            new() { Key = "menuCreateItemExtension", Url = "/extensions/itemextension" }
+        }
+    },
+    new SidebarMenuItem
+    {
+        Key="menuAdministratorGroup",
+        Icon = "nav-icon bi bi-gear",
+        Children = new()
+        {
+            new(){ Key = "menuUsers", Url = "/doesnotexist"},
+            new(){ Key = "menuUserCreate", Url = "/doesnotexist"}
+        }
+    }
+};
+
+    private string SearchTerm = "";
+
+    private List<SidebarMenuItem> FilteredMenu =>
+        FilterMenu(Menu);
+
+    private List<SidebarMenuItem> FilterMenu(List<SidebarMenuItem> menu)
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+            return menu;
+
+        var result = new List<SidebarMenuItem>();
+
+        foreach (var item in menu)
+        {
+            // Get localized parent text
+            var parentText = Lan[item.Key].Value;
+
+            // Filter children
+            var filteredChildren = item.Children
+                .Where(c => Lan[c.Key].Value
+                    .Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // If parent matches OR any child matches → include parent
+            if (parentText.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+                || filteredChildren.Any())
+            {
+                result.Add(new SidebarMenuItem
+                {
+                    Key = item.Key,
+                    Icon = item.Icon,
+                    Url = item.Url,
+                    Children = filteredChildren // ONLY matched children
+                });
+            }
+        }
+
+        return result;
+    }
+
+    private void ClearSearch()
+    {
+        SearchTerm = string.Empty;
+    }
+    #endregion
 
     public void Dispose()
     {

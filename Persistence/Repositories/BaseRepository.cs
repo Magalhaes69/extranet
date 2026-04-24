@@ -12,26 +12,20 @@ namespace Persistence.Repositories
         {
             _context = context;
         }
-        public void CreateAsync(T entity)
+        public async Task CreateAsync(T entity)
         {
             entity.DateCreated = DateTime.UtcNow;
 
-            _context.Add(entity);
+           await _context.AddAsync(entity);
         }
 
         public void DeleteAsync(T entity)
         {
-            throw new NotImplementedException();
+            _context.Remove(entity);
         }
-
-        public async Task<List<T>> GetAllAsync(Guid Id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _context.Set<T>().ToListAsync(cancellationToken);
-        }
-
-        public async Task<T> GetAsync(Guid Id, CancellationToken cancellationToken)
-        {
-            return await _context.Set<T>().FirstOrDefaultAsync(x=> x.Id == Id, cancellationToken);
         }
 
         public void UpdateAsync(T entity)

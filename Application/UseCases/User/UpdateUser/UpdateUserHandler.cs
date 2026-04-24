@@ -13,14 +13,17 @@ namespace Application.UseCases.User.UpdateUser
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private IFileService _fileService;
 
         public UpdateUserHandler(IUnitOfWork unitOfWork,
                                 IBaseUserRepository appUserRepository,
-                                IMapper mapper)
+                                IMapper mapper,
+                                IFileService file)
         {
             _unitOfWork = unitOfWork;
             _userRepository = appUserRepository;
             _mapper = mapper;
+            _fileService = file;
         }
         public async Task<UserDto> Handle(UpdateUserRequest request, CancellationToken cancellationToken)
         {
@@ -30,6 +33,22 @@ namespace Application.UseCases.User.UpdateUser
                 return null!;
             }
             else {
+
+                    var oldImage = user.ImageUrl;
+                if (request.ImageStream != null)
+                {
+                    var newImageUrl = await _fileService.SaveAsync(
+                        request.ImageStream,
+                        request.FileName!,
+                        "users"
+                        );
+
+                    request.ImageUrl = newImageUrl;
+                    if (!string.IsNullOrEmpty(oldImage) && oldImage != newImageUrl)
+                    {
+                        _fileService.Delete(oldImage);
+                    }
+                }
                 user.Email = request.Email;
                 user.FirstName = request.FirstName;
                 user.LastName = request.LastName;
@@ -40,6 +59,7 @@ namespace Application.UseCases.User.UpdateUser
                 user.TwoFactorEnabled = request.TwoFactorEnabled;
                 user.Language = request.Language;
                 user.Theme = request.Theme;
+                user.ImageUrl = request.ImageUrl;
             }
 
             var result = _mapper.Map<AppUser>(user);

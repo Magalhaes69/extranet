@@ -1,5 +1,5 @@
 ﻿
-using Application.UseCases.Invoices.GetAllInvoices;
+using Application.UseCases.Items.GetAllItemsCatalog;
 using Domain.Helps;
 using Domain.Helps.Enum;
 using Domain.Interfaces;
@@ -25,15 +25,17 @@ namespace Application.UseCases.Invoices.Helps
                 // List<string> → OR
                 if (value is IEnumerable<string> list && prop.PropertyType != typeof(string))
                 {
-                    AddOr(filters, prop.Name, list);
+                    if(prop.Name != "Page" && prop.Name != "PageSize")
+                        AddOr(filters, prop.Name, list);
                 }
                 else
                 {
-                    AddEqual(filters, prop.Name, value);
+                    if (prop.Name != "Page" && prop.Name != "PageSize")
+                        AddEqual(filters, prop.Name, value);
                 }
             }
 
-            // 🔥 your dynamic engine stays unchanged
+           
             if (request.DynamicFilters?.Any() == true)
             {
                 var grouped = request.DynamicFilters.GroupBy(f => f.Field);
@@ -197,6 +199,21 @@ namespace Application.UseCases.Invoices.Helps
                 return value.ToString()!;
 
             return $"'{value}'";
+        }
+
+        public static string BuildCatalog(GetAllItemsCatalogRequest request)
+        {
+            var filters = new List<string>();
+
+            if (request.GroupNumbes != null && request.GroupNumbes.Any())
+            {
+                var groupFilter = string.Join(" or ",
+                    request.GroupNumbes.Select(id => $"ItemsGroupCode eq {id}"));
+
+                filters.Add($"({groupFilter})");
+            }
+
+            return string.Join(" and ", filters);
         }
     }
 }

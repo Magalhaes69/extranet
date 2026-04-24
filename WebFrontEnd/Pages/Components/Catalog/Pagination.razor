@@ -1,0 +1,116 @@
+﻿<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+
+        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+            <button class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" aria-label="Previous">
+                <span aria-hidden="true">«</span>
+            </button>
+        </li>
+
+        @foreach (var item in VisiblePagesWithEllipsis)
+        {
+            if (item.IsEllipsis)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item @(item.PageNumber == CurrentPage ? "active" : "")">
+                    <button class="page-link"
+                            @onclick="() => ChangePage(item.PageNumber.Value)">
+                        @item.PageNumber
+                    </button>
+                </li>
+            }
+        }
+
+        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+            <button class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" aria-label="Next">
+                <span aria-hidden="true">»</span>
+            </button>
+        </li>
+
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public int TotalItems { get; set; }
+    [Parameter] public int PageSize { get; set; } = 9;
+    [Parameter] public int CurrentPage { get; set; }
+    private int WindowSize = 4;
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    private int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
+
+    private async Task ChangePage(int page)
+    {
+        if (page < 1 || page > TotalPages)
+            return;
+
+        await OnPageChanged.InvokeAsync(page);
+    }
+
+    private List<int> VisiblePages
+    {
+        get
+        {
+            var pages = new List<int>();
+
+            if (TotalPages == 0)
+                return pages;
+
+            int start = Math.Max(1, CurrentPage - WindowSize / 2);
+            int end = Math.Min(TotalPages, start + WindowSize - 1);
+
+            start = Math.Max(1, end - WindowSize + 1);
+
+            for (int i = start; i <= end; i++)
+                pages.Add(i);
+
+            return pages;
+        }
+    }
+
+    private List<PageItem> VisiblePagesWithEllipsis
+    {
+        get
+        {
+            var pages = new List<PageItem>();
+
+            int start = Math.Max(1, CurrentPage - WindowSize / 2);
+            int end = Math.Min(TotalPages, start + WindowSize - 1);
+
+            start = Math.Max(1, end - WindowSize + 1);
+
+            if (start > 1)
+            {
+                pages.Add(new PageItem { PageNumber = 1 });
+
+                if (start > 2)
+                    pages.Add(new PageItem { PageNumber = null });
+            }
+
+            for (int i = start; i <= end; i++)
+                pages.Add(new PageItem { PageNumber = i });
+
+            if (end < TotalPages)
+            {
+                if (end < TotalPages - 1)
+                    pages.Add(new PageItem { PageNumber = null });
+
+                pages.Add(new PageItem { PageNumber = TotalPages });
+            }
+
+            return pages;
+        }
+    }
+    public class PageItem
+    {
+        public int? PageNumber { get; set; }
+        public bool IsEllipsis => PageNumber == null;
+    }
+    
+}

@@ -2,9 +2,8 @@
 {
     public sealed record DocumentLinesDetailsDto : DocumentLineBaseDto
     {
+        public bool Selected { get; set; }
         public DateTime? ShipDate { get; set; }
-        public decimal? DiscountPercent { get; set; }
-      
         public string? SerialNum { get; set; }
     }
 }

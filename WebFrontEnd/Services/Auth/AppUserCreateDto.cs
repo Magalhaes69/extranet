@@ -24,6 +24,7 @@ namespace WebFrontEnd.Services.Auth
         public string Theme { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Language { get; set; }
+        public string? ImageUrl { get; set; }
         public bool TwoFactorEnabled { get; set; }
     }
 }

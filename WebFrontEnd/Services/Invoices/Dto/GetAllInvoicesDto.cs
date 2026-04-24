@@ -25,6 +25,7 @@
         public string? ShipToCode { get; set; }
         public string? PayToCode { get; set; }
         public string? Address2 { get; set; }
+        public string? NumAtCard { get; set; } 
         public List<GetAllDocumentLinesDto>? DocumentLines { get; set; }
     }
 }

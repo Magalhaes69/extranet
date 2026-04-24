@@ -65,39 +65,9 @@ window.ShowDialog = function () {
     document.getElementById("my-dialog").showModal();
 }
 
-
-
-window.initResizableTable = () => {
-    const table = document.getElementById("resizable-table");
-    if (!table) return;
-
-    let th = null, startX = 0, startWidth = 0;
-
-    table.querySelectorAll("th .resizer").forEach(resizer => {
-        resizer.addEventListener("mousedown", function (e) {
-            th = e.target.parentElement;
-            startX = e.pageX;
-            startWidth = th.offsetWidth;
-
-            document.addEventListener("mousemove", resize);
-            document.addEventListener("mouseup", stopResize);
-
-            console.log("mousedown started");
-        });
-
-        function resize(e) {
-            if (th) {
-                const newWidth = startWidth + (e.pageX - startX);
-                th.style.width = newWidth + "px";
-                console.log("resizing");
-            }
-        }
-
-        function stopResize() {
-            console.log("stop mouse");
-            document.removeEventListener("mousemove", resize);
-            document.removeEventListener("mouseup", stopResize);
-        }
-    });
+window.isNearBottom = (element) => {
+    return element.scrollTop + element.clientHeight >= element.scrollHeight - 50;
 };
+
+
 

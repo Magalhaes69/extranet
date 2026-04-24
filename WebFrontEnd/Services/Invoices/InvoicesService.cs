@@ -13,9 +13,9 @@ namespace WebFrontEnd.Services.Invoices
         private GetAllInvoicesDto invoices;
         public Action InvoicesAction { get; set; }
 
-        public InvoicesService(HttpClient httpClient)
+        public InvoicesService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
         public async Task<List<GetAllInvoicesDto>> GetInvoiceAsync(
             string? CardCode,

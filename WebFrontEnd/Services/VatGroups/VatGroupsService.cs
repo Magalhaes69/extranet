@@ -10,9 +10,9 @@ namespace WebFrontEnd.Services.VatGroups
         private const string BaseUrl = "api/VatGroups";
 
         private List<VatGroupsDto> _cache;
-        public VatGroupsService(HttpClient httpClient)
+        public VatGroupsService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
         public Action IVatGroupsAction { get; set; }
 

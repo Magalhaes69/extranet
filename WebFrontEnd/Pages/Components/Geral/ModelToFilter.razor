@@ -3,7 +3,7 @@
 
 @if (ShowModal)
 {
-    <div class="modal fade show d-block filter-modal" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal fade show d-block filter-modal" tabindex="-1" style="@(ThemeService.CurrentTheme == "dark" ? "background: rgba(0,0,0,0.5);" : "")">
         <div class="modal-dialog modal-dialog-scrollable modal-xl custom-modal-height">
             <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
                 <div class="modal-header py-1">

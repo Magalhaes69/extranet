@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.DeliveryNotes.Dto;
+using WebFrontEnd.Shared.Dtos;
 
 namespace WebFrontEnd.Services.DeliveryNotes
 {
@@ -13,24 +14,33 @@ namespace WebFrontEnd.Services.DeliveryNotes
 
         public Action DeliveryNotesAction { get; set; }
 
-        public DeliveryNotesService(HttpClient httpClient)
+        public DeliveryNotesService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
-        public async Task<List<DeliveryNotesViewDto>> GetDeliveryNotesAsync(string cardCode, bool forceRefresh = false)
+        public async Task<List<DeliveryNotesViewDto>> GetDeliveryNotesAsync(DeliveryNotesRequest request, bool forceRefresh = false)
         {
-            if (_cache is not null && !forceRefresh)
+            try
+            {
+                if (_cache is not null && !forceRefresh)
+                    return _cache;
+
+                var serialized = General.GennerateStringContent(General.SerializeObject(request));
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+
+                if (!response.IsSuccessStatusCode)
+                    return new List<DeliveryNotesViewDto>();
+
+                _cache = await response.Content.ReadFromJsonAsync<List<DeliveryNotesViewDto>>()
+                         ?? new List<DeliveryNotesViewDto>();
+
                 return _cache;
-
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?CardCode={cardCode}");
-
-            if (!response.IsSuccessStatusCode)
+            }
+            catch
+            {
                 return new List<DeliveryNotesViewDto>();
-
-            _cache = await response.Content.ReadFromJsonAsync<List<DeliveryNotesViewDto>>()
-                     ?? new List<DeliveryNotesViewDto>();
-
-            return _cache;
+            }
+            
         }
 
         public async Task<DeliveryNotesDetailsDto> GetByDocEntryDeliveryNotesAsync(string cardCode, int DocEntry, bool forceRefresh = false)

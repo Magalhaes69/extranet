@@ -1,0 +1,386 @@
+﻿@page "/catalog-item"
+@using WebFrontEnd.Services.ItemGroups.Dto
+@using WebFrontEnd.Services.OrdersCarts.Dto
+@implements IDisposable
+@attribute [Authorize]
+@if (IsLoading)
+{
+    <div class="container-fluid">
+        <div class="row py-1">
+            <div class="row mt-2">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="col-md-3 mb-3">
+                        <div class="card placeholder-glow">
+                            <div class="card-body">
+                                <div class="placeholder col-12 mb-2"></div>
+                                <div class="placeholder col-8"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+<div class="container-fluid">
+    <div class="row py-1">
+      
+        <!-- LEFT: Groups -->
+        <div class="col-md-3">
+
+            <GroupList Groups="Groups"
+                       SelectedGroup="SelectedGroup"
+                       OnGroupSelected="HandleGroupSelected" />
+        </div>
+
+        <!-- RIGHT: Catalog -->
+        <div class="col-md-9">
+            <div class="card mb-2">
+                <div class="card-body d-flex gap-2 align-items-center">
+
+                    <input class="form-control form-control-sm"
+                           placeholder="Search item name..."
+                           @bind="SearchText" />
+
+                    <button class="btn btn-sm @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                            @onclick="ApplyFilterClick">
+                        Filter
+                    </button>
+
+                    <button class="btn btn-sm @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-secondary")"
+                            @onclick="ClearFilter">
+                        Clear
+                    </button>
+
+                </div>
+            </div>
+            <ProductGrid Products="PagedProducts"
+                         TPriceBusiness="TPriceBusiness"
+                         OnAddToCart="HandleAddToCart" />
+
+
+
+            @if (IsBackgroundLoading)
+            {
+                <div class="row">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="col-md-4 mb-3">
+                            <div class="card placeholder-glow">
+                                <div class="card-body">
+                                    <div class="placeholder col-12 mb-2"></div>
+                                    <div class="placeholder col-8"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <Pagination TotalItems="FilteredProducts.Count"
+                            PageSize="PageSize"
+                            CurrentPage="CurrentPage"
+                            OnPageChanged="HandlePageChanged" />
+            }
+
+        </div>
+    </div>
+</div>
+}
+@code {
+    private List<CatalogItemDto> AllProducts = new();
+    private List<CatalogItemDto> FilteredProducts = new();
+    private List<CatalogItemDto> PagedProducts = new();
+
+    private List<ItemGroupsDto> Groups = new();
+    private List<ItemGroupsDto> SelectedGroup = new();
+    [Inject] public OrdersCartService CartServices { get; set; }
+    private int CurrentPage = 1;
+    private int PageSize = 20;
+    private bool IsLoading = false;
+    private List<CatalogItemDto> itemsDtos = new();
+    private CancellationTokenSource _cts;
+    private string SearchText = "";
+    private bool isCollapsed = true;
+    private int TPriceBusiness = 0;
+    private string CardCode = string.Empty;
+    private string CardType = string.Empty;
+    private bool IsBackgroundLoading = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+
+            ThemeService.OnThemeChanged += StateHasChanged;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ToastService.OnChange += StateHasChanged;
+        IsLoading = true;
+        PageState.SetTitle(LanGeneral["catalogTitleNavBar"]);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        CardCode = user.GetCardCode();
+        CardType = "cCustomer";
+        var getBus = await BusinessPartnersService.GetBusinessPartnersAsync(CardCode, CardType, true);
+        TPriceBusiness = getBus.PriceListNum ?? 0;
+
+        await LoadItemGroups();
+        await LoadItems();
+        ApplyFilter();
+
+
+    }
+    private async Task LoadItems()
+    {
+        var groupIds = SelectedGroup?.Select(x => x.Number).ToList() ?? new List<int>();
+        var request = new GetAllitemsCatalogRequest
+        {
+            Page = CurrentPage,
+            PageSize = PageSize,
+            Valid = "tYES",
+            GroupNumbes = groupIds,
+            TPriceBusiness = TPriceBusiness
+        };
+        var firstPage = await ItemsService.GetFirstPageAsync(request);
+        AllProducts.AddRange(firstPage);
+
+        ApplyFilter();
+
+        IsLoading = false;
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        await InvokeAsync(StateHasChanged);
+
+        IsBackgroundLoading = true;
+        await Task.Yield();
+        _ = ItemsService.GetBackgroundAsync(
+            request,
+            onPageLoaded: (items) =>
+            {
+                AllProducts.AddRange(items);
+                ApplyFilter(resetPage: false);
+                InvokeAsync(StateHasChanged);
+            },
+            cancellationToken: _cts.Token
+        ).ContinueWith(_ => {
+            IsBackgroundLoading = false;
+            InvokeAsync(StateHasChanged);
+        });
+
+    }
+    private void HandleGroupSelected(ItemGroupsDto group)
+    {
+        try
+        {
+            if (SelectedGroup.Any(g => g.Number == group.Number))
+            {
+                SelectedGroup.RemoveAll(g => g.Number == group.Number);
+            }
+            else
+            {
+                SelectedGroup.Add(group);
+            }
+            ApplyFilter();
+        }
+        catch(Exception ex)
+        {
+
+        }
+    }
+
+    private void HandlePageChanged(int page)
+    {
+        CurrentPage = page;
+        ApplyPaging();
+    }
+
+    private async Task HandleAddToCart(CatalogItemDto product)
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var cardCode = string.Empty;
+        var userId = string.Empty;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            cardCode = user.GetCardCode();
+            userId = user.GetUserGuid();
+
+        }
+
+        var cart = CartServices.CurrentCart;
+
+        // Case 1: No header → create full cart
+        if (cart == null)
+        {
+            var createCart = new CreateOrdersCartDto
+            {
+                CardCode = cardCode,
+                UserId = userId,
+                OrderLineCart = new List<CreateOrderLineCartDto>
+            {
+                new CreateOrderLineCartDto
+                {
+                    UserId = userId,
+                    ItemCode = product.ItemCode,
+                    ItemDescription = product.ItemName,
+                    Quantity = 1,
+                    WarehouseCode = "PGMT",
+                    UnitPrice = product.ItemPrices
+                }
+            }
+            };
+
+            await CartServices.CreateAsync(createCart);
+            return;
+        }
+
+        // Case 2: Header exists → work on lines
+        var existingLine = cart.OrderLineCarts
+            .FirstOrDefault(x => x.ItemCode == product.ItemCode);
+
+        if (existingLine != null)
+        {
+            // Increase quantity
+            existingLine.Quantity++;
+
+
+            var getResult =  await CartServices.UpdateLineAsync(new UpdateOrdersCartLineDto
+            {
+                OrderLineCartId = existingLine.OrderLineCartId,
+                OrderId = existingLine.OrderId,
+                ItemCode = existingLine.ItemCode,
+                Quantity = existingLine.Quantity,
+                UnitPrice = existingLine.UnitPrice,
+                ItemDescription = existingLine.ItemDescription,
+                LineTotal = existingLine.Quantity * existingLine.UnitPrice,
+                DiscPrcnt = existingLine.DiscPrcnt,
+                WarehouseCode = existingLine.WarehouseCode,
+                UserId = userId,
+            });
+
+            if (getResult.Flag)
+            {
+                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+
+                existingLine.Quantity--;
+                CartServices.NotifyStateChanged();
+            }
+            else
+                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            return;
+        }
+        else
+        {
+            // Add new line to existing header
+            var newLine = new CreateOrderLineCartExistOrderDto
+            {
+                OrderId = cart.OrderId,
+                ItemCode = product.ItemCode,
+                ItemDescription = product.ItemName,
+                Quantity = 1,
+                UnitPrice = product.ItemPrices,
+                UserId = userId,
+                WarehouseCode = "PGMT"
+            };
+
+            var result = await CartServices.AddLineAsync(newLine);
+
+            if (result.Flag)
+            {
+                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+
+                cart.OrderLineCarts.Add(new ViewOrderLineCartDto
+                {
+                    OrderLineCartId = result.Data!.OrderLineCartId,
+                    OrderId = cart.OrderId,
+                    ItemCode = product.ItemCode,
+                    ItemDescription = product.ItemName,
+                    Quantity = 1,
+                    UserId = userId,
+                    UnitPrice = product.ItemPrices,
+                    LineTotal = newLine.Quantity * newLine.UnitPrice
+
+                });
+
+                CartServices.NotifyStateChanged();
+            }
+            else
+                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+      
+            return;
+        }
+    }
+
+    private void ApplyFilter(bool resetPage = true)
+    {
+        IEnumerable<CatalogItemDto> query = AllProducts;
+
+       
+        if (SelectedGroup?.Any() == true)
+        {
+            var groupIds = SelectedGroup.Select(x => x.Number).ToList();
+            query = query.Where(x => groupIds.Contains(x.ItemsGroupCode));
+        }
+
+        
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            query = query.Where(x =>
+                (!string.IsNullOrEmpty(x.ItemName) && x.ItemName.Contains(SearchText, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.ItemCode) && x.ItemCode.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        FilteredProducts = query.ToList();
+
+        if (resetPage)
+            CurrentPage = 1;
+
+        ApplyPaging();
+    }
+
+    private async Task LoadItemGroups()
+    {
+        Groups = await ItemGroupsService.GetItemsGroupsAsync();
+    }
+    private void ApplyPaging()
+    {
+        PagedProducts = FilteredProducts
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+    }
+
+    private void ApplyFilterClick()
+    {
+        ApplyFilter();
+    }
+    private void ClearFilter()
+    {
+        SearchText = "";
+        SelectedGroup.Clear();
+
+        ApplyFilter();
+    }
+    private async Task HandlePageLoaded(List<CatalogItemDto> items)
+    {
+        AllProducts.AddRange(items);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+        ToastService.OnChange -= StateHasChanged;
+    }
+}

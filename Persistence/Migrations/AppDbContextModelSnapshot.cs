@@ -56,6 +56,9 @@ namespace Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(250)");
+
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(10)");
 
@@ -103,6 +106,146 @@ namespace Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppUsers");
+                });
+
+            modelBuilder.Entity("Domain.Models.ItemExtension", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("DateUpdated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ItemCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ItemName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ItemId");
+
+                    b.ToTable("ItemExtension");
+                });
+
+            modelBuilder.Entity("Domain.Models.OrderLineCart", b =>
+                {
+                    b.Property<Guid>("OrderLineCartId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("DateUpdated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("DiscPrcnt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ItemCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("OrderLineCartId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderLineCart");
+                });
+
+            modelBuilder.Entity("Domain.Models.OrdersCart", b =>
+                {
+                    b.Property<Guid>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CardCode")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("CardName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("DateUpdated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("OrderId");
+
+                    b.ToTable("OrdersCart");
+                });
+
+            modelBuilder.Entity("Domain.Models.OrderLineCart", b =>
+                {
+                    b.HasOne("Domain.Models.OrdersCart", "OrdersCart")
+                        .WithMany("OrderLineCarts")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrdersCart");
+                });
+
+            modelBuilder.Entity("Domain.Models.OrdersCart", b =>
+                {
+                    b.Navigation("OrderLineCarts");
                 });
 #pragma warning restore 612, 618
         }

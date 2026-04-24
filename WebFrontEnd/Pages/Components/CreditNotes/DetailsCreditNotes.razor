@@ -9,250 +9,277 @@
 }
 else
 {
-    <div class="bg-white">
-        <div class="mb-4 position-relative">
-            <AppContentHeader Title=@($"Minha nota de crédito {credit.DocNum}") />
+    <AppPageDetailsLayout Title=@Title>
 
+        <HeaderContent>
+            <HeaderDetailsComponent CardCode="@credit.CardCode"
+                                    CardName="@credit.CardName"
+                                    DocCurrency="@credit.DocCurrency"
+                                    Cancelled="@credit.Cancelled"
+                                    DocTotal="@credit.DocTotal"
+                                    DocumentStatus="@credit.DocumentStatus" />
+        </HeaderContent>
+
+        <Body>
+
+            <AppTabs Tabs="@tabs"
+                     ActiveTab="@activeSection"
+                     ActiveTabChanged="ScrollTo" />
             <div class="app-content">
                 <div class="container-fluid">
-                    <!-- Filter Section -->
-                    @if (isOpen)
-                    {
-                        <HeaderDetailsComponent CardCode="@credit.CardCode"
-                                                CardName="@credit.CardName"
-                                                DocCurrency="@credit.DocCurrency"
-                                                Cancelled="@credit.Cancelled"
-                                                DocTotal="@credit.DocTotal"
-                                                DocumentStatus="@credit.DocumentStatus" />
-                    }
-                    <!-- Floating toggle button -->
-                    <div class="card-floating-btn">
-                        <button type="button" class="btn btn-light shadow" @onclick="ToggleCard">
-                            <i class="bi @(isOpen ? "bi-chevron-up" : "bi-chevron-down")"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <div id="geral" class="card mb-2">
+                        <div class="card-body pt-5">
+                            <div class="row mb-3">
 
-    <div class="app-content-header bg-white pt-2 pb-1 mb-2">
-        <div class="container-fluid">
-            <div class="top-menu sticky-top bg-white">
-                <ul class="nav custom-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold @(activeSection == "geral" ? "active" : "")" @onclick="@(() => ScrollTo("geral"))">Geral </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link  fw-bold @(activeSection == "conteudo" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("conteudo"))">Conteúdo</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link  fw-bold @(activeSection == "logisticaQuotation" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("logisticaQuotation"))">Logística</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link  fw-bold @(activeSection == "anexos" ? "active" : "")"
-                           @onclick="@(() => ScrollTo("anexos"))">Anexos</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+                                <label for="inputEmail3" class="col-sm-2 col-form-label"> @LanSales["numAtCard"]:</label>
+                                <div class="col-sm-4">
+                                    <div class="position-relative">
+                                        <InputText class="form-control form-control-sm" @bind-Value="credit.NumAtCard" disabled />
+                                    </div>
+                                </div>
 
-    
-    <div class="app-content">
-        <div class="container-fluid">
+                                <label for="Series" class="col-sm-2 col-form-label">@LanSales["salesSeries"]:</label>
+                                <div class="col-sm-4">
+                                    <InputNumber class="form-control form-control form-control-sm" @bind-Value="credit.Series" disabled />
+                                </div>
+                            </div>
 
-            <div id="geral" class="card mb-2">
-                <div class="card-body pt-5">
-                    <div class="row mb-3">
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                    </div>
+                                <label for="DocDate" class="col-sm-2 col-form-label">@LanSales["documentDate"]:</label>
+                                <div class="col-sm-4">
+                                    <input class="form-control form-control-sm"
+                                           Value="@(credit.DocDate?.ToString("dd/MM/yyyy"))"
+                                               disabled />
+                                </div>
+                            </div>
 
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Cliente <span class="text-danger fw-bold">*</span>:</label>
-                        <div class="col-sm-4">
-                            <InputText class="form-control form-control form-control-sm" @bind-Value="credit.CardCode" disabled />
-                        </div>
-
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Série/Nº:</label>
-                        <div class="col-sm-4">
-                            <InputNumber class="form-control form-control form-control-sm" @bind-Value="credit.Series" disabled />
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Nome:</label>
-                        <div class="col-sm-4">
-                            <InputText class="form-control form-control-sm" @bind-Value="credit.CardName" disabled />
-                        </div>
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Data de lançamento:</label>
-                        <div class="col-sm-4">
-                            <InputDate class="form-control form-control-sm" @bind-Value="credit.DocDate" disabled />
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Pessoa de contacto:</label>
-                        <div class="col-sm-4">
-                            <div class="position-relative">
-                                
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                </div>
+                                <label for="DocDueDate" class="col-sm-2 col-form-label">@LanSales["deliveryDate"] <span class="text-danger fw-bold">*</span>:</label>
+                                <div class="col-sm-4">
+                                    <Input class="form-control form-control-sm" Value="@(credit.DocDueDate?.ToString("dd/MM/yyyy"))" disabled />
+                                </div>
                             </div>
                         </div>
-
-                        <label for="inputEmail3" class="col-sm-2 col-form-label">Data de entrega <span class="text-danger fw-bold">*</span>:</label>
-                        <div class="col-sm-4">
-                            <InputDate class="form-control form-control-sm" @bind-Value="credit.DocDueDate" disabled />
-                        </div>
                     </div>
-                </div>
-            </div>
-            <h5 class="mb-1 sapTitle">Conteúdo</h5>
-            <div id="conteudo" class="card mb-5">
-                <div class="card-body table-responsive">
-                    <h5 class="mb-3 sapTitle-table ">Detalhes</h5>
-                    <div class="row">
-                        <div class="col-12">
-                            <div style="height: 250px;max-height:300px; overflow:auto;">
-                                <table class="table table-head-fixed table-hover align-middle text-nowrap">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col"><input type="checkbox"></th>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Nº do artigo</th>
-                                        <th scope="col">Descrição do antigo</th>
-                                        <th scope="col">País/região</th>
-                                        <th scope="col" class="text-end">Quantidade</th>
-                                        <th scope="col" class="text-end">Preço unitário</th>
-                                        <th scope="col" class="text-end">% do desconto</th>
-                                        <th scope="col" class="text-end"> Preço após desconto</th>
-                                        <th scope="col" class="text-end">Código de imposto</th>
-                                        <th scope="col" class="text-end">Total(ML)</th>
-                                        <th scope="col" class="text-end">Armazém</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                        @foreach (var item in credit.DocumentLines!)
+
+                    <h5 class="mb-1 sapTitle">@LanSales["tabDetailsContents"]</h5>
+                    <div id="conteudo" class="card mb-2">
+                        <div class="card-body pt-">
+
+                            <h6 class="mt-0">
+                                @LanSales["preferences"]</h6>
+
+                            <div class="row mb-3">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">@LanSales["currency"]: </label>
+                                <div class="col-sm-4">
+                                    <InputText class="form-control form-control-sm" @bind-Value="credit.DocCurrency" readonly />
+                                </div>
+
+                                <label for="DocType" class="col-sm-2 col-form-label">@LanSales["itemserviceType"]:</label>
+                                <div class="col-sm-4">
+                                    <InputText id="DocType" class="form-control form-control-sm" @bind-Value="credit.DocType" readonly />
+                                        
+                                </div>
+                            </div>
+
+                            <AppTableDetails TableClass="@(ThemeService.CurrentTheme == "dark" ? "table-dark" : "table-light")">
+                                <HeaderGroup>
+                                    <colgroup>
+                                        <col style="width: 50px;" />
+                                        <col style="width: 50px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 150px;" />
+                                       
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 80px;" />
+                                    </colgroup>
+                                </HeaderGroup>
+                                <Header>
+                                <tr>
+                                    <th class="border-end sticky-left"><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                                    <th scope="col" class="border-end" style="position: relative;">#<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanSales["itemCode"]<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanSales["itemDscription"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["quantity"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["unitPrice"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["discountLine"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["priceAfterDiscount"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["taxCode"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["totalLC"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["whse"]<div class="resizer"></div></th>
+                                </tr>
+                                </Header>
+
+                                <RowTemplate>
+                                    @if (credit.DocumentLines is not null)
                                     {
-                                        <tr>
-                                            <td><input type="checkbox"></td>
-                                            <td>@item.LineNum</td>
-                                            <td>@item.ItemCode</td>
-                                            <td>@item.ItemDescription</td>
-                                            <td></td>
-                                            <td class="text-end">@item.Quantity</td>
-                                            <td class="text-end">@item.Price?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
-                                            <td class="text-end"></td>
-                                            <td class="text-end"></td>
-                                            <td class="text-end">@item.VatGroup</td>
-                                            <td class="text-end">@item.LineTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
-                                            <td class="text-end">@item.WarehouseCode</td>
-                                        </tr>
+                                        @foreach (var item in credit.DocumentLines)
+                                        {
+                                            <tr>
+                                                <td><InputCheckbox @bind-Value="item.Selected" /></td>
+                                                <td>@item.LineNum</td>
+                                                <td>@item.ItemCode</td>
+                                                <td>@item.ItemDescription</td>
+                                                <td class="text-end">@item.Quantity</td>
+                                                <td class="text-end">@item.Price?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
+                                                <td class="text-end"></td>
+                                                <td class="text-end"></td>
+                                                <td class="text-end">@item.VatGroup</td>
+                                                <td class="text-end">@item.LineTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
+                                                <td class="text-end">@item.WarehouseCode</td>
+                                            </tr>
+                                        }
                                     }
-                                </tbody>
-                            </table>
+                                </RowTemplate>
+                            </AppTableDetails>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                </div>
+                                <div class="col-md-6 mt-2">
+                                    <div class="">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0"><b>@LanSales["totalSubtitle"]</b></h5>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <span>@LanSales["totalBeforeDiscount"]:</span>
+                                                <span>@totalBefore.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>@LanSales["discountPercent"]:</span>
+                                                <span>@credit.DiscountPercent?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) %</span>
+                                                <span>@credit.TotalDiscount?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>
+                                                    @LanSales["rounding"]:</span>
+                                                <span>0 MZN</span>
+                                            </div>
+
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>@LanSales["vatSum"]:</span>
+                                                <span>@credit.VatSum?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
+                                            </div>
+
+                                            <hr />
+
+                                            <div class="d-flex justify-content-between">
+                                                <strong>@LanSales["docTotal"]:</strong>
+                                                <strong>@credit.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</strong>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                        </div>
-                        <div class="col-md-6 mt-2">
-                            <div class="">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0"><b>Resumo total</b></h5>
+
+                    <!-- LOGÍSTICA -->
+                    <h5 class="mb-1 sapTitle">@LanSales["tabDetailsLogistics"]</h5>
+                    <div id="logisticaQuotation">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <h5 class="mb-2 sapTitle-table ">
+                                        @LanSales["shipToAddress"]</h5>
+                                    <label for="ShipToCode" class="col-sm-2 col-form-label">
+                                        @LanSales["bpAddress"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="credit.ShipToCode" disabled />
+                                    </div>
+
+                                    <label for="PayToCode" class="col-sm-2 col-form-label">@LanSales["bpAddress"]:</label>
+                                    <div class="col-sm-4">
+
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="credit.PayToCode" disabled />
+                                    </div>
                                 </div>
-
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Total antes do desconto:</span>
-                                        <span>@totalBefore.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
+                                <div class="row">
+                                    <label for="Address2" class="col-sm-2 col-form-label"> @LanSales["addressSummary"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="credit.Address2" disabled />
                                     </div>
 
-                                    <div class="d-flex justify-content-between mt-2">
-                                        <span>Desconto:</span>
-                                        <span>@credit.DiscountPercent?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) %</span>
-                                        <span>@credit.TotalDiscount?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
+                                    <label for="Address" class="col-sm-2 col-form-label">
+                                        @LanSales["addressSummary"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="credit.Address" disabled />
                                     </div>
-
-                                    <div class="d-flex justify-content-between mt-2">
-                                        <span>Arrendondamento:</span>
-                                        <span>0 MZN</span>
-                                    </div>
-
-                                   
-                                    <div class="d-flex justify-content-between mt-2">
-                                        <span>Imposto:</span>
-                                        <span>@credit.VatSum?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</span>
-                                    </div>
-
-                                    <hr />
-
-                                    <div class="d-flex justify-content-between">
-                                        <strong>Total:</strong>
-                                        <strong>@credit.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @credit.DocCurrency</strong>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-            <h5 class="mb-1 sapTitle">Logística</h5>
-            <div id="logisticaQuotation">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <h5 class="mb-2 sapTitle-table ">Endereço do destinatário</h5>
-                            <label for="inputEmail3" class="col-sm-2 col-form-label">Endereço do PN:</label>
-                            <div class="col-sm-4">
-                                <InputText class="form-control form-control form-control-sm" @bind-Value="credit.ShipToCode" disabled />
-                            </div>
+        </Body>
 
-                            <label for="inputEmail3" class="col-sm-2 col-form-label">Endereço do PN:</label>
-                            <div class="col-sm-4">
-
-                                <InputText class="form-control form-control form-control-sm" @bind-Value="credit.PayToCode" disabled />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <label for="inputEmail3" class="col-sm-2 col-form-label">Resumo do endereço:</label>
-                            <div class="col-sm-4">
-                                <InputText class="form-control form-control form-control-sm" @bind-Value="credit.Address2" disabled />
-                            </div>
-
-                            <label for="inputEmail3" class="col-sm-2 col-form-label">Resumo do endereço:</label>
-                            <div class="col-sm-4">
-                                <InputText class="form-control form-control form-control-sm" @bind-Value="credit.Address" disabled />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </AppPageDetailsLayout>
 }
-
 <style>
     .custom-tabs li a {
-        color: #1d2d3e !important;
+        color: var(--bs-body-color);
         cursor: pointer;
     }
 
     .custom-tabs li a:hover {
-            color: #0064d9 !important;
+            color: var(--bs-body-color);
     }
 
     .custom-tabs .nav-item .active {
-        color: #0064d9!important;
+        color: var(--bs-primary);
+        border-bottom: 3px solid var(--bs-primary);
     }
 
     .sapTitle-table {
-        color: #1d2d3e;
+        color: var(--bs-body-color);
         font-size: .875rem;
         font-weight: bold;
     }
-    
+
+
+    #resizable-table th,
+    #resizable-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 1px;
+    }
+
+    #resizable-table th {
+        position: relative;
+        min-width: 80px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    #resizable-table th .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 1;
+    }
 </style>
 @code {
     private string activeSection = "geral";
@@ -262,8 +289,20 @@ else
     public int DocNum { get; set; }
     private bool isLoading;
     private CreditNotesDetailsDto credit = new();
-
+    private string Title = string.Empty;
     private decimal totalBefore = 0;
+    private List<TabItem> tabs = new();
+    private bool AllSelected
+    {
+        get => credit.DocumentLines!.All(l => l.Selected);
+        set
+        {
+            foreach (var line in credit.DocumentLines!)
+            {
+                line.Selected = value;
+            }
+        }
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -275,14 +314,24 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        PageState.SetTitle(LanGeneral["creditIndexTitleNavbar"]);
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         var CardCode = user.GetCardCode();
         isLoading = true;
         credit = await CreditNotesService.GetByDocEntryCreditNotesAsync(CardCode, DocNum);
 
+        tabs = new()
+        {
+            new TabItem {Id = "geral", Label=  LanSales["tabDetailsGeneral"]},
+            new TabItem {Id="conteudo", Label = LanSales["tabDetailsContents"]},
+            new TabItem {Id="logisticaQuotation", Label = LanSales["tabDetailsLogistics"]},
 
+        };
         totalBefore = credit.DocumentLines?.Sum(x => x.LineTotal) ?? 0;
+
+        Title = LanSales["credit"] + $" {credit.DocNum}";
+
         isLoading = false;
     }
     private async Task ScrollTo(string id)

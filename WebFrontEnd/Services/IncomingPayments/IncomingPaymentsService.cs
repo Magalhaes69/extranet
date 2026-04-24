@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.IncomingPayments.Dto;
+using WebFrontEnd.Shared.Dtos;
 
 
 namespace WebFrontEnd.Services.IncomingPayments
@@ -10,28 +11,36 @@ namespace WebFrontEnd.Services.IncomingPayments
 
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/IncomingPayments";
-        private List<GetAllIncomingPaymentsDto>? _cache;
+        private GetIncomingPaymentsResult _cache;
       
 
-        public IncomingPaymentsService(HttpClient httpClient)
+        public IncomingPaymentsService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
 
-        public async Task<List<GetAllIncomingPaymentsDto>> GetIncomingPaymentsServiceAsync(string cardCode, bool forceRefresh = false)
+        public async Task<GetIncomingPaymentsResult> GetIncomingPaymentsServiceAsync(IncomingPaymentsRequest request, bool forceRefresh = false)
         {
-            if (_cache is not null && !forceRefresh)
+            try
+            {
+                if (_cache is not null && !forceRefresh)
+                    return _cache;
+
+                var serialized = General.GennerateStringContent(General.SerializeObject(request));
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+
+                if (!response.IsSuccessStatusCode)
+                    return new GetIncomingPaymentsResult();
+
+                _cache = await response.Content.ReadFromJsonAsync<GetIncomingPaymentsResult>()
+                         ?? new GetIncomingPaymentsResult();
+
                 return _cache;
-
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?CardCode={cardCode}");
-
-            if (!response.IsSuccessStatusCode)
-                return new List<GetAllIncomingPaymentsDto>();
-
-            _cache = await response.Content.ReadFromJsonAsync<List<GetAllIncomingPaymentsDto>>()
-                     ?? new List<GetAllIncomingPaymentsDto>();
-
-            return _cache;
+            }
+            catch
+            {
+                return new GetIncomingPaymentsResult();
+            }
         }
     }
 }

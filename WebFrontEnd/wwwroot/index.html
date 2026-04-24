@@ -122,40 +122,44 @@
             }
         });
 
-        window.initResizableTable = function () {
-            const table = document.getElementById("resizable-table");
+        window.initResizableTable = function (tableId = "resizable-table") {
+            const table = document.getElementById(tableId);
             if (!table) return;
 
-            let th = null, startX = 0, startWidth = 0, colIndex = 0;
+            const cols = table.querySelectorAll("col");
+            const headers = table.querySelectorAll("th");
+            headers.forEach((th, index) => {
+                const resizer = th.querySelector(".resizer");
+                if (!resizer) return;
 
-            table.querySelectorAll("th .resizer").forEach(resizer => {
-                resizer.addEventListener("mousedown", function (e) {
-                    th = e.target.parentElement;
+                if (resizer.dataset.bound === "true") return;
+                resizer.dataset.bound = "true";
+
+                let startX, startWidth;
+
+                resizer.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
+
+                    const col = cols[index]; // now correctly aligned
                     startX = e.pageX;
-                    startWidth = th.offsetWidth;
-                    colIndex = Array.from(th.parentElement.children).indexOf(th);
+                    startWidth = col.getBoundingClientRect().width;
 
-                    document.addEventListener("mousemove", resize);
-                    document.addEventListener("mouseup", stopResize);
-                });
-
-                function resize(e) {
-                    if (th) {
+                    const onMouseMove = (e) => {
                         const newWidth = startWidth + (e.pageX - startX);
-                        th.style.width = newWidth + "px";
 
-                        // Apply new width to all cells in this column
-                        table.querySelectorAll("tr").forEach(row => {
-                            const cell = row.children[colIndex];
-                            if (cell) cell.style.width = newWidth + "px";
-                        });
-                    }
-                }
+                        if (newWidth > 60) {
+                            col.style.width = newWidth + "px";
+                        }
+                    };
 
-                function stopResize() {
-                    document.removeEventListener("mousemove", resize);
-                    document.removeEventListener("mouseup", stopResize);
-                }
+                    const onMouseUp = () => {
+                        document.removeEventListener("mousemove", onMouseMove);
+                        document.removeEventListener("mouseup", onMouseUp);
+                    };
+
+                    document.addEventListener("mousemove", onMouseMove);
+                    document.addEventListener("mouseup", onMouseUp);
+                });
             });
         };
 

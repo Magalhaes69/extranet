@@ -1,6 +1,9 @@
 ﻿@using WebFrontEnd.Pages.Components.Auth
 @using WebFrontEnd.Services.Auth
+@using WebFrontEnd.Services.Help
 @inject IStringLocalizer<NavBarApp> Lan
+@inject NavigationHistoryService History
+
 @implements IDisposable
 
   <!--begin::Header-->
@@ -9,12 +12,22 @@
     <div class="container-fluid">
         <!--begin::Start Navbar Links-->
         <ul class="navbar-nav align-items-center gap-1">
+            @if (CanGoBack)
+            {
+                <li class="nav-item d-flex align-items-center">
+                    <a class="nav-link btn btn-sm @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")" role="button" @onclick="GoBack">
+                    <i class="bi bi-chevron-left @(ThemeService.CurrentTheme == "dark" ? "text-white" : "")"
+                       style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;">
+                    </i>
+                </a>
+            </li>
+            }
             <li class="nav-item d-flex align-items-center">
                 <a class="nav-link btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")"
                    data-lte-toggle="sidebar"
                    @onclick="ToggleSidebar"
                    role="button">
-                    <i class="bi bi-list-ul icon-color-default @(ThemeService.CurrentTheme == "dark" ? "text-white" : "")"
+                    <i class="bi bi-list-ul  @(ThemeService.CurrentTheme == "dark" ? "text-white" : "")"
                        style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;">
                     </i>
                 </a>
@@ -23,30 +36,33 @@
             <li class="nav-item d-none d-md-flex align-items-center">
                 <a href="" class=" btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")">
                     <img style="height:1.665rem !important; width: 11.875rem !important;"
-                         src="@(ThemeService.CurrentTheme == "dark" ? "/img/logo@sap_horizon_hcb.png" : "/img/logo@sap_horizon.png")" />
+                         src="@(ThemeService.CurrentTheme == "dark" ? $"{ApiBaseUrl}/images/geral/logo@sap_horizon_hcb.png" : $"{ApiBaseUrl}/images/geral/logo@sap_horizon.png")" />
                 </a>
             </li>
            
             <li class="nav-item d-none d-md-flex align-items-center">
-                <span id="AppTilePage"
-                      class="nav-link fw-bold @(ThemeService.CurrentTheme == "dark" ? "" : "text-dark-emphasis") " style="@(ThemeService.CurrentTheme == "dark" ? "color: #fff!important;" : "")">
-                    @Lan["navTitle"]
+                <span class="nav-link fw-bold rounded-2 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white text-dark-emphasis border-dashed" : "text-dark-emphasis")">
+                    @PageState.PageTitle
                 </span>
             </li>
         </ul>
         <!--end::Start Navbar Links-->
         <!--begin::End Navbar Links-->
         <ul class="navbar-nav ms-auto gap-1">
+            <!--begin::Navbar cart-->
+            <CartDropdownComponent />
+            <!--end::Navbar cart-->
+
             <!--begin::Navbar Search-->
             <li class="nav-item">
-                <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-widget="navbar-search" href="#" role="button">
+                <a class="nav-link px-2 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-widget="navbar-search" href="#" role="button">
                     <i class="bi bi-search"></i>
                 </a>
             </li>
             <!--end::Navbar Search-->
             <!--begin::Notifications Dropdown Menu-->
-            <li class="nav-item dropdown" data-bs-auto-close="outside">
-                <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-bs-toggle="dropdown" href="#">
+            <li class="nav-item" data-bs-auto-close="outside">
+                <a class="nav-link px-2 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-bs-toggle="dropdown" href="#">
                     <i class="bi bi-bell-fill"></i>
                     <span class="navbar-badge badge text-bg-warning">15</span>
                 </a>
@@ -82,14 +98,14 @@
             <!--begin::User Menu Dropdown-->
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="/img/user2-160x160.jpg"
+                    <img src="@($"{ApiBaseUrl}{appUser.ImageUrl ?? "/images/users/defaul-user.png"}")"
                          class="user-image rounded-circle shadow @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white " : "")"
                          alt="" />
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end @(ThemeService.CurrentTheme == "dark" ? " shadow-white" : "")">
                     <AuthorizeView>
                         <Authorized>
-                            <span class="dropdown-item fa-bold">Hello, @context.User.Identity?.Name!</span>
+                            <span class="dropdown-item fa-bold"> @context.User.Identity?.Name!</span>
                         </Authorized>
                     </AuthorizeView>
                     <a href="#" class="dropdown-item">
@@ -126,13 +142,18 @@
     .shadow-white {
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
     }
+
+    .border-dashed {
+        border-style: dashed !important;
+    }
 </style>
 @inject AuthenticationStateProvider authenticationState
 @code {
-
+    private AppUserViewDto appUser = new();
     private bool isCollapsed = true;
-
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
     private SettingUser Settings;
+    bool CanGoBack => History.Count > 1;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -145,6 +166,21 @@
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += Refresh;
+        PageState.OnPageTitleChanged += StateHasChanged;
+        History.OnChange += StateHasChanged;
+        await LoadUser();
+    }
+    private async Task LoadUser()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var Id = string.Empty;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            Id = user.GetUserGuid();
+        }
+
+        appUser = await AuthService.GetUserById(Id);
     }
     private async Task ToggleSidebar()
     {
@@ -179,7 +215,17 @@
     public void Dispose()
     {
         ThemeService.OnThemeChanged -= Refresh;
+        PageState.OnPageTitleChanged -= StateHasChanged;
+        History.OnChange -= StateHasChanged;
     }
     
+    private void GoBack()
+    {
+        var previous = History.Back();
+        if (previous != null)
+        {
+            nav.NavigateTo(previous);
+        }
+    }
     
 }

@@ -1,0 +1,762 @@
+﻿@page "/extensions/itemextension"
+@using WebFrontEnd.Services.ItemExtension.Dto
+@implements IDisposable
+@inject OrdersCartService CartService
+
+@inject IStringLocalizer<ItemInvoiceModal> LanItem
+
+<!--begin::App Content Header-->
+<AppContentHeader Title="@Title" />
+<!--end::App Content Header-->
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <EditForm Model="itemExtensionDto" OnValidSubmit="HandleSaveOrder">
+            <DataAnnotationsValidator />
+          
+
+            <div class="card mb-5">
+                <div class="card-body">
+
+                    <!-- Row 1 -->
+                    <div class="row mb-3">
+
+                        <label class="col-sm-2 col-form-label">
+                            @LanItem["itemCode"] <span class="text-danger fw-bold">*</span>:
+                        </label>
+
+                        <div class="col-sm-4">
+                            <div class="position-relative">
+                                <InputText class="form-control form-control-sm" @bind-Value="itemExtensionDto.ItemCode" />
+
+                                <button type="button" @onclick="OpenModalItems"
+                                        class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                        style="border: none; background: transparent;">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+
+                            </div>
+
+                            <div class="text-danger">
+                                <ValidationMessage For="@(() => itemExtensionDto.ItemCode)" />
+                            </div>
+                        </div>
+
+                        <label class="col-sm-2 col-form-label">
+                            @LanItem["itemDescription"]:
+                        </label>
+
+                        <div class="col-sm-4">
+                            <InputText class="form-control form-control-sm"
+                                       @bind-Value="itemExtensionDto.ItemName" readonly="true" />
+
+                            <div class="text-danger">
+                                <ValidationMessage For="@(() => itemExtensionDto.ItemName)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="row mb-3">
+
+                        <label class="col-sm-2 col-form-label">
+                            @LanItem["img"]:
+                        </label>
+
+                        <div class="col-sm-4">
+                            <InputFile class="form-control form-control-sm"
+                                       OnChange="HandleFileSelected" />
+
+                           
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label class="col-sm-2 col-form-label">
+                            
+                        </label>
+                        <!-- Preview -->
+                        <div class="col-sm-6">
+                            @if (!string.IsNullOrEmpty(ImagePreview))
+                            {
+                                <img src="@ImagePreview"
+                                     class="img-fluid rounded border"
+                                     style="max-height:150px;" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="position-fixed bottom-0 p-2 @(ThemeService.CurrentTheme == "dark" ? "bg-dark border border-white" : "border bg-light") shadow-sm rounded-1 mb-2"
+                 style="z-index:1050; width:calc(100% - 250px); left:200px; right: 15px!important">
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light" : "btn-secondary")"
+                            @onclick="Cancel">
+                        @LanGeneral["btnCancel"]
+                    </button>
+
+                    @if (ToastService.ShowSaveButton)
+                    {
+                        <button type="submit"
+                                class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light" : "btn-primary")">
+                            @LanGeneral["btnSave"]
+                        </button>
+                    }
+
+                    <BusyButtonComponent cssBtn=@($"btn-sm py-0 {GetWarningButtonClass()}")
+                                         ShowBusyButton="@ToastService.ShowBusyButton" />
+                </div>
+
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+@* ======== Modal Items ============= *@
+<ModalChooseGlobal TITem="ItemsDto"
+                   @ref="ModalShowItems"
+                   TitleModal=@TitleItem
+                   IsLoding="IsLoading"
+                   Items="allItemsDtos">
+    <FilterHeader>
+        <div class="card-body pb-2">
+            <div class="row g-3 align-items-end">
+                <!-- Filtro por code -->
+                <div class="col-md-4">
+                    <label class="form-label">@LanItem["itemCode"]:</label>
+                    <div class="position-relative">
+
+                        <div class="form-control form-control-sm d-flex align-items-center gap-1 pe-5 filter-input-container">
+                            <!-- Scrollable tags -->
+                            <div class="d-flex gap-1 flex-nowrap overflow-auto filter-tags">
+                                @if (filter.DynamicFilters is not null)
+                                {
+                                    @foreach (var f in filter.DynamicFilters!.Where(x => x.Field == "ItemCode"))
+                                    {
+                                        <span class="badge muilt-tag d-flex align-items-center pointer-filter" @onclick="ToggleItemCoderopdown">
+                                            @DynamicFilterServices.RenderFilterText(f, AvailableFields)
+
+                                            <span class="ms-1"
+                                                  style="cursor:pointer"
+                                                  @onclick:stopPropagation
+                                                  @onclick="() => RemoveFilterDynamic(f)">
+                                                <i class="bi bi-x-circle"></i>
+                                            </span>
+                                        </span>
+                                    }
+                                }
+                                <!-- Input -->
+                                <input class="border-0 filter-input"
+                                       @bind="InputValue"
+                                       @onclick="ToggleItemCoderopdown" />
+                                @if (ShowItemCodeDropdown)
+                                {
+                                    <div class="dropdown-filter shadow-sm px-2 @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-light" : "bg-light text-dark") ">
+
+                                        @if (filter.DynamicFilters?.Any(x => x.Field == "ItemCode") == true)
+                                        {
+                                            @foreach (var f in filter.DynamicFilters.Where(x => x.Field == "ItemCode"))
+                                            {
+                                                <div class="dropdown-item @(ThemeService.CurrentTheme == "dark" ? " dropdown-item-dark " : "")  d-flex justify-content-between align-items-center">
+
+                                                    @DynamicFilterServices.RenderFilterText(f, AvailableFields)
+
+                                                    <i class="bi bi-x-circle text-danger"
+                                                       style="cursor:pointer"
+                                                       @onclick="() => RemoveFilterDynamic(f)">
+                                                    </i>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="dropdown-item @(ThemeService.CurrentTheme == "light" ? " text-muted" : "text-light  dropdown-item-dark") ">
+                                                @LanGeneral["noFilter"]
+                                            </div>
+                                        }
+
+                                        <div class="dropdown-divider"></div>
+
+                                        <!-- Open modal -->
+                                        <div class="dropdown-item text-primary"
+                                             style="cursor:pointer"
+                                             @onclick="OpenItemCodeModal">
+                                            <i class="bi bi-funnel"></i> @LanGeneral["btnAddFilter"]
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Button -->
+                        <button type="button"
+                                @onclick="OpenItemCodeModal"
+                                class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                style="border: none; background: transparent;">
+                            <i class="bi bi-filter"></i>
+                        </button>
+                    </div>
+                </div>
+                <!--Fim-->
+                <!-- Filter by Name -->
+                <div class="col-md-4">
+                    <label class="form-label">@LanItem["itemDescription"]:</label>
+                    <div class="position-relative">
+
+                        <div class="form-control form-control-sm d-flex align-items-center gap-1 pe-5 filter-input-container">
+                            <!-- Scrollable tags -->
+                            <div class="d-flex gap-1 flex-nowrap overflow-auto filter-tags">
+                                @if (filter.DynamicFilters is not null)
+                                {
+                                    @foreach (var f in filter.DynamicFilters!.Where(x => x.Field == "ItemName"))
+                                    {
+                                        <span class="badge muilt-tag d-flex align-items-center pointer-filter" @onclick="ToggleItemNameDropdown">
+                                            @DynamicFilterServices.RenderFilterText(f, AvailableFields)
+
+                                            <span class="ms-1"
+                                                  style="cursor:pointer"
+                                                  @onclick:stopPropagation
+                                                  @onclick="() => RemoveFilterDynamic(f)">
+                                                <i class="bi bi-x-circle"></i>
+                                            </span>
+                                        </span>
+                                    }
+                                }
+                                <!-- Input -->
+                                <input class="border-0 filter-input"
+                                       @bind="InputValue"
+                                       @onclick="ToggleItemNameDropdown" />
+                                @if (ShowItemNameDropdown)
+                                {
+                                    <div class="dropdown-filter shadow-sm px-2 @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-light" : "bg-light text-dark") ">
+
+                                        @if (filter.DynamicFilters?.Any(x => x.Field == "ItemName") == true)
+                                        {
+                                            @foreach (var f in filter.DynamicFilters.Where(x => x.Field == "ItemName"))
+                                            {
+                                                <div class="dropdown-item @(ThemeService.CurrentTheme == "dark" ? " dropdown-item-dark " : "")  d-flex justify-content-between align-items-center">
+
+                                                    @DynamicFilterServices.RenderFilterText(f, AvailableFields)
+
+                                                    <i class="bi bi-x-circle text-danger"
+                                                       style="cursor:pointer"
+                                                       @onclick="() => RemoveFilterDynamic(f)">
+                                                    </i>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="dropdown-item @(ThemeService.CurrentTheme == "light" ? " text-muted" : "text-light  dropdown-item-dark") ">
+                                                @LanGeneral["noFilter"]
+                                            </div>
+                                        }
+
+                                        <div class="dropdown-divider"></div>
+                                        <!-- Open modal -->
+                                        <div class="dropdown-item text-primary"
+                                             style="cursor:pointer"
+                                             @onclick="OpenItemNameModal">
+                                            <i class="bi bi-funnel"></i> @LanGeneral["btnAddFilter"]
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Button -->
+                        <button type="button"
+                                @onclick="OpenItemNameModal"
+                                class="btn position-absolute top-50 end-0 translate-middle-y me-1 p-1"
+                                style="border: none; background: transparent;">
+                            <i class="bi bi-filter"></i>
+                        </button>
+                    </div>
+                </div>
+                <!--Fim-->
+                <div class="col-md-1">
+                    <button class="btn btn-sm  @(ThemeService.CurrentTheme == "light" ? "btn-primary" : "btn-outline-light border border-white")"
+                            @onclick="getFilterItems">
+                        @LanGeneral["btnOkFilterModal"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </FilterHeader>
+
+    <Options>
+        <GridOptionsComponent>
+            <TotalFacturas>
+                @TitleItem (@allItemsDtos.Count())
+            </TotalFacturas>
+
+            <ButtonOptions>
+                <button class="btn btn-icon @(ThemeService.CurrentTheme == "light" ? "btn-link" : "btn-outline-light border border-white") btn-sm text-decoration-none"><i class="fa-solid fa-gear"></i></button>
+            </ButtonOptions>
+        </GridOptionsComponent>
+    </Options>
+
+    <Header>
+    <tr>
+        <th scope="col">@LanItem["itemCode"]</th>
+        <th scope="col">@LanItem["itemDescription"]</th>
+        <th scope="col">@LanItem["itemGroup"]</th>
+    </tr>
+    </Header>
+
+    <RowTemplate Context="items">
+        <tr>
+            <td style="cursor:pointer" @onclick="() => SelectedItem(items)">@items.ItemCode</td>
+            <td style="cursor:pointer" @onclick="() => SelectedItem(items)">@items.ItemName</td>
+            <td>@items.ItemsGroupCode</td>
+        </tr>
+    </RowTemplate>
+
+    <LoadingTemplate>
+        <LoadingPage />
+    </LoadingTemplate>
+    <Footer>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : "btn-secondary") rounded-1"
+                @onclick="CloseModalItem">
+            Fechar
+        </button>
+    </Footer>
+</ModalChooseGlobal>
+@* ========= Fim modal items ============ *@
+
+<ModelToFilter TITem="DynamicFilter"
+               @ref="ModalDynamic"
+               Title="@DynamicFilterServices.GetFieldLabel(CurrentField, AvailableFields)"
+               ITems="@dynamicFilters">
+
+    <Rows Context="item">
+        <div class="d-flex gap-2 mb-2">
+
+            <!-- Field -->
+            <CustomSelect TItem="string"
+                          Items="@DynamicFilterServices.GetFieldOption(CurrentField!, AvailableFields)"
+                          @bind-SelectedValue="item.Field" />
+
+            <!-- Operator -->
+            <CustomSelect TItem="OperatorType"
+                          Items="DynamicFilterServices.GetOperators(CurrentField!, AvailableFields)"
+                          @bind-SelectedValue="item.Operator" />
+
+            <!-- Value -->
+            @if (RequiresTwoValues(item.Operator))
+            {
+
+                <input type="@DynamicFilterServices.GetInputType(AvailableFields.FirstOrDefault(x => x.Name == item.Field)!)"
+                       class="form-control form-control-sm"
+                       @bind="item.Value1" />
+
+
+                <input type="@DynamicFilterServices.GetInputType(AvailableFields.FirstOrDefault(x => x.Name == item.Field)!)"
+                       class="form-control form-control-sm"
+                       @bind="item.Value2" />
+            }
+            else
+            {
+
+                <input type="@DynamicFilterServices.GetInputType(AvailableFields.FirstOrDefault(x => x.Name == item.Field)!)"
+                       class="form-control form-control-sm"
+                       @bind="item.Value1" />
+            }
+            <!-- Remove -->
+            <button class="btn btn-sm"
+                    @onclick="() => RemoveFilterOnDynamic(item)">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    </Rows>
+
+    <AddButton>
+        <button class="btn py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : " btn-success ") btn-sm" @onclick="() => AddFilterDynamic(CurrentField)">
+            @LanGeneral["btnAddFilter"]
+        </button>
+    </AddButton>
+
+    <Footer>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : " btn-secondary ")"
+                @onclick="CloseModalDynamic">
+            @LanGeneral["btnClose"]
+        </button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : " btn-primary ")"
+                @onclick="ApplyFiltersDynamic">
+            @LanGeneral["btnOkFilter"]
+        </button>
+    </Footer>
+
+</ModelToFilter>
+
+<ConfirmModal @ref="ConfirmModalRef"
+              BorderColor="border-warning">
+    <ModalHeader>
+        <h6 class="modal-title fs-5 mx-auto" id="staticBackdropLabel"><i class="bi bi-exclamation-triangle-fill text-warning"></i> @LanGeneral["confirmationTitleItem"]</h6>
+    </ModalHeader>
+    <ModalBody>
+        <p>@LanGeneral["confirmCancel"]</p>
+    </ModalBody>
+    <ModalFooter>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="ConfirmModalRef.Hide">@LanGeneral["btnConfirmNo"]</button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="CancelConfirm">@LanGeneral["btnConfirmYes"]</button>
+    </ModalFooter>
+</ConfirmModal>
+@if (IsLoading)
+{
+    <LoadingPage />
+}
+
+
+@code {
+    private string ItemCode = string.Empty;
+    private IBrowserFile? selectedFile;
+    private string? ImagePreview;
+    private bool IsLoading = false;
+    private bool isCollapsed = true;
+    private CreateItemExtensionDto itemExtensionDto = new();
+    private string Title = string.Empty;
+    private string GetWarningButtonClass()
+    {
+        return ThemeService.CurrentTheme == "dark"
+            ? "btn-outline-warning text-white border-white"
+            : "btn-warning";
+    }
+    private ConfirmModal ConfirmModalRef;
+
+    private ModalChooseGlobal<ItemsDto> ModalShowItems;
+    private List<ItemsDto> itemsDtos = new();
+    private List<ItemsDto> allItemsDtos = new();
+    private string TitleItem = string.Empty;
+
+    private FilterRequest filter = new();
+
+    private List<FilterField> AvailableFields = new();
+    private string? InputValue;
+
+    private List<DynamicFilter> dynamicFilters = new()
+        {
+            new DynamicFilter()
+        };
+
+    private string CurrentField = string.Empty;
+    private ModelToFilter<DynamicFilter>? ModalDynamic;
+    public string? ItemId = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+
+            await js.InvokeVoidAsync("initResizableTable");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Title = LanItem["itemTitle"];
+        PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
+
+        ThemeService.OnThemeChanged += StateHasChanged;
+        filter = new FilterRequest
+        {
+            DynamicFilters = new List<DynamicFilter>()
+        };
+
+        AvailableFields = new List<FilterField>
+            {
+                new()
+                {
+                    Name = "ItemCode",
+                    Label = "Code",
+                    DataType = typeof(string),
+                    AllowedOperators = new()
+                    {
+                        OperatorType.Iqual,
+                        OperatorType.NotIqual,
+                        OperatorType.Contains,
+                        OperatorType.StartsWith,
+                        OperatorType.EndsWith
+                    }
+                },
+                new()
+                {
+                    Name = "ItemName",
+                    Label = "Nama",
+                    DataType = typeof(string),
+                    AllowedOperators = new()
+                    {
+                        OperatorType.Iqual,
+                        OperatorType.NotIqual,
+                        OperatorType.Contains,
+                        OperatorType.StartsWith,
+                        OperatorType.EndsWith
+                    }
+                }
+        };
+    }
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+
+        // Preview
+        using var stream = selectedFile.OpenReadStream(5 * 1024 * 1024);
+        var buffer = new byte[selectedFile.Size];
+        await stream.ReadAsync(buffer);
+
+        ImagePreview = $"data:{selectedFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
+    }
+
+
+    private async Task HandleSaveOrder()
+    {
+
+        ToastService.ShowSaveButton = false;
+        ToastService.ShowBusyButton = !ToastService.ShowSaveButton;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            itemExtensionDto.UserId = user.GetUserGuid();
+        }
+        var response = await ItemExtensionService.CreateAsync(itemExtensionDto, selectedFile);
+
+        if (response.Flag)
+        {
+            ItemId = response.Data!.ItemId.ToString();
+            ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+
+            nav.NavigateTo("/extensions/list-item-extension");
+        }
+        else
+            ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+
+
+
+        return;
+    }
+
+    private async Task LoadItems()
+    {
+        IsLoading = true;
+
+
+        itemsDtos = await ItemsService.GetItemsAsync();
+
+        allItemsDtos = itemsDtos.ToList();
+        IsLoading = false;
+    }
+
+
+    private void Clear()
+    {
+        ItemCode = string.Empty;
+        selectedFile = null;
+        ImagePreview = null;
+    }
+
+    private void CloseModalItem()
+    {
+        ModalShowItems.CloseModal();
+    }
+    private async Task SelectedItem(ItemsDto item)
+    {
+        var checkItem = await ItemExtensionService.CheckByItemCodeAsync(item.ItemCode);
+        if(checkItem)
+        {
+            ToastService.ShowError(LanGeneral["existItemMessage"], ThemeService.CurrentTheme);
+
+            ModalShowItems.CloseModal();
+            StateHasChanged();
+            return;
+        }
+
+        itemExtensionDto.ItemName =item.ItemName;
+        itemExtensionDto.ItemCode = item.ItemCode;
+        ModalShowItems.CloseModal();
+
+        StateHasChanged();
+    }
+    private async Task OpenModalItems()
+    {
+        await LoadItems();
+        ModalShowItems.ShowModal();
+    }
+
+    #region Filter item modal
+    // ================
+    // Filter item modal
+    // ================
+    private bool ShowItemCodeDropdown = false;
+    private bool ShowItemNameDropdown = false;
+    private void OpenItemCodeModal()
+    {
+        CurrentField = "ItemCode";
+
+        dynamicFilters = (filter.DynamicFilters ?? Enumerable.Empty<DynamicFilter>())
+        .Where(f => f.Field == CurrentField)
+            .Select(f => new DynamicFilter
+            {
+                Field = f.Field,
+                Operator = f.Operator,
+                Value1 = f.Value1,
+                Value2 = f.Value2,
+                Logic = f.Logic
+            })
+            .ToList();
+
+        if (!dynamicFilters.Any())
+            dynamicFilters.Add(new DynamicFilter { Field = CurrentField });
+
+        ShowItemCodeDropdown = false;
+        ModalDynamic!.Show();
+    }
+    private void RemoveFilterDynamic(DynamicFilter item)
+    {
+        filter.DynamicFilters!.Remove(item);
+        StateHasChanged();
+    }
+    private void ToggleItemCoderopdown()
+    {
+        ShowItemCodeDropdown = !ShowItemCodeDropdown;
+    }
+
+    private void OpenItemNameModal()
+    {
+        CurrentField = "ItemName";
+
+        dynamicFilters = (filter.DynamicFilters ?? Enumerable.Empty<DynamicFilter>())
+        .Where(f => f.Field == CurrentField)
+            .Select(f => new DynamicFilter
+            {
+                Field = f.Field,
+                Operator = f.Operator,
+                Value1 = f.Value1,
+                Value2 = f.Value2,
+                Logic = f.Logic
+            })
+            .ToList();
+
+        if (!dynamicFilters.Any())
+            dynamicFilters.Add(new DynamicFilter { Field = CurrentField });
+
+        ShowItemNameDropdown = false;
+        ModalDynamic!.Show();
+    }
+
+    private void ToggleItemNameDropdown()
+    {
+        ShowItemNameDropdown = !ShowItemNameDropdown;
+    }
+
+    private void getFilterItems()
+    {
+        allItemsDtos = DynamicFilterHelper.ApplyFilters(itemsDtos, filter.DynamicFilters).ToList();
+        StateHasChanged();
+    }
+
+    private List<SelectItem<string>> GetFieldOption(string field)
+    {
+        var f = AvailableFields.FirstOrDefault(x => x.Name == field);
+
+        if (f == null)
+            return new();
+
+        return new List<SelectItem<string>>
+        {
+            new SelectItem<string>
+            {
+                Value = f.Name,
+                Text = f.Label
+            }
+        };
+    }
+
+    private string GetNameOfField(string? field)
+    {
+        if (string.IsNullOrEmpty(field))
+            return string.Empty;
+
+        var selectedField = AvailableFields.FirstOrDefault(f => f.Name == field);
+
+        if (selectedField == null)
+            return string.Empty;
+
+        return selectedField.Label;
+    }
+
+    private bool RequiresTwoValues(OperatorType op)
+    {
+        return op == OperatorType.Between;
+    }
+    private void RemoveFilterOnDynamic(DynamicFilter f)
+    {
+        dynamicFilters.Remove(f);
+    }
+    private void AddFilterDynamic(string? field)
+    {
+        dynamicFilters.Add(new DynamicFilter { Field = field! });
+    }
+    private void CloseModalDynamic()
+    {
+        ModalDynamic!.CloseModal();
+    }
+    private void ApplyFiltersDynamic()
+    {
+        try
+        {
+            filter.DynamicFilters!.RemoveAll(f => f.Field == CurrentField);
+            foreach (var f in dynamicFilters)
+            {
+                f.Field = CurrentField!;
+                filter.DynamicFilters.Add(f);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        ModalDynamic!.CloseModal();
+    }
+    // ========================
+    // Fim modal Items
+    // =======================
+    #endregion
+
+
+    private void Cancel()
+    {
+        if (!string.IsNullOrEmpty(itemExtensionDto.ItemName))
+        {
+            ConfirmCancel();
+            return;
+        }
+        nav.NavigateTo("/extensions/list-item-extension");
+    }
+
+    private void ConfirmCancel()
+    {
+        ConfirmModalRef.Show();
+    }
+    private void CancelConfirm()
+    {
+        nav.NavigateTo("/extensions/list-item-extension");
+    }
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

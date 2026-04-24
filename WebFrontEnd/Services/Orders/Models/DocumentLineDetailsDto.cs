@@ -2,6 +2,7 @@
 {
     public sealed record DocumentLineDetailsDto
     {
+        public bool Selected { get; set; }
         public int LineNum { get; set; }
         public string? ItemCode { get; set; }
         public string? ItemDescription { get; set; }

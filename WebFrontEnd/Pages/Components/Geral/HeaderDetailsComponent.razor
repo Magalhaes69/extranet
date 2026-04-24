@@ -1,7 +1,9 @@
-﻿<div class="summary-flex">
+﻿
+
+<div class="summary-flex">
     <!-- Cliente -->
     <div class="summary-item">
-        <small class="text-muted d-block">Cliente</small>
+        <small class="text-muted d-block">@UiConverters.ToDocType("rCustomer")</small>
 
         <div class="d-flex align-items-center gap-2">
             <i class="fas fa-angle-right text-warning"></i>
@@ -13,7 +15,7 @@
 
     <!-- Total -->
     <div class="summary-item">
-        <small class="text-muted d-block">Total</small>
+        <small class="text-muted d-block">@LanSales["docTotal"]</small>
         <div class="fs-4 fw-semibold">
             @UiConverters.ToFormat(DocTotal ?? 0) <small class="text-muted">@DocCurrency</small>
         </div>
@@ -21,13 +23,16 @@
 
     <!-- Status -->
     <div class="summary-item">
-        <small class="text-muted d-block">Status</small>
+        <small class="text-muted d-block">
+            @LanSales["ststusLine"]</small>
         <div class="@UiConverters.ToDocStatusClass(DocumentStatus!, Cancelled!) fw-semibold">@UiConverters.ToDocStatus(DocumentStatus!, Cancelled!)</div>
     </div>
 
     <!-- Crédito -->
     <div class="summary-item flex-grow-1">
-        <small class="text-muted d-block">Utilização limite de crédito</small>
+        <small class="text-muted d-block">
+            @LanSales["creditLimitUt"]
+            </small>
 
         <div class="progress mt-1 rounded-4" style="height: 18px; width:150px;">
             <div class="progress-bar bg-success text-dark" style="width: 50%">

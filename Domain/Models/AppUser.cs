@@ -23,6 +23,8 @@ namespace Domain.Models
         public string? Theme { get; set; }
         [Column(TypeName = "nvarchar(10)")]
         public string? Language { get; set; }
+        [Column(TypeName = "nvarchar(250)")]
+        public string? ImageUrl { get; set; }
         public DateTimeOffset DateCreated { get; set; }
         public DateTimeOffset DateUpdated { get; set; }
         public DateTimeOffset DateDeleted { get; set; }

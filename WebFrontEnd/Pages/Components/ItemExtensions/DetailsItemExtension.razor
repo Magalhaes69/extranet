@@ -1,0 +1,178 @@
+﻿@page "/orders-details/{ItemId}"
+@using WebFrontEnd.Services.ItemExtension.Dto
+@inject IStringLocalizer<ItemInvoiceModal> LanItem
+@attribute [Authorize]
+
+@if (isLoading)
+{
+    <LoadingPage />
+}
+else
+{
+    <AppPageDetailsLayout Title=@Title>
+
+        <ButtonList>
+
+            <!-- Edit Button -->
+            <button class="btn btn-sm py-0
+                @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                @onclick="EditExtension">
+                 @LanGeneral["btnEdit"]
+            </button>
+            <!-- Delete Button -->
+            <button class="btn btn-sm py-0 
+                    @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                    @onclick="ConfirmDelete">
+                @LanGeneral["btnRemove"]
+            </button>
+        </ButtonList>
+        <HeaderContent>
+           <HeaderDetailsItemsComponent
+               ItemCode="@viewItem.ItemCode"
+               ItemName="@viewItem.ItemName"
+              TotalStock="@InStock" />
+        </HeaderContent>
+
+        <Body>
+
+            <AppTabs Tabs="@tabs"
+                     ActiveTab="@activeSection"
+                     ActiveTabChanged="ScrollTo" />
+            <div class="app-content">
+                <div class="container-fluid">
+                    <div id="geral" class="card mb-2">
+                        <div class="card-body pt-5">
+                            <div class="row mb-3">
+
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">
+                                    @LanItem["itemCode"] <span class="text-danger fw-bold">*</span>:
+                                </label>
+                                <div class="col-sm-4">
+                                    <div class="position-relative">
+                                        <InputText class="form-control form-control-sm" @bind-Value="viewItem.ItemCode" disabled />
+                                    </div>
+                                </div>
+
+                                <label for="Series" class="col-sm-2 col-form-label">@LanItem["itemDescription"]:</label>
+                                <div class="col-sm-4">
+                                    <InputText class="form-control form-control form-control-sm" @bind-Value="viewItem.ItemName" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">
+
+                                </label>
+                                <!-- Preview -->
+                                <div class="col-sm-6">
+                                    @if (!string.IsNullOrEmpty(viewItem.ImageUrl))
+                                    {
+                                        <img src="@($"{ApiBaseUrl}{viewItem.ImageUrl}")"
+                                             class="table-img"
+                                             style="max-height:150px;" />
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Body>
+
+    </AppPageDetailsLayout>
+}
+
+
+<ConfirmModal @ref="ConfirmModalRef"
+              BorderColor="border-warning">
+    <ModalHeader>
+        <h6 class="modal-title fs-5 mx-auto" id="staticBackdropLabel"><i class="bi bi-exclamation-triangle-fill text-warning"></i> @LanGeneral["confirmationTitleItem"]</h6>
+    </ModalHeader>
+    <ModalBody>
+        <p>@LanGeneral["confirmDeleteItemExtension"]</p>
+    </ModalBody>
+    <ModalFooter>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="ConfirmModalRef.Hide">@LanGeneral["btnCancel"]</button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="RemoveExtension">@LanGeneral["btnConfirm"]</button>
+    </ModalFooter>
+</ConfirmModal>
+
+@code {
+    [Parameter] public string ItemId { get; set; }
+    private bool isOpen = true;
+    private bool isCollapsed = true;
+    private bool isLoading;
+    private ViewItemExtensionDto viewItem = new();
+    private List<TabItem> tabs = new();
+    private string Title = string.Empty;
+    private string activeSection = "geral";
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
+    private decimal InStock = 0.0M;
+    private ConfirmModal ConfirmModalRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await js.InvokeVoidAsync("preventDropdownClose");
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var CardCode = user.GetCardCode();
+        Title = LanItem["itemTitle"];
+        tabs = new()
+        {
+            new TabItem {Id = "geral", Label=  LanSales["tabDetailsGeneral"]}
+        };
+        isLoading = true;
+        viewItem = await ItemExtensionService.GetByItemId(ItemId);
+
+        isLoading = false;
+    }
+
+    private async Task ScrollTo(string id)
+    {
+        activeSection = id;
+        await js.InvokeVoidAsync("scrollToSection", id);
+    }
+
+    private void ConfirmDelete()
+    {
+        ConfirmModalRef.Show();
+    }
+    private async Task RemoveExtension()
+    {
+        if (viewItem != null)
+        {
+            var getItemId = new List<string>()
+            {
+                viewItem.ItemCode.ToString()
+            };
+
+            var response = await ItemExtensionService.RemoveAsync(getItemId);
+            if (response.Flag)
+            {
+
+                ConfirmModalRef.Hide();
+                nav.NavigateTo("/extensions/list-item-extension");
+                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+            }
+            else
+            {
+                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            }
+        }
+
+        return;
+    }
+
+    private void EditExtension()
+    {
+        nav.NavigateTo($"/extensions/edit/{viewItem.ItemId.ToString()}");
+    }
+}

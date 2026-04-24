@@ -1,0 +1,92 @@
+﻿<div class="table-wrapper" style="max-height: 300px;overflow:auto;">
+    <table class="table table-hover align-middle @TableClass" id="resizable-table">
+        @HeaderGroup
+
+        <thead class="sticky-sm-top border-bottom border-top">
+            @Header
+        </thead>
+        <tbody>
+            @RowTemplate
+        </tbody>
+    </table>
+</div>
+<style>
+    #resizable-table th,
+    #resizable-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #resizable-table {
+        table-layout: auto;
+        width: max-content;
+        min-width: 100%;
+    }
+
+        #resizable-table th {
+            position: relative;
+            min-width: 20px;
+            user-select: none;
+        }
+
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    #resizable-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        min-width: 20px;
+        max-width: 20px;
+        background-color: var(--bs-body-bg) !important;
+    }
+
+    #resizable-table th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        min-width: 50px;
+        max-width: 50px;
+        background-color: var(--bs-body-bg) !important;
+    }
+
+    
+
+    #resizable-table th,
+    #resizable-table td {
+        background: var(--bs-body-bg); /* or fallback */
+    }
+
+        /* left fixed column shadow */
+        #resizable-table th:first-child,
+        #resizable-table td:first-child {
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        #resizable-table th:first-child .resizer {
+            right: 0;
+        }
+
+    #resizable-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+</style>
+@code {
+
+    [Parameter] public string Height { get; set; } = "250px";
+    [Parameter] public string TableClass { get; set; } = "";
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? HeaderGroup { get; set; }
+    [Parameter] public RenderFragment? RowTemplate { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await js.InvokeVoidAsync("initResizableTable", "resizable-table");
+    }
+
+}

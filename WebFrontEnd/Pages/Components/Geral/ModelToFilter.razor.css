@@ -1,0 +1,11 @@
+﻿.modal-dark {
+    background-color: #0f0f10;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.5);
+}
+
+/* Layout */
+.modal-layout {
+    height: 70vh;
+}

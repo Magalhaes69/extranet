@@ -1,14 +1,23 @@
-﻿namespace WebFrontEnd.Services.DeliveryNotes.Dto
+﻿using WebFrontEnd.Shared.Dtos;
+
+namespace WebFrontEnd.Services.DeliveryNotes.Dto
 {
     public sealed record DeliveryNotesViewDto
     {
+        public bool Selected { get; set; }
         public int DocEntry { get; set; }
+
+        [Filterable(LabelKey = "docmentNo")]
         public int DocNum { get; set; }
         public string? DocType { get; set; }
         public string? HandWritten { get; set; }
         public string? Printed { get; set; }
-        public DateTime? DocDate { get; set; }
-        public DateTime? DocDueDate { get; set; }
+        [Filterable(LabelKey = "launchDate")]
+        public DateTime DocDate { get; set; }
+
+        [Filterable(LabelKey = "validUntil")]
+        public DateTime DocDueDate { get; set; }
+
         public string? CardCode { get; set; }
         public string? CardName { get; set; }
         public string? Address { get; set; }

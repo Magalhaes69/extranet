@@ -35,11 +35,13 @@ namespace WebFrontEnd.Helps
                 _ => value ?? "-"
             };
 
-        public static string ToDocType(string value)
+        public string ToDocType(string value)
             => value switch
             {
-                "rCustomer" => "Cliente",
-                "rSupplier" => "Fornecedor",
+                "rCustomer" => _localizer["rCustomer"],
+                "rSupplier" => _localizer["rSupplier"],
+                "dDocument_Items" => _localizer["dDocument_Items"],
+                "dDocument_Service" => _localizer["dDocument_Service"],
                 _ => value ?? "-"
             };
         public string ToDocStatus(string documentStatus, string cancelled)

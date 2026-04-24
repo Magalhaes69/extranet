@@ -12,9 +12,9 @@ namespace WebFrontEnd.Services.BusinessPartners
         private BusinessPartnersDto _cache;
         public Action BusinessPartnersAction { get; set; }
 
-        public BusinessPartnersService(HttpClient httpClient)
+        public BusinessPartnersService(IHttpClientFactory factory)
         {
-            this._httpClient = httpClient;
+            this._httpClient = factory.CreateClient("API");
         }
 
         public async Task<BusinessPartnersDto> GetBusinessPartnersAsync(string CardCode, string CardType, bool forceRefresh = false)

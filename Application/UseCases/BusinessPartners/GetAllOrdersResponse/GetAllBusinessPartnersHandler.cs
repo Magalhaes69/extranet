@@ -18,58 +18,19 @@ namespace Application.UseCases.BusinessPartners.GetAllOrdersResponse
             string? filter = null;
             if (!string.IsNullOrEmpty(request.CardCode))
                 filter = $"CardCode eq '{request.CardCode}'";
-            //if (!string.IsNullOrEmpty(request.CardType))
-                //filter += $" and CardType eq '{request.CardType}";
-
-            var getPartner= await _sapClient.GetAsync<GetAllBusinessPartnersResponse>("BusinessPartners", filter, cancellationToken);
-
-            return new GetAllBusinessPartnersResponse
+            var queryParams = new Dictionary<string, string>
             {
-                CardCode = getPartner!.CardCode!,
-                CardName = getPartner.CardName,
-                CardType = getPartner.CardType,
-                GroupCode = getPartner.GroupCode,
-                Address = getPartner.Address,
-                MailAddress = getPartner.MailAddress,
-                MailZipCode = getPartner.MailZipCode,
-                Phone1 = getPartner.Phone1,
-                Phone2 = getPartner.Phone2,
-                Fax = getPartner.Fax,
-                CreditLimit = getPartner.CreditLimit,
-                MaxCommitment = getPartner.MaxCommitment,
-                DiscountPercent = getPartner.DiscountPercent,
-                PriceListNum = getPartner.PriceListNum,
-                Currency = getPartner.Currency,
-                City = getPartner.City,
-                Country = getPartner.Country,
-                County = getPartner.County,
-                BilltoDefault = getPartner.BilltoDefault,
-                BPAddresses = getPartner.BPAddresses!.Select(p => new GetAllBPAddressesResponse
-                {
-                    AddressName = p.AddressName,
-                    Street = p.Street,
-                    Block = p.Block,
-                    ZipCode = p.ZipCode,
-                    City = p.City,
-                    County = p.County,
-                    Country = p.Country,
-                }).ToList(),
-                ContactEmployees = getPartner.ContactEmployees!.Select(x=> new GetAllContactEmployeesResponse
-                {
-                    CardCode = x.CardCode,
-                    Name = x.Name,
-                    Position = x.Position,
-                    Address = x.Address,
-                    Phone1 = x.Phone1,
-                    Phone2 = x.Phone2,
-                    MobilePhone = x.MobilePhone,
-                    Fax = x.Fax,
-                    E_Mail = x.E_Mail,
-                    FirstName = x.FirstName,
-                    MiddleName = x.MiddleName,
-                    LastName = x.LastName,
-                }).ToList(),
+                ["$select"] = "CardCode,CardName,CardType,GroupCode,Address,MailAddress,MailZipCode,Phone1,Phone2,Fax,CreditLimit,MaxCommitment,DiscountPercent,PriceListNum,Currency,City,County,Country,BilltoDefault,BPAddresses,ContactEmployees",
+                ["$orderby"] = "CardCode"
             };
+
+            return await _sapClient.GetB1Async<GetAllBusinessPartnersResponse>(
+                "BusinessPartners", 
+                filter, 
+                queryParams,
+                cancellationToken);
+
+            
         }
     }
 }

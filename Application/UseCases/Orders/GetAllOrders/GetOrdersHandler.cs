@@ -1,5 +1,4 @@
-﻿using Application.Dtos.Orders;
-using Application.UseCases.Orders.CreateOrder;
+﻿using Application.UseCases.Invoices.Helps;
 using Domain.Interfaces;
 using MediatR;
 
@@ -15,13 +14,20 @@ namespace Application.UseCases.Orders.GetAllOrders
 
         public async Task<List<GetAllOrdersResponse>> Handle(GetAllOrdersRequest request, CancellationToken cancellationToken)
         {
-            string? filter = null;
-            if (!string.IsNullOrEmpty(request.CardCode))
-                filter = $"CardCode eq '{request.CardCode}' &$orderby=DocEntry desc";
+            var filter = ODataFilterBuilder.Build(request);
+            var queryParams = new Dictionary<string, string>
+            {
+                ["$select"] = "DocEntry,DocNum,DocType,Series,DocDate,DocDueDate,CardCode,CardName,Address,DocTotal,DocCurrency,Reference1,Reference2,Comments,TotalDiscount,DocumentStatus,Cancelled,DiscountPercent,VatSum,ShipToCode,PayToCode,Address2",
+                ["$orderby"] = "DocEntry desc"
+            };
 
-            var sapOrders = await _sapClient.GetAllAsync<GetAllOrdersResponse>("Orders", filter, cancellationToken);
+            var sapOrders = await _sapClient.GetAllB1Async<GetAllOrdersResponse>(
+                "Orders",
+                filter,
+                queryParams,
+                cancellationToken);
 
-            return sapOrders.ToList()!;
+            return sapOrders;
         }
     }
 }
