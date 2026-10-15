@@ -22,12 +22,27 @@ namespace WebFrontEnd.Services.SQLQueries
             var response = await _httpClient.PostAsync($"{BaseUrl}/series", serialized);
 
             if (!response.IsSuccessStatusCode)
-                return null!;
+                return new List<GetSeriesDynamicResult>();
 
             _cache = await response.Content.ReadFromJsonAsync<List<GetSeriesDynamicResult>>()
-                     ?? null!;
+                     ?? new List<GetSeriesDynamicResult>();
 
             return _cache;
+        }
+
+        public async Task<ContactEmployeesResponse> ExecuteQueryContactAsync(
+            ContactEmployeesRequest request)
+        {
+            var serialized = General.GennerateStringContent(General.SerializeObject(request));
+            var response = await _httpClient.PostAsync($"{BaseUrl}/contact", serialized);
+
+            if (!response.IsSuccessStatusCode)
+                return new ContactEmployeesResponse();
+
+            var result = await response.Content.ReadFromJsonAsync<ContactEmployeesResponse>()
+                     ?? new ContactEmployeesResponse();
+
+            return result;
         }
     }
 }

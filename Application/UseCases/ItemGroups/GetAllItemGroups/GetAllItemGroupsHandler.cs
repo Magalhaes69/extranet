@@ -1,5 +1,5 @@
 ﻿
-using Application.UseCases.Invoices.Helps;
+using Application.Shared.Helps;
 using Application.UseCases.Items;
 using Domain.Interfaces;
 using MediatR;
@@ -19,7 +19,7 @@ namespace Application.UseCases.ItemGroups.GetAllItemGroups
             var filter = ODataFilterBuilder.Build(request);
             var queryParams = new Dictionary<string, string>
             {
-                ["$select"] = "Number,GroupName",
+                ["$select"] = "Number,GroupName,ItemGroupsWarehouseInfos",
                 ["$orderby"] = "GroupName"
             };
             var getItems = await _client.GetAllB1Async<GetAllItemGroupsResponse>(

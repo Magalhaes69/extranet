@@ -10,7 +10,9 @@ namespace WebFrontEnd.Services.Items
            GetAllitemsCatalogRequest request,
            Action<List<CatalogItemDto>> onPageLoaded,
            CancellationToken cancellationToken);
-        Task<List<ItemsDto>> GetItemsAsync();
+        Task<ItemsResultDto> GetItemsAsync(
+            GetAllItemsRequest request,
+            bool forceRefresh = false);
 
         Action ItemsAction { get; set; }
     }

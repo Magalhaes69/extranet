@@ -2,7 +2,15 @@
 {
     public class OrderLineDto
     {
-        public string ItemCode { get; set; }
+        private string _itemCode;
+        public string ItemCode { 
+            get => _itemCode; 
+            set { 
+                _itemCode = value;
+                CalculateTotal();
+            } 
+        }
+
         private decimal _quantity;
         public decimal Quantity { get => _quantity; 
             set { 
@@ -11,7 +19,14 @@
 
             } 
         }
-        public decimal UnitPrice { get; set; }
+        private decimal _unitPrice;
+        public decimal UnitPrice { 
+            get => _unitPrice; 
+            set { 
+                _unitPrice = value; 
+                CalculateTotal(); 
+            } 
+        }
         public string? _UnitPrice { 
             get => UnitPrice.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) + " " + Currency; 
             set
@@ -35,14 +50,26 @@
                 }
             }
         }
+
         public int Line { get; set; }
         public bool Selected { get; set; }
-        public string VatGroup { get; set; }
-
+        private string _vatGroup;
+       
+        public string VatGroup {
+            get => _vatGroup;
+            set {
+                _vatGroup = value;
+                CalculateTotal();
+            }
+        }
+        public decimal VatRate { get; set; } = 0m;
+       
         public string? Currency { get; set; }
         private void CalculateTotal()
         {
-            LineTotal = Quantity * UnitPrice;
+            LineTotal = (Quantity * UnitPrice) ;
+            VatAmount = (LineTotal * (VatRate / 100m));
         }
+        public decimal VatAmount { get; set; }
     }
 }

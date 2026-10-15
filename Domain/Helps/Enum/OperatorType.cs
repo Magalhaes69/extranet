@@ -9,5 +9,10 @@
         LessThanOrEqual,
         GreaterThan,
         GreaterThanOrEqual,
+        Contains,
+        StartsWith,
+        EndsWith,
+        IsNull,
+        IsNotNull
     }
 }

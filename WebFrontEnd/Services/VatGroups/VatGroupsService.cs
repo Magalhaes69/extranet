@@ -9,7 +9,7 @@ namespace WebFrontEnd.Services.VatGroups
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/VatGroups";
 
-        private List<VatGroupsDto> _cache;
+        private VatGroupsResultDto _cache;
         public VatGroupsService(IHttpClientFactory factory)
         {
             this._httpClient = factory.CreateClient("API");
@@ -21,19 +21,26 @@ namespace WebFrontEnd.Services.VatGroups
             throw new NotImplementedException();
         }
 
-        public async Task<List<VatGroupsDto>> GetVatGroupsAsync()
+        public async Task<VatGroupsResultDto> GetVatGroupsAsync(
+            VatGroupsRequestDto request,
+            bool forceRefresh = false)
         {
-            if (_cache is not null)
+            if (!forceRefresh)
                 return _cache;
-
-            var inativo = "tNO";
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?Inactive={inativo}");
+            var serialized = General.GennerateStringContent(General.SerializeObject(request));
+            var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
 
             if (!response.IsSuccessStatusCode)
-                return new List<VatGroupsDto>();
+                return new VatGroupsResultDto { 
+                    Items = new List<VatGroupsDto>(),
+                    TotalCount = 0 
+                };
 
-            _cache = await response.Content.ReadFromJsonAsync<List<VatGroupsDto>>()
-                     ?? new List<VatGroupsDto>();
+            _cache = await response.Content.ReadFromJsonAsync<VatGroupsResultDto>()
+                     ?? new VatGroupsResultDto { 
+                         Items = new List<VatGroupsDto>(), 
+                         TotalCount = 0 
+                     };
 
             return _cache;
         }

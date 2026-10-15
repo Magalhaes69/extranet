@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Application.Shared.Behavior;
 using Application.UseCases.Orders.CreateOrder;
 using Application.UseCases.Orders.DetailsOrders;
 using Application.UseCases.Orders.GetAllOrders;
@@ -19,17 +20,38 @@ namespace WebAPI.Controllers
         public OrdersController(IMediator mediator) => _mediator = mediator;
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateB1OrderRequest request)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateB1OrderRequest request, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(request);
-
-            var response = new ServiceResponse
+            try
             {
-                Flag = true,
-                Message = "Order created successfully",
-                DocEntry = result.DocEntry
-            };
-            return Ok(response);
+                var result = await _mediator.Send(request, cancellationToken);
+
+                return Ok(new ServiceResponse
+                {
+                    Flag = true,
+                    Message = "Order created successfully",
+                    DocEntry = result.DocEntry
+                });
+            }
+            catch (SapB1Exception ex)
+            {
+                // SAP business error, e.g. "Item is inactive [RDR1.ItemCode][line: 1]"
+                return BadRequest(new ServiceResponse
+                {
+                    Flag = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Unexpected error creating SAP order");
+
+                return StatusCode(500, new ServiceResponse
+                {
+                    Flag = false,
+                    Message = "Unexpected error while creating the order."
+                });
+            }
         }
 
         [HttpPost("list")]

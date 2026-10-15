@@ -2,6 +2,7 @@
 
 using WebFrontEnd.Services.Quotations.Dto;
 using WebFrontEnd.Shared.Dtos;
+using WebFrontEnd.Shared.Results;
 
 namespace WebFrontEnd.Services.Quotations
 {
@@ -11,36 +12,38 @@ namespace WebFrontEnd.Services.Quotations
 
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Quotations";
-        private List<QuotationsDto>? _cache;
+        //private List<QuotationsDto>? _cache;
         private QuotationsDto quotations;
-
+        private readonly Dictionary<string, PagedResult<QuotationsDto, TotalResultDto>> _cache = new();
         public QuotationsService(IHttpClientFactory factory)
         {
             this._httpClient = factory.CreateClient("API");
         }
-        public async Task<List<QuotationsDto>> GetQuotationsAsync(
-            QuotationRequest quotation, 
-            bool forceRefresh = false)
+        public async Task<PagedResult<QuotationsDto, TotalResultDto>> GetQuotationsAsync(
+                QuotationRequest quotation,
+                bool forceRefresh = false)
         {
+            var body = General.SerializeObject(quotation);   // also used as the cache key
+
+            if (!forceRefresh && _cache.TryGetValue(body, out var cached))
+                return cached;
+
             try
             {
-                if (_cache is not null && !forceRefresh)
-                    return _cache;
-
-                var serialized = General.GennerateStringContent(General.SerializeObject(quotation));
-                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", General.GennerateStringContent(body));
 
                 if (!response.IsSuccessStatusCode)
-                    return new List<QuotationsDto>();
+                    return PagedResult<QuotationsDto, TotalResultDto>.Empty(quotation.Page, quotation.PageSize);
 
-                _cache = await response.Content.ReadFromJsonAsync<List<QuotationsDto>>()
-                         ?? new List<QuotationsDto>();
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<QuotationsDto, TotalResultDto>>()
+                             ?? PagedResult<QuotationsDto, TotalResultDto>.Empty(quotation.Page, quotation.PageSize);
 
-                return _cache;
+                _cache[body] = result;
+                return result;
             }
             catch
             {
-                return new List<QuotationsDto>();
+                return PagedResult<QuotationsDto, TotalResultDto>.Empty(quotation.Page, quotation.PageSize);
             }
         }
 

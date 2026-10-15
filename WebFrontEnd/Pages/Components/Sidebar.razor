@@ -32,149 +32,30 @@
                     <Authorized>
                         <div class="position-relative mb-2">
 
-                            <!-- 🔍 Search icon (left) -->
-                            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+                            <!--Input -->
+                            <input type="text"
+                                   class="form-control form-control-sm ps-2 pe-2"
+                                   placeholder="@Lan["searchMenu"]"
+                                   @bind="SearchTerm"
+                                   @bind:event="oninput" />
 
-                            <!-- ❌ Clear button (right) -->
-                            @if (!string.IsNullOrEmpty(SearchTerm))
+                            @if (string.IsNullOrEmpty(SearchTerm))
                             {
+                                <!-- Search icon (left) -->
+                                <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
+                            }
+                            else if(!string.IsNullOrEmpty(SearchTerm))
+                            {
+                        <!-- Clear button (right) -->
                                 <i class="bi bi-x-circle position-absolute top-50 end-0 translate-middle-y me-2 text-muted"
                                    style="cursor:pointer;"
                                    @onclick="ClearSearch"></i>
                             }
-
-                            <!-- 🔤 Input -->
-                            <input type="text"
-                                   class="form-control form-control-sm ps-4 pe-4"
-                                   placeholder="@Lan["searchMenu"]"
-                                   @bind="SearchTerm"
-                                   @bind:event="oninput" />
                         </div>
 
                         <!-- Menu -->
                     <SidebarMenuComponent 
                         Items="FilteredMenu" />
-                       @*  <li class="nav-item @(isSalesOpen ? "menu-open" : "")">
-
-                            <a href="#" @onclick="ToggleSales" class="nav-link" >
-                                <i class="nav-icon bi bi-cart"></i>
-                                <p>
-                                    @Lan["menuVendasGroup"]
-                                    <i class="nav-arrow bi bi-chevron-right "></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <NavLink href="/quotations" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuQuotation"]</p>
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item">
-                                    <NavLink href="/orders" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuOrder"]</p>
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item">
-                                    <NavLink href="/add-orders" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["createOrder"]</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuARReserve"]</p>
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item">
-                                    <NavLink href="/delivery" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuDeliveries"]</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/invoices" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["APInvoices"]</p>
-                                    </NavLink>
-                                </li>
-
-                              
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuReturns"]</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/credits" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuCredit"]</p>
-                                    </NavLink>
-                                </li>
-
-                            </ul>
-                        </li>
-                      
-                        <li class="nav-item @(isPaymentOpen ? "menu-open" : "")">
-                            <a @onclick="TogglePayment" class="nav-link">
-                                <i class="nav-icon bi bi-credit-card-2-front"></i>
-                                <p>
-                                    @Lan["menuPaymentGroup"]
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <NavLink href="/payments" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuPayments"]</p>
-                                    </NavLink>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item @(isItemsOpen ? "menu-open" : "")">
-                            <a  @onclick="ToggleItemExtensions" class="nav-link">
-                                <i class="bi bi-box-seam"></i>
-                                <p>
-                                    @Lan["menuItemExtension"]
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <NavLink href="/extensions/list-item-extension" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuListItemExtension"]</p>
-                                    </NavLink>
-                                </li>
-
-                                <li class="nav-item">
-                                    <NavLink href="/extensions/itemextension" class="nav-link" Match="NavLinkMatch.All">
-                                        
-                                        <p>@Lan["menuCreateItemExtension"]</p>
-                                    </NavLink>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item @(isSettingsOpen ? "menu-open" : "")">
-                            <a @onclick="ToggleSettings" class="nav-link">
-                                <i class="nav-icon bi bi-gear"></i>
-                                <p>
-                                    @Lan["menuAdministratorGroup"]
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuUsers"]</p>
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item">
-                                    <NavLink href="/cotacao" class="nav-link" Match="NavLinkMatch.All">
-                                        <p>@Lan["menuUserCreate"]</p>
-                                    </NavLink>
-                                </li>
-                            </ul>
-                        </li> *@
                     </Authorized>
                 </AuthorizeView>
             </ul>
@@ -229,53 +110,59 @@
     #region Menu
 
     private List<SidebarMenuItem> Menu = new()
-{
-    new SidebarMenuItem
     {
-        Key = "menuVendasGroup",
-        Icon = "nav-icon bi bi-cart",
-        Children = new()
+        new SidebarMenuItem
         {
-            new() { Key = "menuQuotation", Url = "/quotations" },
-            new() { Key = "menuOrder", Url = "/orders" },
-            new() { Key = "createOrder", Url = "/add-orders" },
-            new() { Key = "menuARReserve", Url = "/doesnotexist" },
-            new() { Key = "menuDeliveries", Url = "/delivery" },
-            new() { Key = "APInvoices", Url = "/invoices" },
-            new() { Key = "menuReturns", Url = "/doesnotexist" },
-            new() { Key = "menuCredit", Url = "/credits" },
-        }
-    },
-    new SidebarMenuItem
-    {
-        Key = "menuPaymentGroup",
-        Icon = "nav-icon bi bi-credit-card-2-front",
-        Children = new()
+            Key = "menuPrincipal",
+            Icon = "nav-icon bi bi-house",
+            Url = "/"
+        },
+        new SidebarMenuItem
         {
-            new() { Key = "menuPayments", Url = "/payments" }
-        }
-    },
-    new SidebarMenuItem
-    {
-        Key = "menuItemExtension",
-        Icon = "nav-icon bi bi-box-seam",
-        Children = new()
+            Key = "menuVendasGroup",
+            Icon = "nav-icon bi bi-cart",
+            Children = new()
+            {
+                new() { Key = "menuQuotation", Url = "/quotations" },
+                new() { Key = "menuOrder", Url = "/orders" },
+                new() { Key = "createOrder", Url = "/add-orders" },
+                //new() { Key = "menucreateOrderByCat", Url = "/catalog-item" },
+                new() { Key = "menuReturns", Url = "/returns" },
+                new() { Key = "menuDeliveries", Url = "/delivery" },
+                new() { Key = "APInvoices", Url = "/invoices" },
+                new() { Key = "menuCredit", Url = "/credits" },
+            }
+        },
+        new SidebarMenuItem
         {
-            new() { Key = "menuListItemExtension", Url = "/extensions/list-item-extension" },
-            new() { Key = "menuCreateItemExtension", Url = "/extensions/itemextension" }
-        }
-    },
-    new SidebarMenuItem
-    {
-        Key="menuAdministratorGroup",
-        Icon = "nav-icon bi bi-gear",
-        Children = new()
+            Key = "menuPaymentGroup",
+            Icon = "nav-icon bi bi-credit-card-2-front",
+            Children = new()
+            {
+                new() { Key = "menuPayments", Url = "/payments" }
+            }
+        },
+        // new SidebarMenuItem
+        // {
+        //     Key = "menuItemExtension",
+        //     Icon = "nav-icon bi bi-box-seam",
+        //     Children = new()
+        //     {
+        //         new() { Key = "menuListItemExtension", Url = "/extensions/list-item-extension" },
+        //         new() { Key = "menuCreateItemExtension", Url = "/extensions/itemextension" }
+        //     }
+        // },
+        new SidebarMenuItem
         {
-            new(){ Key = "menuUsers", Url = "/doesnotexist"},
-            new(){ Key = "menuUserCreate", Url = "/doesnotexist"}
-        }
-    }
-};
+            Key="menuAdministratorGroup",
+            Icon = "nav-icon bi bi-gear",
+            Children = new()
+            {
+                new(){ Key = "menuConfigure", Url = "/configure-app"},
+            }
+        },
+        
+    };
 
     private string SearchTerm = "";
 

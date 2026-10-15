@@ -25,7 +25,7 @@
             <li class="nav-item d-flex align-items-center">
                 <a class="nav-link btn @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white" : "")"
                    data-lte-toggle="sidebar"
-                   @onclick="ToggleSidebar"
+                       @onclick="ToggleSidebar"
                    role="button">
                     <i class="bi bi-list-ul  @(ThemeService.CurrentTheme == "dark" ? "text-white" : "")"
                        style="font-size:1rem!important; width: 2.25rem!important;height: 2.25rem!important;">
@@ -150,7 +150,6 @@
 @inject AuthenticationStateProvider authenticationState
 @code {
     private AppUserViewDto appUser = new();
-    private bool isCollapsed = true;
     private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
     private SettingUser Settings;
     bool CanGoBack => History.Count > 1;
@@ -159,14 +158,17 @@
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
         }
     }
     protected override async Task OnInitializedAsync()
     {
+        LayoutState.OnChange += UpdateSidebar;
+
         ThemeService.OnThemeChanged += Refresh;
         PageState.OnPageTitleChanged += StateHasChanged;
+        PageTitleService.OnChange += StateHasChanged;
         History.OnChange += StateHasChanged;
         await LoadUser();
     }
@@ -184,9 +186,22 @@
     }
     private async Task ToggleSidebar()
     {
-        isCollapsed = !isCollapsed;
+        await LayoutState.ToggleSidebar();
 
-        await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+        await js.InvokeVoidAsync(
+            "layoutHelper.toggleSidebar",
+            LayoutState.IsSidebarCollapsed);
+
+        StateHasChanged();
+    }
+    private async Task UpdateSidebar()
+    {
+
+        await js.InvokeVoidAsync(
+            "layoutHelper.toggleSidebar",
+            LayoutState.IsSidebarCollapsed);
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task logout()
@@ -217,6 +232,8 @@
         ThemeService.OnThemeChanged -= Refresh;
         PageState.OnPageTitleChanged -= StateHasChanged;
         History.OnChange -= StateHasChanged;
+        LayoutState.OnChange -= UpdateSidebar;
+        PageTitleService.OnChange -= StateHasChanged;
     }
     
     private void GoBack()

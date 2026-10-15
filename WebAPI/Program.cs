@@ -17,6 +17,11 @@ builder.Services.ConfigureApplicationApp();
 
 var app = builder.Build();
 
+await DatabaseInitializerExtension.InitializeDatabaseAsync(
+    app.Services, 
+    builder.Configuration);
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -33,5 +38,6 @@ app.UseStaticFiles();
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
 
 app.Run();

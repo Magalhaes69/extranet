@@ -69,5 +69,53 @@ window.isNearBottom = (element) => {
     return element.scrollTop + element.clientHeight >= element.scrollHeight - 50;
 };
 
+window.getElementPosition = (element) => {
 
+    if (!element || typeof element.getBoundingClientRect !== "function") {
+        return null;
+    }
+    const rect = element.getBoundingClientRect();
 
+    return {
+        top: rect.top,
+        left: rect.right,
+        width: rect.width,
+        height: rect.height,
+        right: rect.right,
+        bottom: rect.bottom,
+        x: rect.x,
+        y: rect.y
+    };
+};
+
+document.addEventListener("click", function (e) {
+    window.blazorModalClickOutside?.invokeMethodAsync("CloseIfOutside");
+});
+
+window.getWindowHeight = () => {
+    return window.innerHeight;
+};
+
+window.getWindowWidth = () => {
+    return window.innerWidth;
+};
+window.getWindowSize = () => {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
+};
+
+// Definição do FavIcon
+window.setFavicon = (url) => {
+    let link = document.querySelector("link[rel*='icon']");
+
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+
+    link.href = url;
+    
+};

@@ -14,9 +14,16 @@ namespace Persistence.Repositories
         }
         public async Task CreateAsync(T entity)
         {
-            entity.DateCreated = DateTime.UtcNow;
+            try
+            {
+                entity.DateCreated = DateTime.UtcNow;
 
-           await _context.AddAsync(entity);
+                await _context.AddAsync(entity);
+            }
+            catch(Exception ex)
+            {
+                throw;
+            }
         }
 
         public void DeleteAsync(T entity)
@@ -26,6 +33,11 @@ namespace Persistence.Repositories
         public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _context.Set<T>().ToListAsync(cancellationToken);
+        }
+
+        public async Task<T?> GetByIdAsync(Guid Id, CancellationToken cancellationToken)
+        {
+            return await _context.Set<T>().FindAsync(new object[] { Id }, cancellationToken);
         }
 
         public void UpdateAsync(T entity)

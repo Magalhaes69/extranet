@@ -1,4 +1,4 @@
-﻿using Application.UseCases.Invoices.Helps;
+﻿using Application.Shared.Helps;
 using Application.UseCases.Quotations.GetAllQuotations;
 using Domain.Interfaces;
 using MediatR;

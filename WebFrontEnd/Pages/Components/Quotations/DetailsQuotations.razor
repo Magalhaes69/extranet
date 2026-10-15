@@ -309,13 +309,15 @@ else
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["quotationIndexTitleNavbar"]);
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         var CardCode = user.GetCardCode();

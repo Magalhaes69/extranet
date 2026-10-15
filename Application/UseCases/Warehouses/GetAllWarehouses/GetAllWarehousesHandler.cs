@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.UseCases.Items;
+﻿
+using Application.Shared.Helps;
 using Domain.Interfaces;
 using MediatR;
 
 namespace Application.UseCases.Warehouses.GetAllWarehouses
 {
-    public class GetAllWarehousesHandler : IRequestHandler<GetAllWarehousesRequest, List<GetAllWarehousesResponse>>
+    public class GetAllWarehousesHandler : IRequestHandler<GetAllWarehousesRequest, GetAllWarehousesResult>
     {
         private readonly ISapClient _sapClient;
 
@@ -17,20 +13,28 @@ namespace Application.UseCases.Warehouses.GetAllWarehouses
         {
             this._sapClient = sapClient;
         }
-        public async Task<List<GetAllWarehousesResponse>> Handle(GetAllWarehousesRequest request, CancellationToken cancellationToken)
+        public async Task<GetAllWarehousesResult> Handle(GetAllWarehousesRequest request, CancellationToken cancellationToken)
         {
-            string? filter = null;
-            if (!string.IsNullOrEmpty(request.Inactive))
-                filter = $"Inactive eq '{request.Inactive}'";
-
-            var getItems = await _sapClient.GetAllAsync<GetAllWarehousesResponse>("Warehouses", filter, cancellationToken);
-
-            return getItems.Select(x => new GetAllWarehousesResponse
+            var filter = ODataFilterBuilder.Build(request);
+            var queryParams = new Dictionary<string, string>
             {
-                WarehouseCode = x.WarehouseCode,
-                WarehouseName = x.WarehouseName,
-                Location = x.Location
-            }).ToList();
+                ["$select"] = "WarehouseName,WarehouseCode,Location,Inactive"
+            };
+
+            var (getItems, totalCount) = await _sapClient.GetPagedBL1Async<GetAllWarehousesResponse>(
+                "Warehouses",
+                request.Page,
+                request.PageSize,
+                filter, 
+                queryParams,
+                cancellationToken);
+
+
+            return new GetAllWarehousesResult
+            {
+                Items = getItems,
+                TotalCount = totalCount
+            };
         }
     }
 }

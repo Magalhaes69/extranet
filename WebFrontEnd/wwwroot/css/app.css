@@ -397,3 +397,46 @@ code {
             background-color: rgba(255, 255, 255, 0.08);
             color: #ffffff;
   }
+
+ /*Modal to show details */
+.right-modal {
+    position: fixed !important;
+    width: 320px;
+    background: #000;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.5);
+    z-index: 9999;
+}
+
+    .right-modal.show {
+        transform: translateY(-50%) translateX(0);
+    }
+
+.modal-header-custom {
+    border-bottom: 1px solid #555;
+    text-align: center;
+    padding: 5px;
+    font-size: .865rem;
+}
+
+.modal-body-custom {
+    padding: 10px;
+}
+
+.field-label {
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.field-value {
+    font-weight: 200;
+    margin-bottom: 10px;
+}
+
+.modal-footer-custom {
+    border-top: 1px solid #555;
+    padding: 5px;
+    text-align: right;
+}
+/*End*/

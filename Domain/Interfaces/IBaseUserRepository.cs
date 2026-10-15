@@ -18,6 +18,9 @@ namespace Domain.Interfaces
         Task<AppUser?> GetByEmailAsync(string email, CancellationToken cancellationToken);
 
         Task<List<AppUser>> GetAllAsync(CancellationToken cancellationToken);
-        
+
+        Task<IdentityResult> ResetPasswordAsync(AppUser user, string token, string newPassword);
+        Task<IdentityResult> SedUpdateAsync(AppUser user);
+
     }
 }

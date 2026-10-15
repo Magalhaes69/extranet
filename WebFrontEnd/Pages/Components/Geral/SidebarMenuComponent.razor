@@ -5,17 +5,34 @@
     <li class="nav-item @(IsOpen(item) ? "menu-open" : "")">
 
         <!-- Parent -->
-        <a href="javascript:void(0)" class="nav-link"
-           @onclick="() => Toggle(item.Key)">
-            <i class="@item.Icon"></i>
-            <p class="small">
-                @Lan[item.Key]
-                @if (item.Children.Any())
-                {
-                    <i class="nav-arrow bi bi-chevron-right"></i>
-                }
-            </p>
-        </a>
+        @if (!string.IsNullOrEmpty(item.Url))
+        {
+            <a href="@item.Url" class="nav-link"
+                   @onclick="() => Toggle(item.Key)">
+                <i class="@item.Icon"></i>
+                <p class="small">
+                    @Lan[item.Key]
+                    @if (item.Children.Any())
+                    {
+                        <i class="nav-arrow bi bi-chevron-right"></i>
+                    }
+                </p>
+            </a>
+        }
+        else
+        {
+            <a href="javascript:void(0)" class="nav-link"
+            @onclick="() => Toggle(item.Key)">
+                <i class="@item.Icon"></i>
+                <p class="small">
+                    @Lan[item.Key]
+                    @if (item.Children.Any())
+                    {
+                        <i class="nav-arrow bi bi-chevron-right"></i>
+                    }
+                </p>
+            </a>
+        }
 
         <!-- Children -->
         @if (item.Children.Any())

@@ -171,4 +171,13 @@
   <data name="searchMenu" xml:space="preserve">
     <value>Menu de pesquisa...</value>
   </data>
+  <data name="menuPrincipal" xml:space="preserve">
+    <value>Página principal</value>
+  </data>
+  <data name="menucreateOrderByCat" xml:space="preserve">
+    <value>Catálogo</value>
+  </data>
+  <data name="menuConfigure" xml:space="preserve">
+    <value>Configurações gerais</value>
+  </data>
 </root>

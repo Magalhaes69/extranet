@@ -12,5 +12,6 @@
         public decimal LineTotal { get; set; }
         public decimal DiscPrcnt { get; set; }
         public string UserId { get; set; }
+        public string? VatGroup { get; set; }
     }
 }

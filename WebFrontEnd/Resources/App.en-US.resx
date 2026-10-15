@@ -288,4 +288,19 @@
   <data name="IncomingPaymentIndexTitleNavbar" xml:space="preserve">
     <value>Manage my payments</value>
   </data>
+  <data name="it_Invoice" xml:space="preserve">
+    <value>A/R Invoice</value>
+  </data>
+  <data name="it_JournalEntry" xml:space="preserve">
+    <value>Journal entry</value>
+  </data>
+  <data name="selectLineToRemove" xml:space="preserve">
+    <value>Select line to remove</value>
+  </data>
+  <data name="confirmDeleteItemInOrder" xml:space="preserve">
+    <value>The selected items will be deleted. Do you want to continue?</value>
+  </data>
+  <data name="selectLineToMove" xml:space="preserve">
+    <value>Select line</value>
+  </data>
 </root>

@@ -313,7 +313,7 @@
             </TotalFacturas>
 
             <ButtonOptions>
-                <button class="btn btn-sm text-decoration-none dropdown-toggle py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+               @*  <button class="btn btn-sm text-decoration-none dropdown-toggle py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
                         data-bs-toggle="dropdown" disabled="@(!quotationsDtos!.Any(s => s.Selected))">
                     @LanGeneral["preview"]
                 </button>
@@ -325,9 +325,7 @@
                     </li>
                 </ul>
                 <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-gear"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-table-cells"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-chart-column"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-list"></i></button>
+                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-chart-column"></i></button> *@
             </ButtonOptions>
         </GridOptionsComponent>
 
@@ -341,14 +339,14 @@
                 <colgroup>
                     <col style="width: 50px;" />
                     <col style="width: 150px;" />
+                    <col style="width: 100px;" />
                     <col style="width: 200px;" />
                     <col style="width: 150px;" />
                     <col style="width: 150px;" />
                     <col style="width: 150px;" />
                     <col style="width: 150px;" />
-                    <col style="width: 150px;" />
-                    <col style="width: 150px;" />
-                    <col style="width: 20px;" />
+                    <col style="width: 100px;" />
+                    <col style="width: 50px;" />
                 </colgroup>
             </HeaderGroup>
             <Header>
@@ -373,34 +371,34 @@
                     <td>@item.DocNum</td>
 
                     <td>
-                        <a href="#" class="customer-link">
-                            <i class="bi bi-chevron-right"></i> @item.CardCode
-                        </a>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none">
+                            <i class="bi bi-chevron-right text-warning"></i> @item.CardCode
+                        </button>
                     </td>
 
                     <td>@item.CardName</td>
                     <td>@item.Reference1</td>
 
                     <td class="text-center">
-                        @(item.DocDate.ToString("dd/MM/yyyy"))
+                        @UiConverters.ToDate(item.DocDate)
                     </td>
 
                     <td class="text-center">
-                        @(item.DocDueDate.ToString("dd/MM/yyyy"))
+                        @UiConverters.ToDate(item.DocDueDate)
                     </td>
 
                     <td class="text-end">
-                        @(item.DocTotal.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))) @item.DocCurrency
+                        @UiConverters.ToCurrency(item.DocTotal, currency)
                     </td>
 
                     <td>
-                        @UiConverters.ToDocStatus(item.DocumentStatus!, item.Cancelled!)
+                        @UiConverters.ToDocStatus(item.DocumentStatus!, currency)
                     </td>
 
                     <td class="text-center">
-                        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
                                 @onclick="() => SelectQuotation(item)">
-                            <i class="bi bi-chevron-right"></i>
+                            <i class="bi bi-chevron-right @(ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")"></i>
                         </button>
                     </td>
                 </tr>
@@ -411,7 +409,7 @@
                 <td></td>
                 <td colspan="6" class="text-end">@LanSales["totalGrid"]</td>
                 <td class="text-end">
-                    @total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @quotationsDtos?.FirstOrDefault()?.DocCurrency
+                        @UiConverters.ToCurrency(total, currency)
                 </td>
                 <td></td>
                 <td></td>
@@ -522,6 +520,14 @@
     private bool isLoading;
     private string CardCode = string.Empty;
     private bool isCollapsed = true;
+    private int TotalCount = 0;
+    private string currency = string.Empty;
+    private bool HasMore = true;
+    private bool IsLoadingMore = false;
+
+    private int Page = 1;
+    private int PageSize = 100;
+
     private bool AllSelected
     {
         get => quotationsDtos!.All(l => l.Selected);
@@ -545,7 +551,7 @@
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
 
 
@@ -555,9 +561,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["quotationIndexTitleNavbar"]);
         Title = LanSales["quotations"];
         PageState.SetTitle(LanGeneral["quotationIndexTitleNavbar"]);
-        DescpTotal = LanSales["descriptionTotSelected"];
+        DescpTotal = LanSales["quotationTotSelected"];
+
         AvailableFields = FilterMetadataBuilder.Build<QuotationsDto>();
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -584,22 +592,54 @@
         };
 
         Filter.CardCode = CardCode;
-        quotationsDtos = await QuotationsService.GetQuotationsAsync(Filter, false);
-        total = quotationsDtos.Sum(x => x.DocTotal);
+        var response = await QuotationsService.GetQuotationsAsync(Filter, true);
+        quotationsDtos = response.Items;
+        TotalCount = response.TotalCount;
+        HasMore = quotationsDtos.Count < TotalCount;
+
+
+        total = response.Total.Total;
+        currency = response.Total.Currency;
 
         isLoading = false;
     }
 
 
+    private async Task LoadMore()
+    {
+        if (IsLoadingMore || !HasMore)
+            return;
 
+        IsLoadingMore = true;
+
+        var nextPage = Filter.Page + 1; //
+
+        var request = new QuotationRequest
+        {
+            Page = nextPage,
+            PageSize = PageSize
+        };
+
+        var result = await QuotationsService.GetQuotationsAsync(Filter, true);
+
+        if (result.Items == null || result.Items.Count == 0)
+        {
+            HasMore = false;
+        }
+        else
+        {
+            quotationsDtos!.AddRange(result.Items);
+            Filter.Page = nextPage;
+            HasMore = quotationsDtos.Count < TotalCount;
+        }
+
+        IsLoadingMore = false;
+
+        StateHasChanged();
+    }
     private void ToggleCard()
     {
         isOpen = !isOpen;
-    }
-
-    private void Recalculate()
-    {
-        total = quotationsDtos?.Sum(x => x.DocTotal) ?? 0;
     }
 
     private void SelectQuotation(QuotationsDto item)
@@ -648,10 +688,12 @@
             CardCode = user.GetCardCode();
             isLoading = true;
 
-            quotationsDtos = await QuotationsService.GetQuotationsAsync(Filter, true);
+            var response = await QuotationsService.GetQuotationsAsync(Filter, true);
+            quotationsDtos = response.Items;
 
-
-            total = quotationsDtos.Sum(x => x.DocTotal);
+            total = response.Total.Total;
+            currency = response.Total.Currency;
+            HasMore = quotationsDtos.Count < TotalCount;
 
             isLoading = false;
         }
@@ -660,6 +702,7 @@
 
         }
     }
+
 
     private void OpenDocNumModal()
     {

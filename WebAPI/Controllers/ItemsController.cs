@@ -16,10 +16,9 @@ namespace WebAPI.Controllers
             _mediator = mediator;
         }
         // GET
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllItems([FromQuery] string Valid, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllItems([FromBody] GetAllItemsRequest request, CancellationToken cancellationToken)
         {
-            var request = new GetAllItemsRequest { Valid = Valid };
             var response = await _mediator.Send(request, cancellationToken);
             return Ok(response);
         }

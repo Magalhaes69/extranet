@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Application.UseCases.Items;
+﻿
 using Application.UseCases.Warehouses.GetAllWarehouses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +18,11 @@ namespace WebAPI.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAllWarehouses([FromQuery] string Inactive, CancellationToken cancellationToken)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetAllWarehouses([FromBody] GetAllWarehousesRequest request, CancellationToken cancellationToken)
         {
-            var get = new GetAllWarehousesRequest { Inactive  = Inactive };
-            var request = await _mediator.Send(get, cancellationToken);
-            return Ok(request);
+            var result = await _mediator.Send(request, cancellationToken);
+            return Ok(result);
         }
     }
 }

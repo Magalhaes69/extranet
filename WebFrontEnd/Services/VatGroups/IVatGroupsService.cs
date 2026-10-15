@@ -5,7 +5,9 @@ namespace WebFrontEnd.Services.VatGroups
     public interface IVatGroupsService
     {
         Task<VatGroupsDto> GetByIdAsync(int id);
-        Task<List<VatGroupsDto>> GetVatGroupsAsync();
+        Task<VatGroupsResultDto> GetVatGroupsAsync(
+            VatGroupsRequestDto request,
+            bool forceRefresh = false);
 
         Action IVatGroupsAction { get; set; }
     }

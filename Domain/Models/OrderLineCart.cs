@@ -7,7 +7,6 @@ namespace Domain.Models
     {
         [Key]
         public Guid OrderLineCartId { get; set; }
-
         public Guid OrderId { get; set; }
         [ForeignKey(nameof(OrderId))]
         public OrdersCart OrdersCart { get; set; }
@@ -18,6 +17,8 @@ namespace Domain.Models
         public string? ItemDescription { get; set; }
         public decimal LineTotal { get; set; }
         public decimal DiscPrcnt { get; set; }
+        [MaxLength(100)]
+        public string? VatGroup { get; set; }
         
     }
 }

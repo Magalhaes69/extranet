@@ -4,6 +4,10 @@
 @inject NavigationHistoryService History
 
 @inherits LayoutComponentBase
+@implements IDisposable
+
+<PageTitle>@PageTitleService.Title</PageTitle>
+
 <div class="app-wrapper">
     <AppHeader />
     <Sidebar />
@@ -41,6 +45,9 @@
 
 </style>
 @code {
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
+
+
     protected override async Task OnInitializedAsync()
     {
         var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
@@ -49,8 +56,21 @@
 
         ThemeService.SetTheme(storedTheme);
         await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", storedTheme);
+        UiStateService.OnChange += UpdateFavicon;
 
+        var favIcon = "favicon-sap.png";
+        UiStateService.SetFavicon($"https://localhost:7118/images/geral/{favIcon}");
+        
 
         History.Init(nav);
+    }
+
+    private async Task UpdateFavicon()
+    {
+        await js.InvokeVoidAsync("setFavicon", UiStateService.Favicon);
+    }
+    public void Dispose()
+    {
+        
     }
 }

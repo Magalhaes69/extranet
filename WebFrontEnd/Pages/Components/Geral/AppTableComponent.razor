@@ -2,7 +2,7 @@
 @implements IDisposable
 
 <div class="card">
-    <div class="card-body table-wrapper p-0" style="height: @Height;m-height: 300px;max-height: 80vh;overflow-y: auto;"
+    <div class="card-body table-wrapper p-0" style="height: @Height;min-height: 300px;max-height: 80vh;overflow-y: auto;"
         @ref="ScrollContainer"
         @onscroll="HandleScroll">
         @if (IsLoading)
@@ -21,6 +21,7 @@
                 <tbody>
                     @foreach (var item in Items)
                     {
+                        
                         @RowTemplate(item)
                     }
                 </tbody>
@@ -162,6 +163,7 @@
     [Parameter] public bool IsLoadingMore { get; set; }
     private ElementReference ScrollContainer;
 
+    public ElementReference btnRef { get; set; }
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += StateHasChanged;

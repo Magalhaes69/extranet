@@ -6,5 +6,8 @@ namespace WebFrontEnd.Services.SQLQueries
     {
         Task<List<GetSeriesDynamicResult>> ExecuteQueryAsync(
            GetSeriesDynamicRequest request);
+
+        Task<ContactEmployeesResponse> ExecuteQueryContactAsync(
+        ContactEmployeesRequest request);
     }
 }

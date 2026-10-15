@@ -50,7 +50,7 @@ else
                                 <label for="DocDate" class="col-sm-2 col-form-label">@LanSales["documentDate"]:</label>
                                 <div class="col-sm-4">
                                     <input class="form-control form-control-sm"
-                                               Value="@(invoicesDto.DocDate?.ToString("dd/MM/yyyy"))"
+                                               Value="@(UiConverters.ToDate(invoicesDto.DocDate))"
                                                disabled />
                                 </div>
                             </div>
@@ -61,7 +61,7 @@ else
                                 <label for="DocDueDate" class="col-sm-2 col-form-label">@LanSales["deliveryDate"] <span class="text-danger fw-bold">*</span>:</label>
                                 <div class="col-sm-4">
                                     <Input class="form-control form-control-sm"
-                                               Value="@(invoicesDto.DocDueDate?.ToString("dd/MM/yyyy"))"
+                                               Value="@(UiConverters.ToDate(invoicesDto.DocDueDate))"
                                                disabled />
                                 </div>
                             </div>
@@ -132,11 +132,11 @@ else
                                                 <td>@item.ItemCode</td>
                                                 <td>@item.ItemDescription</td>
                                                 <td class="text-end">@item.Quantity</td>
-                                                <td class="text-end">@item.Price?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
+                                                <td class="text-end">@UiConverters.ToCurrency(item.Price ?? 0, item.Currency!)</td>
                                                 <td class="text-end"></td>
                                                 <td class="text-end"></td>
                                                 <td class="text-end">@item.VatGroup</td>
-                                                <td class="text-end">@item.LineTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @item.Currency</td>
+                                                <td class="text-end">@UiConverters.ToCurrency(item.LineTotal ?? 0, item.Currency!)</td>
                                                 <td class="text-end">@item.WarehouseCode</td>
                                             </tr>
                                         }
@@ -156,32 +156,32 @@ else
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
                                                 <span>@LanSales["totalBeforeDiscount"]:</span>
-                                                <span>@totalBefore.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @invoicesDto.DocCurrency</span>
+                                                <span>@UiConverters.ToCurrency(totalBefore, invoicesDto.DocCurrency!)</span>
                                             </div>
 
                                             <div class="d-flex justify-content-between mt-2">
                                                 <span>@LanSales["discountPercent"]:</span>
-                                                <span>@invoicesDto.DiscountPercent?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) %</span>
-                                                <span>@invoicesDto.TotalDiscount?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @invoicesDto.DocCurrency</span>
+                                                <span>@UiConverters.ToFormat(invoicesDto.DiscountPercent ?? 0)</span>
+                                                <span>@UiConverters.ToCurrency(invoicesDto.TotalDiscount ?? 0, invoicesDto.DocCurrency!)</span>
                                             </div>
 
                                             <div class="d-flex justify-content-between mt-2">
                                                 <span>
                                                     @LanSales["rounding"]:</span>
-                                                <span>0 MZN</span>
+                                                <span>0</span>
                                             </div>
 
 
                                             <div class="d-flex justify-content-between mt-2">
                                                 <span>@LanSales["vatSum"]:</span>
-                                                <span>@invoicesDto.VatSum?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @invoicesDto.DocCurrency</span>
+                                                <span>@UiConverters.ToCurrency(invoicesDto.VatSum ?? 0, invoicesDto.DocCurrency!)</span>
                                             </div>
 
                                             <hr />
 
                                             <div class="d-flex justify-content-between">
                                                 <strong>@LanSales["docTotal"]:</strong>
-                                                <strong>@invoicesDto.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @invoicesDto.DocCurrency</strong>
+                                                <strong>@UiConverters.ToCurrency(invoicesDto.DocTotal ?? 0, invoicesDto.DocCurrency!)</strong>
                                             </div>
 
                                         </div>
@@ -310,13 +310,14 @@ else
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["invoiceTitleNavbar"]);
         PageState.SetTitle(LanGeneral["invoiceTitleNavbar"]);
         
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();

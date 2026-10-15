@@ -300,4 +300,10 @@
   <data name="descriptionTotPaymentSelected" xml:space="preserve">
     <value>Pagamento</value>
   </data>
+  <data name="contactPerson" xml:space="preserve">
+    <value>Pessoa do contacto</value>
+  </data>
+  <data name="quotationTotSelected" xml:space="preserve">
+    <value>Cotações</value>
+  </data>
 </root>

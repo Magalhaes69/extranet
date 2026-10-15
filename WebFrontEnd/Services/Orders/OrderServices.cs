@@ -1,6 +1,9 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using WebFrontEnd.Services.Orders.Models;
+using WebFrontEnd.Services.Quotations.Dto;
 using WebFrontEnd.Shared.Dtos;
+using WebFrontEnd.Shared.Results;
 
 namespace WebFrontEnd.Services.Orders
 {
@@ -8,7 +11,7 @@ namespace WebFrontEnd.Services.Orders
     {
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Orders";
-        private List<OrderViewDto>? _cache;
+        private readonly Dictionary<string, PagedResult<OrderViewDto, TotalResultDto>> _cache = new();
         private DetailsOrdersDto? orders;
         public Action OrderAction { get; set; }
 
@@ -23,27 +26,29 @@ namespace WebFrontEnd.Services.Orders
             
         }
 
-        public async Task<List<OrderViewDto>> GetOrdersAsync(OrdersRequest request, bool forceRefresh = false)
+        public async Task<PagedResult<OrderViewDto, TotalResultDto>> GetOrdersAsync(OrdersRequest request, bool forceRefresh = false)
         {
+            var body = General.SerializeObject(request);   // also used as the cache key
+
+            if (!forceRefresh && _cache.TryGetValue(body, out var cached))
+                return cached;
+
             try
             {
-                if (_cache is not null && !forceRefresh)
-                    return _cache;
-
-                var serialized = General.GennerateStringContent(General.SerializeObject(request));
-                var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
+                var response = await _httpClient.PostAsync($"{BaseUrl}/list", General.GennerateStringContent(body));
 
                 if (!response.IsSuccessStatusCode)
-                    return new List<OrderViewDto>();
+                    return PagedResult<OrderViewDto, TotalResultDto>.Empty(request.Page, request.PageSize);
 
-                _cache = await response.Content.ReadFromJsonAsync<List<OrderViewDto>>()
-                         ?? new List<OrderViewDto>();
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<OrderViewDto, TotalResultDto>>()
+                             ?? PagedResult<OrderViewDto, TotalResultDto>.Empty(request.Page, request.PageSize);
 
-                return _cache;
+                _cache[body] = result;
+                return result;
             }
             catch
             {
-                return new List<OrderViewDto>();
+                return PagedResult<OrderViewDto, TotalResultDto>.Empty(request.Page, request.PageSize);
             }
         }
 
@@ -66,47 +71,67 @@ namespace WebFrontEnd.Services.Orders
         }
 
 
+
         public async Task<ServiceResponsePost> CreateAsync(OrderDto order)
         {
-           
+            var lines = order.DocumentLines
+                .Where(l => !string.IsNullOrWhiteSpace(l.ItemCode))
+                .Select(l => new DocumentLines
+                {
+                    ItemCode = l.ItemCode,
+                    Quantity = l.Quantity,
+                    UnitPrice = l.UnitPrice,
+                    WarehouseCode = l.WarehouseCode,
+                    LineTotal = l.LineTotal,
+                    ItemDescription = l.ItemDescription,
+                    //VatGroup = l.VatGroup,
+                })
+                .ToList();
 
-            List<DocumentLines> newDocumentoL = new List<DocumentLines>();
-            foreach (var line in order.DocumentLines)
+            if (lines.Count == 0)
+                return new ServiceResponsePost { Flag = false, Message = "Add at least one item to the order." };
+
+            var newOrder = new OrdersCreate
             {
-                if (line.ItemCode is not null) {
-                    newDocumentoL.Add(new DocumentLines
-                    {
-                        ItemCode = line.ItemCode,
-                        Quantity = line.Quantity,
-                        UnitPrice = line.UnitPrice,
-                        WarehouseCode = line.WarehouseCode,
-                        LineTotal = line.LineTotal,
-                        ItemDescription = line.ItemDescription,
-                        //VatGroup = line.VatGroup,
-                    });
-                }
-            }
-
-
-            var newOrderViewDto = new OrdersCreate()
-            {
-               CardCode = order.CardCode,
-               DocDueDate = order.DocDueDate ?? DateTime.Now,
-               Referencia = order.Referencia ?? string.Empty,
-               CardName = order.CardName,
-               DocumentLines = newDocumentoL,
+                CardCode = order.CardCode,
+                DocDueDate = order.DocDueDate ?? DateTime.Now,
+                Referencia = order.Referencia ?? string.Empty,
+                CardName = order.CardName ?? string.Empty,
+                DocumentLines = lines,
             };
 
-            var response = await _httpClient.PostAsync(BaseUrl, General.GennerateStringContent(General.SerializeObject(newOrderViewDto)));
+            try
+            {
+                var response = await _httpClient.PostAsync(
+                    BaseUrl, General.GennerateStringContent(General.SerializeObject(newOrder)));
 
+                var body = await RedContent(response);
 
-            var result = CheckResponsePost(response);
+                // The API returns ServiceResponse for both success and error
+                if (!string.IsNullOrWhiteSpace(body))
+                {
+                    try
+                    {
+                        var result = General.DeserialzeJsonString<ServiceResponsePost>(body);
+                        if (result is not null)
+                            return result;
+                    }
+                    catch (JsonException)
+                    {
+                        // body wasn't a ServiceResponse (e.g. 401 or proxy error page)
+                    }
+                }
 
-            if (!result.Flag) return result;
-
-            var apiResponse = await RedContent(response);
-
-            return General.DeserialzeJsonString<ServiceResponsePost>(apiResponse);
+                return new ServiceResponsePost
+                {
+                    Flag = false,
+                    Message = $"Request failed ({(int)response.StatusCode} {response.ReasonPhrase})."
+                };
+            }
+            catch (HttpRequestException)
+            {
+                return new ServiceResponsePost { Flag = false, Message = "Could not reach the server." };
+            }
         }
 
         private static async Task<string> RedContent(HttpResponseMessage response) => await response.Content.ReadAsStringAsync();
@@ -124,6 +149,29 @@ namespace WebFrontEnd.Services.Orders
                      ?? new DetailsOrdersDto();
 
             return orders;
+        }
+
+        public async Task<ServiceResponsePost> CreateCatalgAsync(OrdersCreate order)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync(BaseUrl, General.GennerateStringContent(General.SerializeObject(order)));
+                var result = CheckResponsePost(response);
+
+                if (!result.Flag) return result;
+
+                var apiResponse = await RedContent(response);
+
+                return General.DeserialzeJsonString<ServiceResponsePost>(apiResponse);
+            }
+            catch
+            {
+                return new ServiceResponsePost()
+                {
+                    Flag = false,
+                    Message = "Error occured. Try again later..."
+                };
+            }
         }
     }
 }

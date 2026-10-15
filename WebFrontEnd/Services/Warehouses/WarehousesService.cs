@@ -9,7 +9,7 @@ namespace WebFrontEnd.Services.Warehouses
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Warehouses";
 
-        private List<WarehousesDto> _cache;
+        private WarehousesResultDto _cache;
         public Action WarehousesDtoAction { get; set; }
 
         public WarehousesService(IHttpClientFactory factory)
@@ -21,17 +21,21 @@ namespace WebFrontEnd.Services.Warehouses
             throw new NotImplementedException();
         }
 
-        public async Task<List<WarehousesDto>> GetWarehousesServiceAsync(string Inactive)
+        public async Task<WarehousesResultDto> GetWarehousesServiceAsync(
+            WarehousesRequestDto requestDto,
+            bool forceRefresh = false
+            )
         {
-            if (_cache is not null)
+            if (!forceRefresh)
                 return _cache;
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?Inactive={Inactive}");
+
+            var serialized = General.GennerateStringContent(General.SerializeObject(requestDto));
+            var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
 
             if (!response.IsSuccessStatusCode)
-                return new List<WarehousesDto>();
-
-            _cache = await response.Content.ReadFromJsonAsync<List<WarehousesDto>>()
-                     ?? new List<WarehousesDto>();
+                return new WarehousesResultDto();
+            _cache = await response.Content.ReadFromJsonAsync<WarehousesResultDto>()
+                     ?? new WarehousesResultDto();
 
             return _cache;
         }

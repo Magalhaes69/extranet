@@ -22,7 +22,9 @@
 
                     @Options
                     <!-- Table with fixed height, scroll, and padding -->
-                    <div style="max-height: 400px; overflow-y: auto;">
+                    <div style="max-height: 400px; overflow-y: auto;" 
+                    @ref="ScrollContainer" 
+                    @onscroll="HandleScroll">
 
                         <table class="table table-hover align-middle mb-0">
                             <thead class="sticky-top">
@@ -66,7 +68,12 @@
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
     [Parameter] public RenderFragment? FilterHeader { get; set; }
 
-   
+    [Parameter] public EventCallback OnLoadMore { get; set; }
+    [Parameter] public bool HasMore { get; set; }
+    [Parameter] public bool IsLoadingMore { get; set; }
+    private ElementReference ScrollContainer;
+
+
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += StateHasChanged;
@@ -82,7 +89,18 @@
     {
         IsVisible = false;
     }
+    private async Task HandleScroll()
+    {
+        if (IsLoadingMore || !HasMore)
+            return;
 
+        var isNearBottom = await js.InvokeAsync<bool>("isNearBottom", ScrollContainer);
+
+        if (isNearBottom)
+        {
+            await OnLoadMore.InvokeAsync();
+        }
+    }
     public void Dispose()
     {
         ThemeService.OnThemeChanged -= StateHasChanged;

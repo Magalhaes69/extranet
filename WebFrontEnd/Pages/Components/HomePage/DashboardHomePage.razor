@@ -4,319 +4,92 @@
 @implements IDisposable
 @attribute [Authorize]
 
+<div class="dashboard @(IsDark ? "dashboard-dark" : "")">
 
-<div class="app-content-header @(ThemeService.CurrentTheme == "dark" ? "bg-dark text-white" : "bg-light text-dark") pt-2 pb-1">
-    <div class="container-fluid">
-        <div class="top-menu sticky-top">
-            <ul class="nav custom-tabs">
-                <li class="nav-item">
-                    <a class="nav-link @(activeSection == "home" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" @onclick="@(() => ScrollTo("home"))">@LanGeneral["dashboardTitlePrincipalPage"]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeSection == "crm" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("crm"))">@LanGeneral["dashboardPurchaseOrers"]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeSection == "vendas" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("vendas"))">@LanGeneral["dashboardQuotations"]</a>
-                </li>
-                
-                <li class="nav-item">
-                    <a class="nav-link @(activeSection == "compras" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("compras"))">Notas de crédito</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeSection == "compras" ? "active" : "") @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")"
-                       @onclick="@(() => ScrollTo("compras"))">Guias de entrega</a>
-                </li>
-            </ul>
+    <div class="app-content-header pt-2 pb-1">
+        <div class="container-fluid">
+            <div class="top-menu sticky-top d-flex justify-content-between align-items-center">
+                <ul class="nav custom-tabs">
+                    @foreach (var section in Sections)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(activeSection == section.Id ? "active" : "")"
+                               @onclick="() => ScrollTo(section.Id)">@section.Title</a>
+                        </li>
+                    }
+                </ul>
+                <button class="btn btn-sm btn-outline-primary" @onclick="RefreshAll">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
     <div class="app-content">
-    <div class="container-fluid">
-        <div id="home" class="d-flex gap-3 flex-wrap mt-3">
-            <a href="/add-orders">
-                <div class="card custom-tile d-flex flex-column " style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
-                    <div>
-                        <h6 class="card-title mb-2">Criar ordens de compra</h6>
-                    </div>
+        <div class="container-fluid" @key="refreshKey">
 
-                    <div class="d-flex flex-grow-1 align-items-center ">
-                        <div class="d-flex justify-content-center gap-2">
-                            <div class="icon-box">
-                                <i class="bi bi-file-earmark-plus"></i>
-                            </div>
-                        </div>
-                    </div>
+            <section id="home" class="dash-section">
+                <h5 class="dash-section-title">Ações rápidas</h5>
+                <div class="kpi-grid">
+                    <a href="/add-orders" class="kpi-card kpi-action">
+                        <span class="kpi-icon"><i class="bi bi-file-earmark-plus"></i></span>
+                        <span class="kpi-title">Criar ordem de compra</span>
+                    </a>
                 </div>
-            </a>
-            
-            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="/orders" class="value-link">@getCountDto.Total</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-           
-            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
+            </section>
 
-            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
+            @foreach (var section in Sections.Where(s => s.Cards.Count > 0))
+            {
+                <section id="@section.Id" class="dash-section">
+                    <h5 class="dash-section-title">@section.Title</h5>
+                    <div class="kpi-grid">
+                        @foreach (var card in section.Cards)
+                        {
+                            <KpiCard MetricKey="@card.Key"
+                                     Title="@card.Title"
+                                     Icon="@card.Icon"
+                                     Href="@card.Href"
+                                     Accent="@card.Accent"
+                                     Caption="@card.Caption" />
+                        }
                     </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card custom-tile d-flex flex-column" style="width:180px!important; min-width: 180px!important;height: 180px!important; max-height: 180px!important">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="m-3">Orders de compra</h2>
-        <div id="crm" class="d-flex gap-3 flex-wrap">
-            <!-- Card 1 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add more cards as needed -->
-        </div>
-
-
-        <h2 class="m-3">Cotações</h2>
-        <div id="vendas" class="d-flex gap-3 flex-wrap">
-            <!-- Card 1 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add more cards as needed -->
-        </div>
-
-
-        <h2 class="m-3">Compras</h2>
-        <div id="compras" class="d-flex gap-3 flex-wrap">
-            <!-- Card 1 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="card custom-tile d-flex flex-column">
-                <div>
-                    <h6 class="card-title mb-2">Ordens de venda</h6>
-                </div>
-                <div class="d-flex flex-grow-1 align-items-center justify-content-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="icon-box">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                        <a href="#" class="value-link">10</a>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-clock"></i>
-                        <span>6 min</span>
-                    </div>
-                    <div>
-                        <span class="status-open">Aberto</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add more cards as needed -->
+                </section>
+            }
         </div>
     </div>
 </div>
+
 <style>
+    .dashboard {
+        --dash-card-bg: #fff;
+        --dash-border: #e9ecef;
+        --dash-muted: #6c757d;
+        --dash-skeleton: #e9ecef;
+        --dash-skeleton-shine: #f8f9fa;
+    }
+
+    .dashboard-dark {
+        --dash-card-bg: #1f2329;
+        --dash-border: #2f353d;
+        --dash-muted: #9aa4af;
+        --dash-skeleton: #2a2f36;
+        --dash-skeleton-shine: #353b44;
+        color: #e9ecef;
+    }
+
+    .top-menu {
+        z-index: 1000;
+        border-bottom: 1px solid var(--dash-border);
+    }
+
     .custom-tabs {
         border-bottom: none;
-        cursor: pointer
+        cursor: pointer;
     }
 
         .custom-tabs .nav-link {
             border: none;
-            color: #333;
+            color: inherit;
             font-weight: 500;
             padding: 10px 15px;
         }
@@ -327,79 +100,219 @@
                 background: transparent;
             }
 
-    .top-menu {
-        z-index: 1000;
-        border-bottom: 1px solid #dee2e6;
+    .dash-section {
+        margin-top: 1.5rem;
+        scroll-margin-top: 70px;
     }
 
-    .custom-tile {
-        height: 180px;
-        padding: 15px;
+    .dash-section-title {
+        font-weight: 600;
+        margin-bottom: .75rem;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 1rem;
+    }
+
+    .kpi-card {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        min-height: 170px;
+        padding: 1rem;
+        background: var(--dash-card-bg);
+        border: 1px solid var(--dash-border);
+        border-left: 4px solid var(--kpi-accent, #0d6efd);
         border-radius: 12px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        box-shadow: 0 3px 8px rgba(0,0,0,.06);
+        color: inherit;
+        text-decoration: none;
+        transition: transform .15s ease, box-shadow .15s ease;
     }
 
-    /* Icon box */
-    .icon-box {
-        width: 25px;
-        height: 25px;
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,.10);
+        }
+
+    .kpi-primary {
+        --kpi-accent: #0d6efd;
+    }
+
+    .kpi-success {
+        --kpi-accent: #198754;
+    }
+
+    .kpi-warning {
+        --kpi-accent: #fd7e14;
+    }
+
+    .kpi-danger {
+        --kpi-accent: #dc3545;
+    }
+
+    .kpi-info {
+        --kpi-accent: #0dcaf0;
+    }
+
+    .kpi-action {
+        --kpi-accent: #6f42c1;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .kpi-head {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .kpi-icon {
+        width: 34px;
+        height: 34px;
         border-radius: 10px;
-        background: #f4f6f9;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: color-mix(in srgb, var(--kpi-accent) 12%, transparent);
+        color: var(--kpi-accent);
+        font-size: 1.1rem;
     }
 
-        .icon-box i {
-            font-size: 20px;
-            color: #6c757d;
-        }
-
-    /* Value */
-    .value-link {
-        font-size: 28px;
+    .kpi-title {
         font-weight: 600;
-        text-decoration: none;
-        color: #0d6efd;
+        font-size: .9rem;
     }
 
-    /* Status */
-    .status-open {
-        color: #0d6efd;
+    .kpi-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--kpi-accent);
+        text-decoration: none;
+    }
+
+    .kpi-amount {
+        font-weight: 600;
+        margin-top: .25rem;
+    }
+
+    .kpi-caption {
+        font-size: .75rem;
+        color: var(--dash-muted);
+    }
+
+    .kpi-error {
+        color: var(--dash-muted);
+        gap: .25rem;
+        font-size: .85rem;
+    }
+
+    .kpi-foot {
+        display: flex;
+        justify-content: space-between;
+        font-size: .75rem;
+        color: var(--dash-muted);
+    }
+
+    .kpi-link {
+        color: var(--kpi-accent);
+        text-decoration: none;
         font-weight: 500;
     }
 
+    .skeleton {
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--dash-skeleton) 25%, var(--dash-skeleton-shine) 50%, var(--dash-skeleton) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+    }
+
+    .skeleton-value {
+        width: 45%;
+        height: 30px;
+    }
+
+    .skeleton-amount {
+        width: 70%;
+        height: 14px;
+        margin-top: .5rem;
+    }
+
+    .skeleton-foot {
+        width: 35%;
+        height: 10px;
+    }
+
+    @@keyframes shimmer {
+        from {
+            background-position: 200% 0;
+        }
+
+        to {
+            background-position: -200% 0;
+        }
+    }
 </style>
 
-
 @code {
+    private sealed record KpiDef(string Key, string Title, string Icon, string Href, string Accent, string? Caption = null);
+    private sealed record SectionDef(string Id, string Title, List<KpiDef> Cards);
+
     private string activeSection = "home";
-    private GetCountDto getCountDto = new();
-    private string CardCode = string.Empty;
+    private int refreshKey;
+    private bool IsDark => ThemeService.CurrentTheme == "dark";
+
+    private List<SectionDef> Sections => new()
+    {
+        new("home", LanGeneral["dashboardTitlePrincipalPage"], new()),
+
+        new("vendas", "Vendas", new()
+        {
+            new("orders-open",     "Ordens em aberto",   "bi-receipt",           "/orders",     "primary", "Valor total"),
+            new("quotations-open", "Cotações em aberto", "bi-file-earmark-text", "/quotations", "info",    "Valor total"),
+            new("deliveries-open", "Guias de entrega",   "bi-truck",             "/delivery", "success", "Em aberto"),
+        }),
+
+        new("financeiro", "Financeiro", new()
+        {
+            new("invoices-open",    "Faturas em aberto", "bi-file-earmark-ruled", "/invoices",                "warning", "Valor em aberto"),
+            new("invoices-overdue", "Faturas vencidas",  "bi-exclamation-octagon", "/invoices",      "danger",  "Valor vencido"),
+            new("creditnotes-year", "Notas de crédito",  "bi-arrow-counterclockwise", "/credits",        "info",    "Este ano"),
+            new("payments-year",    "Pagamentos",        "bi-cash-coin",          "/payments",                "success", "Este ano"),
+        }),
+    };
+
+    protected override void OnInitialized()
+    {
+        PageTitleService.SetTitle(LanGeneral["homePageTitle"]);
+        PageState.SetTitle(LanGeneral["homePageTitle"]);
+        ThemeService.OnThemeChanged += Refresh;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("registerScrollSpy",
-                DotNetObjectReference.Create(this));
+            await LayoutState.SetSidebar(true);
+            await js.InvokeVoidAsync("registerScrollSpy", DotNetObjectReference.Create(this));
         }
     }
 
-    protected override async Task OnInitializedAsync()
-    {
+    private void RefreshAll() => refreshKey++; // recreates every KpiCard -> each reloads
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        CardCode = user.GetCardCode();
-      
-        getCountDto = await DashboardService.GetCountOrderAsync(CardCode, "");
-        PageState.SetTitle(LanGeneral["homePageTitle"]);
-        ThemeService.OnThemeChanged += Refresh;
-    }
-    private void Refresh()
-    {
-        InvokeAsync(StateHasChanged);
-    }
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
     private async Task ScrollTo(string id)
     {
         activeSection = id;
@@ -412,8 +325,6 @@
         activeSection = section;
         StateHasChanged();
     }
-    public void Dispose()
-    {
-        ThemeService.OnThemeChanged -= Refresh;
-    }
+
+    public void Dispose() => ThemeService.OnThemeChanged -= Refresh;
 }

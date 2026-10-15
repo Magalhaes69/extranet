@@ -1,4 +1,5 @@
-﻿using Application.UseCases.SQLQueries;
+﻿using Application.UseCases.ContactEmployees.GetAllContactEmployees;
+using Application.UseCases.SQLQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,14 @@ namespace WebAPI.Controllers
                 ObjectCode = requestUI.Value
             };
             var result = await _mediator.Send(request, cancellationToken);
+            return Ok(result);
+
+        }
+
+        [HttpPost("contact")]
+        public async Task<IActionResult> GetContact([FromBody] GetAllContactEmployeesRequest requestUI, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(requestUI, cancellationToken);
             return Ok(result);
 
         }

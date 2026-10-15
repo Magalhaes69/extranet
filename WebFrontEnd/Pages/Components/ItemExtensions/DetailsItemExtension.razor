@@ -114,12 +114,13 @@ else
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
         }
     }
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;

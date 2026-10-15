@@ -21,5 +21,13 @@ namespace Application.UseCases.IncomingPayments.GetAllIncomingPayments
         public decimal? TotalDiscount { get; set; }
         public decimal? TotalDiscountFC { get; set; }
         public decimal? TotalDiscountSC { get; set; }
+        public DateTime? DocDate { get; set; }
+        public DateTime? DocDueDate { get; set; }
+        public decimal? DocTotal { get; set; }
+        public decimal? PaidToDate { get; set; }
+        public string? Comments { get; set; }
+        public string? DocCurrency { get; set; }
+        public string? Address { get; set; }
+        public string? PayToCode { get; set; }
     }
 }

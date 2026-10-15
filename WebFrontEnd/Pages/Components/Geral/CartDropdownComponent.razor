@@ -1,4 +1,5 @@
-﻿@inject OrdersCartService CartService
+﻿
+@implements IDisposable
 
 <li class="nav-item dropdown">
     <a class="nav-link position-relative" data-bs-toggle="dropdown" style="cursor:pointer;">
@@ -18,12 +19,12 @@
             <h6 class="mb-0">Cart</h6>
         </div>
 
-        @if (CartService.CurrentCart?.OrderLineCarts?.Any() == true)
+        @if (CartServices.CurrentCart?.OrderLineCarts?.Any() == true)
         {
             <!-- Scrollable items -->
             <div style="max-height: 300px; overflow-y: auto;" class="p-2">
 
-                @foreach (var item in CartService.CurrentCart.OrderLineCarts)
+                @foreach (var item in CartServices.CurrentCart.OrderLineCarts)
                 {
                     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
 
@@ -31,7 +32,7 @@
                         <div style="flex:1;">
                             <strong>@item.ItemCode</strong><br />
                             <small class="text-muted">
-                                @item.Quantity x @item.UnitPrice.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))
+                                @item.Quantity x @UiConverters.ToCurrency(item.UnitPrice, "MZM")
                             </small>
                         </div>
 
@@ -67,7 +68,7 @@
                 <!-- Total -->
                 <div class="d-flex justify-content-between mb-2">
                     <strong>Total:</strong>
-                    <strong>@Total.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))</strong>
+                    <strong>@UiConverters.ToCurrency(Total, "MZM")</strong>
                 </div>
 
                 <!-- Buttons in same line -->
@@ -76,7 +77,8 @@
                         View Order
                     </button>
 
-                    <button class="btn btn-sm py-1 w-50 @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-success")" @onclick="FinishOrder">
+                    <button class="btn btn-sm py-1 w-50 @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-success")" 
+                    @onclick="FinishOrder">
                         Finish Order
                     </button>
                 </div>

@@ -69,5 +69,13 @@ namespace Persistence.Repositories
                 });
             }
         }
+
+        public Task<IdentityResult> ResetPasswordAsync(AppUser user, string token, string newPassword) =>
+                _userManager.ResetPasswordAsync(user, token, newPassword);
+
+        public Task<IdentityResult> SedUpdateAsync(AppUser user) =>
+            _userManager.UpdateAsync(user);
+
+        
     }
 }

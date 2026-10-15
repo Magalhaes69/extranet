@@ -18,7 +18,8 @@ namespace Application.UseCases.SQLQueries
             {
                 var result = await _sapClient.ExecuteQueryAsync<SapQueryResponse>(
                     request.Query,
-                    request.ObjectCode, 
+                    request.ObjectCode,
+                    "ObjectCode",
                     cancellationToken);
 
                 return result ?? new List<SapQueryResponse>();

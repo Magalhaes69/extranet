@@ -451,12 +451,12 @@
     private string CurrentField = string.Empty;
     private ModelToFilter<DynamicFilter>? ModalDynamic;
     public string? ItemId = string.Empty;
-
+    private GetAllItemsRequest Filter = new();
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
 
             await js.InvokeVoidAsync("initResizableTable");
@@ -465,6 +465,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         Title = LanItem["itemTitle"];
         PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
 
@@ -553,10 +554,17 @@
     {
         IsLoading = true;
 
+        Filter = new GetAllItemsRequest
+            {
+                Page = 1,
+                PageSize = 100,
+                Valid = "tYES"
+            };
 
-        itemsDtos = await ItemsService.GetItemsAsync();
+        var resultDto = await ItemsService.GetItemsAsync(Filter);
 
-        allItemsDtos = itemsDtos.ToList();
+        allItemsDtos = resultDto.Items.ToList();
+
         IsLoading = false;
     }
 

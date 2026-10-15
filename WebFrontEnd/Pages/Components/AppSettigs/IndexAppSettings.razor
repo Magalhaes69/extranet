@@ -1,0 +1,162 @@
+﻿@page "/configure-app"
+@using WebFrontEnd.Services.AppSettings.Dtos
+@implements IDisposable
+@attribute [Authorize]
+
+<div class="container-fluid py-4 app-config-page">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-semibold mb-1">Application Configuration</h3>
+            <p class="text-muted mb-0">Manage system parameters and application settings</p>
+        </div>
+        <div>
+            <button class="btn btn-light me-2">Cancel</button>
+            <button class="btn btn-primary">Save Changes</button>
+        </div>
+    </div>
+
+    <div class="row g-2">
+
+        <!-- Left Category Panel -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control form-control-sm" placeholder="Search settings..." />
+                    </div>
+
+                    <div class="list-group list-group-flush config-menu">
+                        @foreach (var item in Categories)
+                        {
+                            var isActive = string.Equals(selectedCategory, item, StringComparison.OrdinalIgnoreCase);
+                            var textClass = isActive || ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark";
+
+                            <button class="list-group-item list-group-item-action @textClass @(isActive ? "active" : "")"
+                                    @onclick="() => SelectCategory(item)">
+                                @item
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="col-9">
+            <div class="card shadow-sm rounded-4 border-0">
+                <div class="card-body">
+
+                    <h4 class="mb-4">@selectedCategory Settings</h4>
+
+                    @foreach (var setting in FilteredSettings)
+                    {
+                        <div class="mb-4 border-bottom pb-3" @key="setting.Key">
+                            <label class="form-label fw-semibold">@setting.Key</label>
+                            <div class="text-muted small mb-2">@setting.Description</div>
+                            @RenderControl(setting)
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <button class="btn btn-primary">Save Changes</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private List<AppSettingViewDto> settingViewDtos = new();
+    private List<string> Categories = new();
+    private string selectedCategory = string.Empty;
+    private string Title = string.Empty;
+
+    private IEnumerable<AppSettingViewDto> FilteredSettings =>
+        settingViewDtos.Where(s => string.Equals(s.Category, selectedCategory, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LayoutState.SetSidebar(true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PageTitleService.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
+        Title = "Sem title";
+        PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
+
+        ThemeService.OnThemeChanged += StateHasChanged;
+        await Load();
+
+        Categories = settingViewDtos
+            .Select(x => x.Category)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        selectedCategory = Categories.FirstOrDefault() ?? string.Empty;
+    }
+
+    private async Task Load()
+    {
+        settingViewDtos = await AppSettingsService.GetAllAppSettings() ?? new();
+    }
+
+    private void SelectCategory(string category) => selectedCategory = category;
+
+    private RenderFragment RenderControl(AppSettingViewDto setting) => builder =>
+    {
+        // Safe parse: null/unknown DataType falls back to Text instead of throwing
+        if (!Enum.TryParse<ConfigDataType>(setting.DataType, true, out var dataType))
+            dataType = ConfigDataType.Text;
+
+        switch (dataType)
+        {
+            case ConfigDataType.Number:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "number");
+                builder.AddAttribute(2, "class", "form-control");
+                builder.AddAttribute(3, "value", setting.Value ?? string.Empty);
+                builder.AddAttribute(4, "onchange",
+                    EventCallback.Factory.Create<ChangeEventArgs>(this, e => setting.Value = e.Value?.ToString()));
+                builder.CloseElement();
+                break;
+
+            case ConfigDataType.Boolean:
+                bool.TryParse(setting.Value, out var isChecked);
+                builder.OpenElement(10, "div");
+                builder.AddAttribute(11, "class", "form-check form-switch");
+                builder.OpenElement(12, "input");
+                builder.AddAttribute(13, "type", "checkbox");
+                builder.AddAttribute(14, "class", "form-check-input");
+                builder.AddAttribute(15, "checked", isChecked);
+                builder.AddAttribute(16, "onchange",
+                    EventCallback.Factory.Create<ChangeEventArgs>(this, e => setting.Value = (e.Value is bool b && b).ToString().ToLower()));
+                builder.CloseElement();
+                builder.CloseElement();
+                break;
+
+            default: // Text and anything unknown
+                builder.OpenElement(20, "input");
+                builder.AddAttribute(21, "type", "text");
+                builder.AddAttribute(22, "class", "form-control");
+                builder.AddAttribute(23, "value", setting.Value ?? string.Empty);
+                builder.AddAttribute(24, "onchange",
+                    EventCallback.Factory.Create<ChangeEventArgs>(this, e => setting.Value = e.Value?.ToString()));
+                builder.CloseElement();
+                break;
+        }
+    };
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

@@ -1,152 +1,454 @@
 ﻿@page "/login"
-
 @using System.Globalization
 @using Microsoft.Extensions.Localization
 @using WebFrontEnd.Services.Auth
 @inject AuthenticationStateProvider authenticationState
 @inject IStringLocalizer<UserApp> UserLan
-
 @layout EmptyLayout
 
+<div class="xl-login-page">
 
-<div class="login-box">
-    <div class="card card-outline card-warning">
-        <div class="card-header">
-            <a href=""
-               class="link-dark text-center link-offset-2 link-opacity-100 link-opacity-50-hover">
-                <h1 class="mb-0">Login</h1>
-            </a>
-        </div>
+    <!-- Formulário (esquerda) -->
+    <main class="xl-login-main">
+        <div class="xl-login-card">
 
-        <div class="card-body login-card-body">
-            <p class="login-box-msg">@UserLan["titleLogin"]</p>
+            <div class="xl-mobile-logo">
+                <i class="bi bi-buildings"></i>
+                <span>Extranet</span>
+            </div>
 
-            <!-- API error alert -->
+            <h2 class="xl-login-title">Bem-vindo</h2>
+            <p class="xl-login-subtitle">@UserLan["titleLogin"]</p>
+
             @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <div class="alert alert-danger mt-2">
-                    @errorMessage
+                <div class="xl-login-alert" role="alert">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>@errorMessage</span>
                 </div>
             }
 
-            <EditForm Model="login" Enhance OnValidSubmit="OnLogin">
-
+            <EditForm Model="login" OnValidSubmit="OnLogin">
                 <DataAnnotationsValidator />
-                <ValidationSummary />
 
-                <div class="input-group  has-validation mb-1">
-                    <div class="form-floating">
-                        <InputText type="email"  @bind-Value="login.email" id="loginEmail" class="form-control" placeholder="" />
-                        <label for="loginEmail">@UserLan["email"]</label>
+                <div class="xl-field">
+                    <label for="loginEmail">@UserLan["email"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-envelope xl-input-icon"></i>
+                        <InputText id="loginEmail"
+                                   type="email"
+                                   class="form-control"
+                                   placeholder="nome@empresa.co.mz"
+                                   autocomplete="username"
+                                   @bind-Value="login.email" />
                     </div>
-                    <div class="input-group-text">
-                        <span class="bi bi-envelope"></span>
-                    </div>
-
-                    <div class="invalid-feedback">
-                        <ValidationMessage For="@(() => login.email)" />
-                    </div>
+                    <ValidationMessage For="@(() => login.email)" class="xl-field-error" />
                 </div>
-                <div class="input-group mb-1">
-                    <div class="form-floating">
-                        <InputText @bind-Value="login.password" id="loginPassword" type="password" class="form-control" placeholder="" />
+
+                <div class="xl-field">
+                    <div class="d-flex justify-content-between align-items-baseline">
                         <label for="loginPassword">@UserLan["password"]</label>
+                        <a href="/forgot-password" class="xl-small-link">@UserLan["forgotPassword"]?</a>
                     </div>
-                    <div class="input-group-text">
-                        <span class="bi bi-lock-fill"></span>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-lock xl-input-icon"></i>
+                        <InputText id="loginPassword"
+                                   type="@(showPassword ? "text" : "password")"
+                                   class="form-control xl-has-toggle"
+                                   placeholder="••••••••"
+                                   autocomplete="current-password"
+                                   @bind-Value="login.password" />
+                        <button type="button"
+                                class="xl-toggle-password"
+                                title="@(showPassword ? "Esconder palavra-passe" : "Mostrar palavra-passe")"
+                                @onclick="() => showPassword = !showPassword">
+                            <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                        </button>
                     </div>
-
-                    <div class="invalid-feedback">
-                        <ValidationMessage For="@(() => login.password)" />
-                    </div>
+                    <ValidationMessage For="@(() => login.password)" class="xl-field-error" />
                 </div>
-                <!--begin::Row-->
-                <div class="row">
-                    <div class="col-8 d-inline-flex align-items-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
-                            <label class="form-check-label" for="flexCheckDefault"> @UserLan["remember"] </label>
-                        </div>
-                    </div>
-                </div>
-                <!--end::Row-->
 
-                <div class="social-auth-links text-center mb-3 d-grid gap-2">
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="rememberMe" @bind="rememberMe" />
+                    <label class="form-check-label" for="rememberMe">@UserLan["remember"]</label>
+                </div>
+
+                <div class="d-grid">
                     @if (MessageDialogService.ShowSaveButton)
                     {
-                        <button type="submit" class="btn btn-warning fw-bold">
-                            <i class="bi bi-box-arrow-in-right"></i> @UserLan["btnLogin"]
+                        <button type="submit" class="btn xl-btn-login">
+                            @UserLan["btnLogin"] <i class="bi bi-arrow-right ms-1"></i>
                         </button>
                     }
-                    <BusyButtonComponent cssBtn="btn-warning" ShowBusyButton="@MessageDialogService.ShowBusyButton" />
+                    <BusyButtonComponent cssBtn="xl-btn-login" ShowBusyButton="@MessageDialogService.ShowBusyButton" />
                 </div>
             </EditForm>
-            <p class="mb-1">
-                <a href="forgot-password.html">@UserLan["forgotPassword"]?</a>
+
+            <p class="xl-login-help">
+                <i class="bi bi-shield-lock"></i>
+                Ainda não tem acesso? Contacte o seu gestor de conta.
             </p>
-           
         </div>
-        <!-- /.login-card-body -->
-    </div>
+    </main>
+
+    <!-- Painel com a imagem (direita) -->
+    <aside class="xl-login-brand">
+        <div class="xl-brand-logo">
+            <i class="bi bi-buildings"></i>
+            <span>Extranet</span>
+        </div>
+
+        <div class="xl-brand-text">
+            <h1>Tudo o que precisa,<br />num só lugar.</h1>
+            <p class="xl-brand-lead">
+                Encomendas, faturas e pagamentos sempre à mão — a qualquer hora, sem telefonemas nem e-mails.
+            </p>
+        </div>
+
+        <img class="xl-brand-illustration" src=@($"{ApiBaseUrl}/images/geral/login.svg") alt="" />
+
+        <div class="xl-brand-bottom">© @DateTime.Now.Year Extranet</div>
+    </aside>
 </div>
 
+<style>
+    .xl-login-page {
+        --brand: #f0a500;
+        --brand-dark: #c98a00;
+        --brand-ink: #1f2933;
+        --panel-bg: #1f2933;
+        --panel-text: #e4e7eb;
+        --panel-muted: #9aa5b1;
+        --page-bg: #f5f7fa;
+        --card-bg: #ffffff;
+        --text: #1f2933;
+        --muted: #616e7c;
+        --border: #d9e2ec;
+        --danger-bg: #fdecec;
+        --danger-text: #b42318;
+    }
 
+    [data-bs-theme="dark"] .xl-login-page {
+        --page-bg: #12161b;
+        --card-bg: #1a1f26;
+        --text: #e4e7eb;
+        --muted: #9aa5b1;
+        --border: #323b45;
+        --danger-bg: #3a1d1d;
+        --danger-text: #f5a3a3;
+    }
+
+    .xl-login-page {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 100vh;
+        width: 100%;
+        background: var(--page-bg);
+        color: var(--text);
+    }
+
+    /* ---------- Formulário (esquerda) ---------- */
+    .xl-login-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+        position: relative;
+        z-index: 2; /* fica por cima da imagem, se se tocarem */
+    }
+
+    .xl-login-card {
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .xl-login-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 6px;
+    }
+
+    .xl-login-subtitle {
+        color: var(--muted);
+        margin: 0 0 28px;
+    }
+
+    .xl-login-alert {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        background: var(--danger-bg);
+        color: var(--danger-text);
+        font-size: .9rem;
+    }
+
+    .xl-field {
+        margin-bottom: 22px;
+    }
+
+        .xl-field label {
+            display: block;
+            font-size: .95rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+    .xl-input-wrap {
+        position: relative;
+    }
+
+    .xl-input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .xl-input-wrap .form-control {
+        height: 56px;
+        padding-left: 48px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        color: var(--text);
+    }
+
+        .xl-input-wrap .form-control.xl-has-toggle {
+            padding-right: 48px;
+        }
+
+        .xl-input-wrap .form-control:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(240,165,0,.2);
+        }
+
+    .xl-toggle-password {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+    }
+
+        .xl-toggle-password:hover {
+            background: rgba(127,127,127,.12);
+            color: var(--text);
+        }
+
+    .xl-field-error {
+        display: block;
+        margin-top: 6px;
+        font-size: .8rem;
+        color: var(--danger-text);
+    }
+
+    .xl-small-link {
+        font-size: .85rem;
+        color: var(--brand-dark);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .xl-small-link:hover {
+            text-decoration: underline;
+        }
+
+    .xl-btn-login {
+        height: 56px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        border: none;
+        background: var(--brand);
+        color: var(--brand-ink);
+        font-weight: 700;
+    }
+
+        .xl-btn-login:hover, .xl-btn-login:focus {
+            background: var(--brand-dark);
+            color: var(--brand-ink);
+        }
+
+    .xl-login-help {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: .85rem;
+        text-align: center;
+    }
+
+    /* ---------- Painel com a imagem (direita) ---------- */
+    .xl-login-brand {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 48px 56px;
+        background: radial-gradient(circle at 80% 10%, rgba(240,165,0,.16), transparent 45%), var(--panel-bg);
+        color: var(--panel-text);
+        overflow: visible;
+    }
+
+    .xl-brand-logo, .xl-mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+        .xl-brand-logo i, .xl-mobile-logo i {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--brand);
+            color: var(--brand-ink);
+            font-size: 1.2rem;
+        }
+
+    .xl-mobile-logo {
+        display: none;
+        margin-bottom: 32px;
+    }
+
+    .xl-brand-text {
+        margin-top: 5vh;
+        max-width: 460px;
+        margin-left: auto;
+        text-align: right;
+    }
+
+        .xl-brand-text h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin: 0 0 14px;
+        }
+
+    .xl-brand-lead {
+        color: var(--panel-muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* A imagem sai um pouco do painel para o lado do formulário */
+    .xl-brand-illustration {
+        position: absolute;
+        left: clamp(-110px, -6vw, -40px);
+        bottom: 6vh;
+        height: min(56vh, 500px);
+        width: auto;
+        max-width: calc(100% + 60px);
+        pointer-events: none;
+        user-select: none;
+        filter: drop-shadow(0 24px 40px rgba(0,0,0,.35));
+    }
+
+    .xl-brand-bottom {
+        margin-top: auto;
+        color: var(--panel-muted);
+        font-size: .8rem;
+        text-align: right;
+    }
+
+    /* Ecrãs médios: a imagem deixa de sair do painel para não tocar no formulário */
+    @@media (max-width: 1279.98px) {
+        .xl-brand-illustration {
+            left: 24px;
+            height: auto;
+            width: calc(100% - 48px);
+            max-height: 52vh;
+        }
+
+        .xl-brand-text h1 {
+            font-size: 2rem;
+        }
+    }
+
+    /* Telemóvel / tablet: só o formulário */
+    @@media (max-width: 991.98px) {
+        .xl-login-page {
+            grid-template-columns: 1fr;
+        }
+
+        .xl-login-brand {
+            display: none;
+        }
+
+        .xl-mobile-logo {
+            display: flex;
+        }
+    }
+</style>
 
 @code {
     LoginDto login = new();
     private string? errorMessage;
-    [Parameter][SupplyParameterFromQuery] public string returnUrl { get; set; }
+    private bool showPassword;
+    private bool rememberMe;
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
+    [Parameter][SupplyParameterFromQuery] public string? returnUrl { get; set; }
+
     private async Task OnLogin()
     {
-
+        errorMessage = null;
         MessageDialogService.ShowSaveButton = false;
-        MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
-        var result = await authService.Login(login);
+        MessageDialogService.ShowBusyButton = true;
 
-        if (result is not null)
+        try
         {
+            var result = await authService.Login(login);
+
+            if (result is null)
+            {
+                errorMessage = "E-mail ou palavra-passe inválidos.";
+                return;
+            }
+
             if (result.Requires2FA)
             {
-                MessageDialogService.ShowSaveButton = true;
-                MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
-                nav.NavigateTo($"/verify?email={result.Email}&returnUrl={returnUrl}");
+                nav.NavigateTo($"/verify?email={Uri.EscapeDataString(result.Email!)}&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
+                return;
             }
-            else
-            {
-                var authStateProvider = (CustomAuthStateProvider)authenticationState;
-                authStateProvider.SetUser(result);
 
-                MessageDialogService.ShowSaveButton = true;
-                MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
+            var authStateProvider = (CustomAuthStateProvider)authenticationState;
+            authStateProvider.SetUser(result);
 
-                await AddTheme(result.Theme, result.Language!);
+            await AddTheme(result.Theme, result.Language!);
 
-                
-                if (!string.IsNullOrWhiteSpace(returnUrl))
-                {
-                    //nav.NavigateTo(returnUrl);
-                    nav.NavigateTo(returnUrl, forceLoad: true);
-                }
-                else
-                {
-                   // nav.NavigateTo("/");
-                    nav.NavigateTo("/", forceLoad: true);
-                }
-            }
+            nav.NavigateTo(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl, forceLoad: true);
         }
-        else
+        catch
+        {
+            errorMessage = "Não foi possível contactar o servidor. Tente novamente.";
+        }
+        finally
         {
             MessageDialogService.ShowSaveButton = true;
-            MessageDialogService.ShowBusyButton = !MessageDialogService.ShowSaveButton;
-            errorMessage = "Invalid email or password!";
+            MessageDialogService.ShowBusyButton = false;
         }
     }
 
-    private async Task AddTheme(string? theme, string Languege)
+    private async Task AddTheme(string? theme, string languege)
     {
         var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
         await js.InvokeVoidAsync("localStorage.setItem", "theme", theme ?? "light");
-        await js.InvokeVoidAsync("localStorage.setItem", "blazorCulture.get", Languege ?? "pt-PT");
+        await js.InvokeVoidAsync("localStorage.setItem", "blazorCulture.get", languege ?? "pt-PT");
+
         string themeToApply = theme ?? "";
         if (storedTheme == "auto")
         {
@@ -154,9 +456,9 @@
                 "window.matchMedia('(prefers-color-scheme: dark)').matches");
             themeToApply = prefersDark ? "dark" : "light";
         }
-        // Set global theme
+
         ThemeService.SetTheme(themeToApply);
         await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", themeToApply);
-
     }
 }
+

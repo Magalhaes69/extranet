@@ -1,10 +1,9 @@
-﻿
-using Application.UseCases.Items.GetAllItemsCatalog;
+﻿using Application.UseCases.Items.GetAllItemsCatalog;
 using Domain.Helps;
 using Domain.Helps.Enum;
 using Domain.Interfaces;
 
-namespace Application.UseCases.Invoices.Helps
+namespace Application.Shared.Helps
 {
     public class ODataFilterBuilder
     {
@@ -158,6 +157,21 @@ namespace Application.UseCases.Invoices.Helps
 
                 OperatorType.Between =>
                     $"({f.Field} ge {FormatValue(f.Value1)} and {f.Field} le {FormatValue(f.Value2)})",
+                
+                    OperatorType.Contains =>
+                                        $"contains({f.Field}, {FormatValue(f.Value1)})",
+
+            OperatorType.StartsWith =>
+                      $"startswith({f.Field}, {FormatValue(f.Value1)})",
+
+            OperatorType.EndsWith => 
+                  $"endswith({f.Field}, {FormatValue(f.Value1)})",
+
+                OperatorType.IsNull =>
+                    $"{f.Field} eq null",
+
+                OperatorType.IsNotNull =>
+                    $"{f.Field} ne null",
 
                 _ => ""
             };

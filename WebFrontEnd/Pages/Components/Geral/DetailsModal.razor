@@ -1,0 +1,42 @@
+﻿@if (IsVisible)
+{
+    <div class="right-modal show" style="@($"top:{Top}px; left:{Left}px;")"
+         @onmouseleave="Close">
+        <div class="modal-header-custom">
+            @Title
+        </div>
+
+        <div class="modal-body-custom">
+            @BodyDetails
+        </div>
+
+        <div class="modal-footer-custom">
+            @Footer
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnViewMore { get; set; }
+
+    [Parameter] public double Top { get; set; }
+    [Parameter] public double Left { get; set; }
+
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public RenderFragment? BodyDetails { get; set; }
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    [JSInvokable]
+    public void CloseIfOutside()
+    {
+        IsVisible = false;
+    }
+}

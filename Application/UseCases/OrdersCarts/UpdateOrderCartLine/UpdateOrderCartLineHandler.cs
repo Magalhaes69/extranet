@@ -23,7 +23,22 @@ namespace Application.UseCases.OrdersCarts.UpdateOrderCartLine
         {
             try
             {
-                var order = _mapper.Map<OrderLineCart>(request);
+                var getOrder = await _ordersCart.GetByIdAsync(request.OrderLineCartId, cancellationToken);
+                if (getOrder is null)
+                {
+                    return null!;
+                }
+                
+                getOrder.ItemCode = request.ItemCode;
+                getOrder.Quantity  = request.Quantity;  
+                getOrder.UnitPrice = request.UnitPrice;
+                getOrder.WarehouseCode = request.WarehouseCode!;
+                getOrder.ItemDescription = request.ItemDescription;
+                getOrder.LineTotal = request.LineTotal;
+                getOrder.DiscPrcnt = request.DiscPrcnt;
+                getOrder.UserId = request.UserId;
+
+                var order = _mapper.Map<OrderLineCart>(getOrder);
                 _ordersCart.UpdateAsync(order);
                 await _unitOfWork.Commit(cancellationToken);
 

@@ -197,7 +197,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>zzz
 
 <div class="app-content">
     <div class="container-fluid">
@@ -231,11 +231,11 @@
 
             <HeaderGroup>
                 <colgroup>
-                    <col style="width: 20px;" />
+                    <col style="width: 50px;" />
                     <col style="width: 200px;" />
-                    <col style="width: 250px;" />
-                    <col style="width: 150px;" />
-                    <col style="width: 20px;" />
+                    <col style="width: 350px;" />
+                    <col style="width: 350px;" />
+                    <col style="width: 50px;" />
                 </colgroup>
             </HeaderGroup>
             <Header>
@@ -260,9 +260,9 @@
                              onerror="this.src='/images/no-image.png'" />
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
                                 @onclick="() => SelectItemExtension(item)">
-                            <i class="bi bi-chevron-right"></i>
+                            <i class="bi bi-chevron-right  @(ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")"></i>
                         </button>
                     </td>
                 </tr>
@@ -381,9 +381,16 @@
             }
         }
     }
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LayoutState.SetSidebar(true);
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         Title = LanItem["itemTitle"];
         PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         DescpTotal = LanItem["descriptionTotItemExtension"];

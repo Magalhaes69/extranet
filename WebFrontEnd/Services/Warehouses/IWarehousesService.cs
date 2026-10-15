@@ -6,7 +6,9 @@ namespace WebFrontEnd.Services.Warehouses
     public interface IWarehousesService
     {
         Task<WarehousesDto> GetByCodeAsync(string code);
-        Task<List<WarehousesDto>> GetWarehousesServiceAsync(string Inactive);
+        Task<WarehousesResultDto> GetWarehousesServiceAsync(
+            WarehousesRequestDto request,
+            bool forceRefresh = false);
 
         Action WarehousesDtoAction { get; set; }
     }

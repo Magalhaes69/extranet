@@ -105,16 +105,16 @@ else
     private List<CatalogItemDto> itemsDtos = new();
     private CancellationTokenSource _cts;
     private string SearchText = "";
-    private bool isCollapsed = true;
     private int TPriceBusiness = 0;
     private string CardCode = string.Empty;
     private string CardType = string.Empty;
     private bool IsBackgroundLoading = false;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
 
             ThemeService.OnThemeChanged += StateHasChanged;
@@ -123,6 +123,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["catalogTitleNavBar"]);
         ToastService.OnChange += StateHasChanged;
         IsLoading = true;
         PageState.SetTitle(LanGeneral["catalogTitleNavBar"]);
@@ -152,6 +153,7 @@ else
             TPriceBusiness = TPriceBusiness
         };
         var firstPage = await ItemsService.GetFirstPageAsync(request);
+
         AllProducts.AddRange(firstPage);
 
         ApplyFilter();
@@ -217,43 +219,55 @@ else
             userId = user.GetUserGuid();
 
         }
-
-        var cart = CartServices.CurrentCart;
-
         // Case 1: No header → create full cart
-        if (cart == null)
+        if (CartServices.CurrentCart.OrderId == Guid.Empty)
         {
             var createCart = new CreateOrdersCartDto
             {
                 CardCode = cardCode,
                 UserId = userId,
-                OrderLineCart = new List<CreateOrderLineCartDto>
-            {
-                new CreateOrderLineCartDto
+                OrderLineCarts = new List<CreateOrderLineCartDto>
                 {
-                    UserId = userId,
-                    ItemCode = product.ItemCode,
-                    ItemDescription = product.ItemName,
-                    Quantity = 1,
-                    WarehouseCode = "PGMT",
-                    UnitPrice = product.ItemPrices
+                    new CreateOrderLineCartDto
+                    {
+                        UserId = userId,
+                        ItemCode = product.ItemCode,
+                        ItemDescription = product.ItemName,
+                        Quantity = 1,
+                        WarehouseCode = product.DefaultWarehouse!,
+                        UnitPrice = product.ItemPrices,
+                        LineTotal = product.ItemPrices * 1,
+                        DiscPrcnt = 0m,
+                        VatGroup = product.SalesVATGroup
+                    }
                 }
-            }
             };
+            CardType = "cCustomer";
+            var getBus = await BusinessPartnersService.GetBusinessPartnersAsync(CardCode, CardType, true);
+            if (getBus is not null)
+                createCart.CardName = getBus.CardName!;
 
-            await CartServices.CreateAsync(createCart);
+            var getResult = await CartServices.CreateAsync(createCart);
+            if (getResult.Flag)
+            {
+                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+            }
+            else
+            {
+                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            }
+            CartServices.NotifyStateChanged();
             return;
         }
-
+        var cart = CartServices.CurrentCart;
         // Case 2: Header exists → work on lines
-        var existingLine = cart.OrderLineCarts
+        var existingLine = cart.OrderLineCarts?
             .FirstOrDefault(x => x.ItemCode == product.ItemCode);
 
         if (existingLine != null)
         {
             // Increase quantity
             existingLine.Quantity++;
-
 
             var getResult =  await CartServices.UpdateLineAsync(new UpdateOrdersCartLineDto
             {
@@ -267,17 +281,21 @@ else
                 DiscPrcnt = existingLine.DiscPrcnt,
                 WarehouseCode = existingLine.WarehouseCode,
                 UserId = userId,
+                VatGroup = existingLine.VatGroup
+                
             });
 
             if (getResult.Flag)
             {
                 ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
-
-                existingLine.Quantity--;
-                CartServices.NotifyStateChanged();
             }
-            else
+            else{
                 ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+                existingLine.Quantity--;
+            }
+
+
+            CartServices.NotifyStateChanged();
             return;
         }
         else
@@ -290,8 +308,11 @@ else
                 ItemDescription = product.ItemName,
                 Quantity = 1,
                 UnitPrice = product.ItemPrices,
+                LineTotal = product.ItemPrices * 1,
                 UserId = userId,
-                WarehouseCode = "PGMT"
+                WarehouseCode = product.DefaultWarehouse!,
+                DiscPrcnt = 0m,
+                VatGroup = product.SalesVATGroup
             };
 
             var result = await CartServices.AddLineAsync(newLine);
@@ -300,7 +321,7 @@ else
             {
                 ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
 
-                cart.OrderLineCarts.Add(new ViewOrderLineCartDto
+                cart.OrderLineCarts?.Add(new ViewOrderLineCartDto
                 {
                     OrderLineCartId = result.Data!.OrderLineCartId,
                     OrderId = cart.OrderId,
@@ -309,8 +330,10 @@ else
                     Quantity = 1,
                     UserId = userId,
                     UnitPrice = product.ItemPrices,
-                    LineTotal = newLine.Quantity * newLine.UnitPrice
-
+                    LineTotal = newLine.Quantity * newLine.UnitPrice,
+                    WarehouseCode = newLine.WarehouseCode!,
+                    DiscPrcnt = newLine.DiscPrcnt,
+                    VatGroup = product.SalesVATGroup
                 });
 
                 CartServices.NotifyStateChanged();

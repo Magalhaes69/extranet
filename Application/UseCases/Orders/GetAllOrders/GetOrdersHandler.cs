@@ -1,10 +1,12 @@
-﻿using Application.UseCases.Invoices.Helps;
+﻿using Application.Dtos;
+using Application.Shared.Helps;
 using Domain.Interfaces;
 using MediatR;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.UseCases.Orders.GetAllOrders
 {
-    public class GetOrdersHandler : IRequestHandler<GetAllOrdersRequest, List<GetAllOrdersResponse>>
+    public class GetOrdersHandler : IRequestHandler<GetAllOrdersRequest, PagedResult<GetAllOrdersResponse, TotalResult>>
     {
         private readonly ISapClient _sapClient;
         public GetOrdersHandler(ISapClient sapClient)
@@ -12,7 +14,7 @@ namespace Application.UseCases.Orders.GetAllOrders
             _sapClient = sapClient;
         }
 
-        public async Task<List<GetAllOrdersResponse>> Handle(GetAllOrdersRequest request, CancellationToken cancellationToken)
+        public async Task<PagedResult<GetAllOrdersResponse, TotalResult>> Handle(GetAllOrdersRequest request, CancellationToken cancellationToken)
         {
             var filter = ODataFilterBuilder.Build(request);
             var queryParams = new Dictionary<string, string>
@@ -21,13 +23,28 @@ namespace Application.UseCases.Orders.GetAllOrders
                 ["$orderby"] = "DocEntry desc"
             };
 
-            var sapOrders = await _sapClient.GetAllB1Async<GetAllOrdersResponse>(
+            var (data, totalPage) = await _sapClient.GetPagedBL1Async<GetAllOrdersResponse>(
                 "Orders",
+                request.Page,
+                request.PageSize,
                 filter,
                 queryParams,
                 cancellationToken);
 
-            return sapOrders;
+            var sumTask = _sapClient.SumAsync("Orders", new[] { "DocTotal" }, filter, cancellationToken);
+
+            return new PagedResult<GetAllOrdersResponse, TotalResult>
+            {
+                Items = data ?? new(),
+                TotalCount = totalPage,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                Total = new TotalResult
+                {
+                    Total = (await sumTask)[0],
+                    Currency = await _sapClient.GetLocalCurrencyAsync(cancellationToken)
+                }
+            };
         }
     }
 }

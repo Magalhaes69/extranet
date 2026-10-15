@@ -8,30 +8,25 @@ namespace WebFrontEnd.Services.Items
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/Items";
         public Action ItemsAction { get; set; }
-        private List<ItemsDto>? _cache;
+        private ItemsResultDto? _cache;
         private List<CatalogItemDto>? _catalogCache;
 
         public ItemsService(IHttpClientFactory factory)
         {
             this._httpClient = factory.CreateClient("API");
         }
-        public async Task<List<ItemsDto>> GetItemsAsync()
+        public async Task<ItemsResultDto> GetItemsAsync(
+            GetAllItemsRequest request, 
+            bool forceRefresh = false)
         {
-            if (_cache is not null)
-                return _cache;
-
-            var valid = "tYES";
-            var queryParams = new List<string>();
-            queryParams.Add($"Valid={valid}");
-
-            var query = string.Join("&", queryParams);
-            var response = await _httpClient.GetAsync($"{BaseUrl}/list?{query}");
+            var serialized = General.GennerateStringContent(General.SerializeObject(request));
+            var response = await _httpClient.PostAsync($"{BaseUrl}/list", serialized);
 
             if (!response.IsSuccessStatusCode)
-                return new List<ItemsDto>();
+                return new ItemsResultDto { Items = new List<ItemsDto>(), TotalCount = 0 };
 
-            _cache = await response.Content.ReadFromJsonAsync<List<ItemsDto>>()
-                     ?? new List<ItemsDto>();
+            _cache = await response.Content.ReadFromJsonAsync<ItemsResultDto>()
+                     ?? new ItemsResultDto { Items = new List<ItemsDto>(), TotalCount = 0 };
 
             return _cache;
         }

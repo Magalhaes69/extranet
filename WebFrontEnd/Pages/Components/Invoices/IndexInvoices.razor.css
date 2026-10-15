@@ -1,4 +1,32 @@
-﻿/* Container: fixed height like input-sm */
+﻿#resizable-table th,
+#resizable-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 1px;
+}
+
+#resizable-table th {
+    position: relative;
+    min-width: 80px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#resizable-table th .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 1;
+}
+
+/* Container: fixed height like input-sm */
 .filter-input-container {
     height: 32px;
     overflow: hidden;
@@ -87,3 +115,13 @@
             background-color: rgba(255, 255, 255, 0.08);
             color: #ffffff;
         }
+
+.total-row {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    z-index: 2;
+    box-shadow: 0 -1px 0 #dee2e6;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}

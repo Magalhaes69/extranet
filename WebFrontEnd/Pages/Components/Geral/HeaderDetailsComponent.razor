@@ -1,6 +1,7 @@
 ﻿
-
 <div class="summary-flex">
+
+  
     <!-- Cliente -->
     <div class="summary-item">
         <small class="text-muted d-block">@UiConverters.ToDocType("rCustomer")</small>
@@ -24,24 +25,27 @@
     <!-- Status -->
     <div class="summary-item">
         <small class="text-muted d-block">
-            @LanSales["ststusLine"]</small>
+            @LanSales["ststusLine"]
+        </small>
         <div class="@UiConverters.ToDocStatusClass(DocumentStatus!, Cancelled!) fw-semibold">@UiConverters.ToDocStatus(DocumentStatus!, Cancelled!)</div>
     </div>
 
-    <!-- Crédito -->
+
+   @*  <!-- Crédito -->
     <div class="summary-item flex-grow-1">
         <small class="text-muted d-block">
             @LanSales["creditLimitUt"]
-            </small>
+        </small>
 
         <div class="progress mt-1 rounded-4" style="height: 18px; width:150px;">
             <div class="progress-bar bg-success text-dark" style="width: 50%">
                 50%
             </div>
         </div>
-    </div>
+    </div> *@
 
 </div>
+
 <style>
     .summary-flex {
         display: flex;

@@ -11,6 +11,7 @@
 @using WebFrontEnd
 @using WebFrontEnd.Layout
 @using WebFrontEnd.Pages.Components
+@using WebFrontEnd.Services.AppSettings
 @using WebFrontEnd.Services.Auth
 
 
@@ -25,6 +26,7 @@
 @using WebFrontEnd.Services.ItemExtension
 @using WebFrontEnd.Services.ItemGroups
 @using WebFrontEnd.Services.Items
+@using WebFrontEnd.Services.LicenseService
 @using WebFrontEnd.Services.Orders.Models
 @using WebFrontEnd.Services
 @using WebFrontEnd.Services.Orders
@@ -47,6 +49,7 @@
 @using WebFrontEnd.Services.Enums
 @using WebFrontEnd.Services.Filter
 @using static WebFrontEnd.Pages.Components.Geral.AppTabs
+@using WebFrontEnd.Services.Returns
 
 @inject ToastService ToastService
 
@@ -66,9 +69,16 @@
 @inject IOrdersCartService OrdersCartService;
 @inject IItemExtensionService ItemExtensionService;
 @inject ISQLQueriesService SQLQueriesService;
+@inject IReturnsService ReturnsService;
+@inject LayoutStateService LayoutState;
+@inject PageTitleService PageTitleService;
+@inject UiStateService UiStateService;
+@inject IAppSettingsService AppSettingsService;
+@inject ILicenseKeyService LicenseKeyService;
 
 @inject AuthService AuthService
 @inject NavigationManager nav
+@inject LicenseState LicenseState
 
 @inject MessageDialogService MessageDialogService
 @inject AuthService authService
@@ -80,5 +90,6 @@
 @inject FilterMetadataBuilder FilterMetadataBuilder
 @inject IStringLocalizer<App> LanGeneral
 @inject IStringLocalizer<SalesGeneralApp> LanSales
+@inject IStringLocalizer<IncomingPaymentApp> LanIncomingPayments
 
 @inject IConfiguration Config

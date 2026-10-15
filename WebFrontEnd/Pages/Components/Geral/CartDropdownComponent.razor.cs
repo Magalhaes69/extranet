@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using WebFrontEnd.Helps;
 using WebFrontEnd.Services.OrdersCarts;
 using WebFrontEnd.Services.OrdersCarts.Dto;
@@ -9,10 +8,11 @@ namespace WebFrontEnd.Pages.Components.Geral
     public partial class CartDropdownComponent : ComponentBase, IDisposable
     {
         [Inject] public OrdersCartService CartServices { get; set; }
-       
+        private string userId = string.Empty;
+        
         protected override async Task OnInitializedAsync()
         {
-            CartServices.OnChange += StateHasChanged;
+            CartServices.OnChange += async () => await InvokeAsync(StateHasChanged);
 
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
@@ -20,9 +20,9 @@ namespace WebFrontEnd.Pages.Components.Geral
             if (user.Identity?.IsAuthenticated == true)
             {
                 var cardCode = user.GetCardCode();
-                var userId = user.GetUserGuid();
+                userId = user.GetUserGuid();
 
-                await CartService.GetLastOrdersCartPend(cardCode, userId);
+                await CartServices.GetLastOrdersCartPend(cardCode, userId);
             }
         }
 
@@ -59,9 +59,9 @@ namespace WebFrontEnd.Pages.Components.Geral
                 LineTotal = row.LineTotal,
                 DiscPrcnt = row.DiscPrcnt,
                 UserId = row.UserId,
-                WarehouseCode = "PGMT"
+                WarehouseCode = row.WarehouseCode,
             };
-            var result = await CartService.UpdateLineAsync(OrderLine);
+            var result = await CartServices.UpdateLineAsync(OrderLine);
             if (result.Flag)
                 ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
             else
@@ -91,19 +91,39 @@ namespace WebFrontEnd.Pages.Components.Geral
                 LineTotal = row.LineTotal,
                 DiscPrcnt = row.DiscPrcnt,
                 UserId = row.UserId,
-                WarehouseCode = "PGMT"
+                WarehouseCode = row.WarehouseCode,
             };
-            await CartService.UpdateLineAsync(OrderLine);
+            await CartServices.UpdateLineAsync(OrderLine);
         }
 
         private async Task Remove(dynamic item)
         {
-            var result = await CartService.DeleteLineAsync(item.OrderLineCartId.ToString(), item.OrderId.ToString());
-
-            if (result.Flag)
-                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+            if (CartServices.CurrentCart?.OrderLineCarts?.Count == 1)
+            {
+                var resultR = await CartServices.DeleteOrderIdAsync(item.OrderId.ToString());
+                if (resultR.Flag)
+                {
+                    ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+                    CartServices.CurrentCart = new ViewOrdersCartDto
+                    {
+                        OrderLineCarts = new List<ViewOrderLineCartDto>()
+                    };
+                    StateHasChanged();
+                }
+                else
+                    ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            }
             else
-                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            {
+                var result = await CartServices.DeleteLineAsync(item.OrderLineCartId.ToString(), item.OrderId.ToString());
+
+                if (result.Flag)
+                {
+                    ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+                }
+                else
+                    ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
+            }
             return;
         }
         private async Task ViewOrder()
@@ -112,7 +132,29 @@ namespace WebFrontEnd.Pages.Components.Geral
         }
         private async Task FinishOrder()
         {
-            Console.WriteLine("Finish order clicked");
+            var getCart = CartServices.CurrentCart;
+            var orders = new UpdateOrdersCartsRequest()
+            {
+                OrderId = getCart.OrderId,
+                Status = true,
+                UserId = userId
+            };
+
+            var response = await OrdersCartService.UpdateOrdersAsync(orders);
+            if (response.Flag)
+            {
+                ToastService.ShowSuccess(LanGeneral["successMessage"], ThemeService.CurrentTheme);
+
+               CartServices.CurrentCart = new ViewOrdersCartDto
+                {
+                    OrderLineCarts = new List<ViewOrderLineCartDto>()
+                };
+                StateHasChanged();
+            }
+            else
+                ToastService.ShowError(LanGeneral["errorMessage"], ThemeService.CurrentTheme);
         }
+
+        
     }
 }

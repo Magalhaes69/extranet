@@ -288,4 +288,19 @@
   <data name="IncomingPaymentIndexTitleNavbar" xml:space="preserve">
     <value>Gerenciar meus pagamentos</value>
   </data>
+  <data name="it_Invoice" xml:space="preserve">
+    <value>Faturas</value>
+  </data>
+  <data name="it_JournalEntry" xml:space="preserve">
+    <value>Lançamento de diário</value>
+  </data>
+  <data name="selectLineToRemove" xml:space="preserve">
+    <value>Selecione uma linha para apagar</value>
+  </data>
+  <data name="confirmDeleteItemInOrder" xml:space="preserve">
+    <value>Os itens selecionados serão excluídos. Deseja continuar?</value>
+  </data>
+  <data name="selectLineToMove" xml:space="preserve">
+    <value>Selecione uma linha</value>
+  </data>
 </root>

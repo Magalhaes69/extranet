@@ -146,7 +146,7 @@
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
             await js.InvokeVoidAsync("initResizableTable");
         }
@@ -154,6 +154,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        PageTitleService.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         Title = LanItem["itemTitle"];
         PageState.SetTitle(LanGeneral["itemExtensionCreateNavBarTitleNavbar"]);
         ThemeService.OnThemeChanged += StateHasChanged;

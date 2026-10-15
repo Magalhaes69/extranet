@@ -7,7 +7,7 @@ namespace WebFrontEnd.Services.OrdersCarts
     {
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/OrdersCart";
-        public ViewOrdersCartDto CurrentCart { get; private set; } = new();
+        public ViewOrdersCartDto CurrentCart { get; set; } = new();
         public Action OrderAction { get; set; }
         public event Action? OnChange;
         public void NotifyStateChanged() => OnChange?.Invoke();
@@ -16,20 +16,20 @@ namespace WebFrontEnd.Services.OrdersCarts
             this._httpClient = factory.CreateClient("API");
         }
 
-        public async Task<ServiceResponsePost> CreateAsync(CreateOrdersCartDto order)
+        public async Task<ServiceResponseGeneralPost<CreateOrdersCardResponseDto>> CreateAsync(CreateOrdersCartDto order)
         {
             var response = await _httpClient.PostAsync(BaseUrl,
                 General.GennerateStringContent(General.SerializeObject(order)));
-
-            var result = CheckResponsePost(response);
-
-            if (!result.Flag) return result;
-
+            if (!response.IsSuccessStatusCode)
+                return new ServiceResponseGeneralPost<CreateOrdersCardResponseDto>
+                {
+                    Flag = false,
+                    Message = "",
+                    Data = null!,
+                };
             var apiResponse = await RedContent(response);
 
-            var created = General.DeserialzeJsonString<ServiceResponsePost>(apiResponse);
-
-           
+            var created = General.DeserialzeJsonString<ServiceResponseGeneralPost<CreateOrdersCardResponseDto>>(apiResponse);
             await GetLastOrdersCartPend(order.CardCode, order.UserId, true);
 
             return created;
@@ -181,6 +181,80 @@ namespace WebFrontEnd.Services.OrdersCarts
             catch
             {
                 return new ServiceResponseGeneralPost<ViewOrderLineCartDto>
+                {
+                    Flag = false,
+                    Message = ""
+                };
+            }
+        }
+
+        public async Task<ServiceResponseGeneralPost<UpdateOrdersCartLineDto>> UpdateOrdersAsync(UpdateOrdersCartsRequest order)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsync(
+                $"{BaseUrl}/update-orders", General.GennerateStringContent(General.SerializeObject(order)));
+
+                var result = CheckResponsePost(response);
+
+                if (!result.Flag)
+                    return new ServiceResponseGeneralPost<UpdateOrdersCartLineDto>
+                    {
+                        Flag = false,
+                        Message = result.Message
+                    };
+
+                var apiResponse = await RedContent(response);
+
+                var created = General.DeserialzeJsonString<ServiceResponseGeneralPost<UpdateOrdersCartLineDto>>(apiResponse);
+               
+                return created;
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponseGeneralPost<UpdateOrdersCartLineDto>
+                {
+                    Flag = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public void ClearCart()
+        {
+            CurrentCart = new ViewOrdersCartDto
+            {
+                OrderLineCarts = new List<ViewOrderLineCartDto>()
+            };
+            NotifyStateChanged();
+        }
+
+        public async Task<ServiceResponseGeneralPost<ViewOrdersCartDto>> DeleteOrderIdAsync(string OrderId)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"{BaseUrl}/delete-order?OrderId={OrderId}");
+
+                if (!response.IsSuccessStatusCode)
+                    return new ServiceResponseGeneralPost<ViewOrdersCartDto>
+                    {
+                        Flag = false,
+                        Message = ""
+                    };
+                var apiResponse = await RedContent(response);
+
+                var result = General.DeserialzeJsonString<ServiceResponseGeneralPost<ViewOrdersCartDto>>(apiResponse);
+                if (result is null)
+                    return new ServiceResponseGeneralPost<ViewOrdersCartDto>
+                    {
+                        Flag = false,
+                        Message = ""
+                    };
+                return result;
+            }
+            catch
+            {
+                return new ServiceResponseGeneralPost<ViewOrdersCartDto>
                 {
                     Flag = false,
                     Message = ""

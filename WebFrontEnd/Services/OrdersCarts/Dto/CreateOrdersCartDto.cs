@@ -7,6 +7,6 @@ namespace WebFrontEnd.Services.OrdersCarts.Dto
         public string CardName { get; set; }
         public string? Referencia { get; set; }
         public string UserId { get; set; }
-        public List<CreateOrderLineCartDto> OrderLineCart { get; set; }
+        public List<CreateOrderLineCartDto> OrderLineCarts { get; set; }
     }
 }

@@ -24,9 +24,8 @@ namespace Application.UseCases.OrdersCarts.CreateOrderCart
         {
             try
             {
-
                 var order = _mapper.Map<OrdersCart>(request);
-                _ordersCart.CreateAsync(order);
+                await _ordersCart.CreateAsync(order);
                 await _unitOfWork.Commit(cancellationToken);
 
                 return _mapper.Map<CreateOrdersCardResponse>(order);

@@ -1,6 +1,8 @@
 ﻿using Application.Dtos;
+using Application.UseCases.OrdersCarts.CreateOrderCart;
 using Application.UseCases.User.Auth;
 using Application.UseCases.User.CreateUser;
+using Application.UseCases.User.DefinePassword;
 using Application.UseCases.User.GetAllUser;
 using Application.UseCases.User.GetUserById;
 using Application.UseCases.User.UpdateUser;
@@ -67,40 +69,40 @@ namespace WebAPI.Controllers
             return Ok(result);
         }
 
-        [HttpPut("updateprofile")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUser(
-            [FromForm] UpdateUserRequest createUser,
-            [FromForm] IFormFile? file,
-            CancellationToken cancellationToken)
-        {
+        //[HttpPut("updateprofile")]
+        //[Authorize]
+        //public async Task<IActionResult> UpdateUser(
+        //    [FromForm] UpdateUserRequest createUser,
+        //    [FromForm] IFormFile? file,
+        //    CancellationToken cancellationToken)
+        //{
 
-            if (file != null)
-            {
-                createUser.FileName = file.FileName;
-                createUser.ImageStream = file.OpenReadStream();
-            }
+        //    if (file != null)
+        //    {
+        //        createUser.FileName = file.FileName;
+        //        createUser.ImageStream = file.OpenReadStream();
+        //    }
 
-            var request = await _mediator.Send(createUser);
+        //    var request = await _mediator.Send(createUser);
 
-            if (request == null)
-            {
-                return NotFound(new ServiceResponse
-                {
-                    Flag = false,
-                    Message = "User not found",
-                    DocEntry = 0
-                });
-            }
+        //    if (request == null)
+        //    {
+        //        return NotFound(new ServiceResponse
+        //        {
+        //            Flag = false,
+        //            Message = "User not found",
+        //            DocEntry = 0
+        //        });
+        //    }
 
-            var response = new ServiceResponse
-            {
-                Flag = true,
-                Message = "Order created successfully",
-                DocEntry = 0
-            };
-            return Ok(response);
-        }
+        //    var response = new ServiceResponse
+        //    {
+        //        Flag = true,
+        //        Message = "Order created successfully",
+        //        DocEntry = 0
+        //    };
+        //    return Ok(response);
+        //}
 
 
         [HttpGet("getbyid")]
@@ -112,6 +114,28 @@ namespace WebAPI.Controllers
             var response = await _mediator.Send(request, cancellationToken);
             return Ok(response);
         }
-        
+        [AllowAnonymous]
+        [HttpPost("set-password")]
+        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(request, cancellationToken);
+            if (result == null)
+            {
+                return BadRequest(new ServiceGeneralResponse<object>
+                {
+                    Flag = false,
+                    Message = "Badrequest",
+                    Data = null!
+                });
+            }
+
+            return Ok(new ServiceGeneralResponse<SetPasswordResponse>
+            {
+                Flag = true,
+                Message = "Actualizado com sucesso.",
+                Data = result
+            });
+        }
+
     }
 }

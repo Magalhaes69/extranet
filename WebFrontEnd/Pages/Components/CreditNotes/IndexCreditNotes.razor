@@ -309,7 +309,7 @@
             </TotalFacturas>
 
             <ButtonOptions>
-                <button class="btn btn-sm text-decoration-none dropdown-toggle py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                @* <button class="btn btn-sm text-decoration-none dropdown-toggle py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
                         data-bs-toggle="dropdown" disabled="@(!creditNotes!.Any(s => s.Selected))">
                     @LanGeneral["preview"]
                 </button>
@@ -321,9 +321,7 @@
                     </li>
                 </ul>
                 <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-gear"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-table-cells"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-chart-column"></i></button>
-                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-list"></i></button>
+                <button class="btn btn-sm text-decoration-none py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"><i class="fa-solid fa-chart-column"></i></button> *@
             </ButtonOptions>
         </GridOptionsComponent>
 
@@ -344,7 +342,7 @@
                     <col style="width: 150px;" />
                     <col style="width: 150px;" />
                     <col style="width: 150px;" />
-                    <col style="width: 20px;" />
+                    <col style="width: 50px;" />
                 </colgroup>
             </HeaderGroup>
             <Header>
@@ -369,24 +367,24 @@
                     <td>@item.DocNum</td>
 
                     <td>
-                        <a href="#" class="customer-link">
-                            <i class="bi bi-chevron-right"></i> @item.CardCode
-                        </a>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none">
+                            <i class="bi bi-chevron-right text-warning"></i> @item.CardCode
+                        </button>
                     </td>
 
                     <td>@item.CardName</td>
                     <td>@item.Reference1</td>
 
                     <td class="text-center">
-                        @(item.DocDate?.ToString("dd/MM/yyyy"))
+                        @(UiConverters.ToDate(item.DocDate))
                     </td>
 
                     <td class="text-center">
-                        @(item.DocDueDate?.ToString("dd/MM/yyyy"))
+                        @(UiConverters.ToDate(item.DocDueDate))
                     </td>
 
                     <td class="text-end">
-                        @(item.DocTotal?.ToString("N2", new System.Globalization.CultureInfo("pt-PT"))) @item.DocCurrency
+                        @(UiConverters.ToCurrency(item.DocTotal ?? 0, item.DocCurrency!))
                     </td>
 
                     <td>
@@ -394,9 +392,9 @@
                     </td>
 
                     <td class="text-end">
-                        <button class="btn btn-sm custom-btn"
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
                                 @onclick="() => SelectDelivery(item)">
-                            <i class="bi bi-chevron-right"></i>
+                            <i class="bi bi-chevron-right @(ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")"></i>
                         </button>
                     </td>
                 </tr>
@@ -407,7 +405,7 @@
                 <td></td>
                 <td colspan="6" class="text-end">@LanSales["totalGrid"]</td>
                 <td class="text-end">
-                    @total.ToString("N2", new System.Globalization.CultureInfo("pt-PT")) @creditNotes?.FirstOrDefault()?.DocCurrency
+                    @UiConverters.ToCurrency(total, creditNotes?.FirstOrDefault()?.DocCurrency!)
                 </td>
                 <td></td>
                 <td></td>
@@ -538,7 +536,7 @@
     {
         if (firstRender)
         {
-            await js.InvokeVoidAsync("layoutHelper.toggleSidebar", isCollapsed);
+            await LayoutState.SetSidebar(true);
             await js.InvokeVoidAsync("preventDropdownClose");
 
             ThemeService.OnThemeChanged += StateHasChanged;
@@ -549,6 +547,7 @@
     {
         Title = LanSales["credit"];
         DescpTotal = LanSales["descriptionTotCreditSelected"];
+        PageTitleService.SetTitle(LanGeneral["creditIndexTitleNavbar"]);
         PageState.SetTitle(LanGeneral["creditIndexTitleNavbar"]);
         AvailableFields = FilterMetadataBuilder.Build<CreditNotesViewDto>();
 

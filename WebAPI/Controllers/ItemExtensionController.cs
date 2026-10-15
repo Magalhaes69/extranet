@@ -26,38 +26,38 @@ namespace WebAPI.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateOrdersCart(
-            [FromForm] CreateItemExtensionRequest request,
-            [FromForm] IFormFile? file,
-            CancellationToken cancellationToken)
-        {
-            // Save image first
-            if (file != null)
-            {
-                var imageUrl = await SaveImage(file);
-                request.ImageUrl = imageUrl;
-            }
+        //[HttpPost]
+        //public async Task<IActionResult> CreateOrdersCart(
+        //    [FromForm] CreateItemExtensionRequest request,
+        //    [FromForm] IFormFile? file,
+        //    CancellationToken cancellationToken)
+        //{
+        //    // Save image first
+        //    if (file != null)
+        //    {
+        //        var imageUrl = await SaveImage(file);
+        //        request.ImageUrl = imageUrl;
+        //    }
 
-            var result = await _mediator.Send(request, cancellationToken);
-            if(result == null)
-            {
-                return NotFound(new ServiceGeneralResponse<CreateItemExtensionResponse>
-                {
-                    Flag = false,
-                    Message = "Item extension not found",
-                    Data = null
-                });
-            }
+        //    var result = await _mediator.Send(request, cancellationToken);
+        //    if(result == null)
+        //    {
+        //        return NotFound(new ServiceGeneralResponse<CreateItemExtensionResponse>
+        //        {
+        //            Flag = false,
+        //            Message = "Item extension not found",
+        //            Data = null
+        //        });
+        //    }
 
-            return Ok(new ServiceGeneralResponse<CreateItemExtensionResponse>
-            {
-                Flag = true,
-                Message = "Item extension created successfully.",
-                Data = result
-            });
+        //    return Ok(new ServiceGeneralResponse<CreateItemExtensionResponse>
+        //    {
+        //        Flag = true,
+        //        Message = "Item extension created successfully.",
+        //        Data = result
+        //    });
 
-        }
+        //}
 
         // GET
         [HttpGet("list")]
@@ -131,37 +131,37 @@ namespace WebAPI.Controllers
         }
 
 
-        [HttpPut]
-        public async Task<IActionResult> EditOrdersCart(
-            [FromForm] EditItemExtensionRequest request,
-            [FromForm] IFormFile? file,
-            CancellationToken cancellationToken)
-        {
-           if(file != null)
-            {
-                request.FileName = file.FileName;
-                request.ImageStream = file.OpenReadStream();
-            }
+        //[HttpPut]
+        //public async Task<IActionResult> EditOrdersCart(
+        //    [FromForm] EditItemExtensionRequest request,
+        //    [FromForm] IFormFile? file,
+        //    CancellationToken cancellationToken)
+        //{
+        //   if(file != null)
+        //    {
+        //        request.FileName = file.FileName;
+        //        request.ImageStream = file.OpenReadStream();
+        //    }
 
-            var result = await _mediator.Send(request, cancellationToken);
-            if (result == null)
-            {
-                return NotFound(new ServiceGeneralResponse<EditItemExtensionResponse>
-                {
-                    Flag = false,
-                    Message = "Item extension not found",
-                    Data = null
-                });
-            }
+        //    var result = await _mediator.Send(request, cancellationToken);
+        //    if (result == null)
+        //    {
+        //        return NotFound(new ServiceGeneralResponse<EditItemExtensionResponse>
+        //        {
+        //            Flag = false,
+        //            Message = "Item extension not found",
+        //            Data = null
+        //        });
+        //    }
 
-            return Ok(new ServiceGeneralResponse<EditItemExtensionResponse>
-            {
-                Flag = true,
-                Message = "Item extension updated successfully.",
-                Data = result
-            });
+        //    return Ok(new ServiceGeneralResponse<EditItemExtensionResponse>
+        //    {
+        //        Flag = true,
+        //        Message = "Item extension updated successfully.",
+        //        Data = result
+        //    });
 
-        }
+        //}
 
         private async Task<string> SaveImage(IFormFile file)
         {

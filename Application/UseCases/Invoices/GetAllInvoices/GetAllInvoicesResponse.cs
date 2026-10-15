@@ -24,5 +24,6 @@
         public string? ShipToCode { get; set; }
         public string? PayToCode { get; set; }
         public string? Address2 { get; set; }
+        public decimal? PaidToDate { get; set; }
     }
 }

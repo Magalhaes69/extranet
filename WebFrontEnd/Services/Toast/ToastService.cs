@@ -13,7 +13,8 @@
 
         public void ShowError(string message, string backround)
             => Add(message, backround, "bi bi-x-circle");
-
+        public void ShowWarning(string message, string backround)
+           => Add(message, backround, "bi bi-exclamation-triangle text-warning");
         public void ShowInfo(string message, string backround)
             => Add(message, backround, "bi bi-info-circle");
 

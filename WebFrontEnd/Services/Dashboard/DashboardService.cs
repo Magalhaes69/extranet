@@ -25,5 +25,18 @@ namespace WebFrontEnd.Services.Dashboard
 
             return get;
         }
+
+        public async Task<DashboardMetricDto?> GetMetricAsync(string key, CancellationToken ct = default)
+        {
+            using var response = await _httpClient.GetAsync($"{BaseUrl}/metrics/{key}", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync(ct);
+                Console.WriteLine($"Dashboard metric '{key}' failed ({(int)response.StatusCode}): {body}");
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<DashboardMetricDto>(cancellationToken: ct);
+        }
     }
 }
