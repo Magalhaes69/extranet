@@ -1,0 +1,432 @@
+@page "/licenses"
+@attribute [Authorize]
+@using WebFrontEnd.Services.Licenses
+@using WebFrontEnd.Services.Licenses.Dto
+@inject IStringLocalizer<LicensesApp> L
+@inject ILicensesService LicensesService
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@Title">
+            <ButtonList>
+                <button type="button"
+                        class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-primary")"
+                        @onclick="OpenRequest">
+                    <i class="bi bi-plus-circle"></i> @L["requestLicense"]
+                </button>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                <div class="row g-3 align-items-end pb-2">
+                    <div class="col-md-4">
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               placeholder="@L["search"]"
+                               @bind="SearchTerm"
+                               @bind:event="oninput" />
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" @bind="StatusFilter">
+                            <option value="">@L["filterAll"]</option>
+                            <option value="active">@L["statusActive"]</option>
+                            <option value="expiring">@L["statusExpiring"]</option>
+                            <option value="expired">@L["statusExpired"]</option>
+                            <option value="pending">@L["statusPending"]</option>
+                            <option value="suspended">@L["statusSuspended"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5 text-muted small">@L["pageSubtitle"]</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        @if (loadFailed)
+        {
+            <div class="alert alert-warning py-2">@L["loadError"]</div>
+        }
+
+        <AppTableComponent TItem="LicenseItemDto"
+                           Items="FilteredLicenses"
+                           IsLoading="isLoading"
+                           ColumnCount="6">
+
+            <Header>
+                <tr class="total-row">
+                    <th class="border-end">@L["colProduct"]</th>
+                    <th class="border-end">@L["colKey"]</th>
+                    <th class="border-end text-center">@L["colUsers"]</th>
+                    <th class="border-end text-center">@L["colStatus"]</th>
+                    <th class="border-end">@L["colExpiry"]</th>
+                    <th class="text-end"></th>
+                </tr>
+            </Header>
+
+            <RowTemplate Context="item">
+                @{
+                    var state = EffectiveStatus(item);
+                }
+                <tr class="@(state is "expired" or "suspended" ? "text-muted" : "")">
+                    <td>@item.Product</td>
+                    <td><code class="small">@(string.IsNullOrWhiteSpace(item.LicenseKey) ? "—" : item.LicenseKey)</code></td>
+                    <td class="text-center">@(item.Users?.ToString() ?? "—")</td>
+                    <td class="text-center">
+                        <span class="badge @StatusBadge(state)">@StatusLabel(state, item.Status)</span>
+                    </td>
+                    <td>
+                        @if (item.ExpiryDate is DateTime expiry)
+                        {
+                            <span>@expiry.ToString("dd/MM/yyyy")</span>
+                            @if (state is "active" or "expiring")
+                            {
+                                <span class="text-muted small ms-1">(@string.Format(L["daysLeft"].Value, DaysLeft(expiry)))</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </td>
+                    <td class="text-end text-nowrap">
+                        @if (CanRenew(state))
+                        {
+                            <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                                    @onclick="() => OpenRenew(item)">
+                                <i class="bi bi-arrow-repeat"></i> @L["btnRenew"]
+                            </button>
+                        }
+                    </td>
+                </tr>
+            </RowTemplate>
+
+            <LoadingTemplate>
+                <LoadingPage />
+            </LoadingTemplate>
+
+            <EmptyTemplate>
+                @L["noLicenses"]
+            </EmptyTemplate>
+        </AppTableComponent>
+    </div>
+</div>
+
+@* Renew a license *@
+@if (showRenew && renewTarget is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,.35);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h6 class="modal-title fs-5">@L["renewTitle"]</h6>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-3">@string.Format(L["renewText"].Value, renewTarget.Product)</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">@L["renewPeriod"]</label>
+                        <InputSelect class="form-select form-select-sm" @bind-Value="renewForm.Months">
+                            @foreach (var months in MonthOptions)
+                            {
+                                <option value="@months">@string.Format(L["monthsOption"].Value, months)</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label class="form-label">@L["notes"]</label>
+                        <InputTextArea class="form-control form-control-sm" rows="3" maxlength="500" @bind-Value="renewForm.Notes" />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(formError))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0">@formError</div>
+                    }
+                </div>
+
+                <div class="modal-footer py-1">
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-secondary")"
+                            disabled="@isSaving"
+                            @onclick="CloseForms">
+                        @L["btnCancel"]
+                    </button>
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-primary")"
+                            disabled="@isSaving"
+                            @onclick="SubmitRenewAsync">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        }
+                        @L["btnRenew"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Request a new license *@
+@if (showRequest)
+{
+    <div class="modal fade show d-block" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,.35);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h6 class="modal-title fs-5">@L["requestTitle"]</h6>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">@L["product"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="150" @bind-Value="requestForm.Product" />
+                            <div class="form-text">@L["productHint"]</div>
+                            @FieldError("Product")
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@L["users"]</label>
+                            <InputNumber class="form-control form-control-sm" @bind-Value="requestForm.Users" />
+                            @FieldError("Users")
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">@L["notes"]</label>
+                            <InputTextArea class="form-control form-control-sm" rows="3" maxlength="500" @bind-Value="requestForm.Notes" />
+                        </div>
+                    </div>
+
+                    <div class="form-text mt-3">@L["requestHint"]</div>
+
+                    @if (!string.IsNullOrWhiteSpace(formError))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0">@formError</div>
+                    }
+                </div>
+
+                <div class="modal-footer py-1">
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-secondary")"
+                            disabled="@isSaving"
+                            @onclick="CloseForms">
+                        @L["btnCancel"]
+                    </button>
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-primary")"
+                            disabled="@isSaving"
+                            @onclick="SubmitRequestAsync">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        }
+                        @L["btnSend"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private const int ExpiringDays = 30;
+    private static readonly int[] MonthOptions = { 3, 6, 12, 24 };
+
+    private string Title = string.Empty;
+    private List<LicenseItemDto> licenses = new();
+    private bool isLoading = true;
+    private bool loadFailed;
+
+    private string SearchTerm { get; set; } = string.Empty;
+    private string StatusFilter { get; set; } = string.Empty;
+
+    // Modal state
+    private bool showRenew;
+    private bool showRequest;
+    private bool isSaving;
+    private string? formError;
+    private LicenseItemDto? renewTarget;
+    private LicenseRenewFormDto renewForm = new();
+    private LicenseRequestFormDto requestForm = new();
+    private readonly Dictionary<string, string> errors = new();
+
+    private List<LicenseItemDto> FilteredLicenses =>
+        licenses
+            .Where(l => string.IsNullOrWhiteSpace(StatusFilter) || EffectiveStatus(l) == StatusFilter)
+            .Where(l => string.IsNullOrWhiteSpace(SearchTerm) ||
+                        Contains(l.Product, SearchTerm) ||
+                        Contains(l.LicenseKey, SearchTerm))
+            .ToList();
+
+    private static bool Contains(string? value, string term) =>
+        value?.Contains(term, StringComparison.OrdinalIgnoreCase) == true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LayoutState.SetSidebar(true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Title = L["pageTitle"];
+        PageTitleService.SetTitle(Title);
+        PageState.SetTitle(Title);
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        var result = await LicensesService.GetAllAsync();
+        loadFailed = result is null;
+        licenses = result ?? new();
+        isLoading = false;
+    }
+
+    // ---------- Status ----------
+
+    /// <summary>
+    /// The API status plus the dates: an "Active" license past its expiry date is shown as expired,
+    /// and one that expires within <see cref="ExpiringDays"/> days as "expiring".
+    /// </summary>
+    private static string EffectiveStatus(LicenseItemDto license)
+    {
+        var status = (license.Status ?? string.Empty).Trim().ToLowerInvariant();
+
+        if (status == "active" && license.ExpiryDate is DateTime expiry)
+        {
+            var days = DaysLeft(expiry);
+            if (days < 0) return "expired";
+            if (days <= ExpiringDays) return "expiring";
+        }
+
+        return status;
+    }
+
+    private static int DaysLeft(DateTime expiry) => (expiry.Date - DateTime.UtcNow.Date).Days;
+
+    private static bool CanRenew(string state) => state is "active" or "expiring" or "expired";
+
+    private static string StatusBadge(string state) => state switch
+    {
+        "active" => "bg-success",
+        "expiring" => "bg-warning text-dark",
+        "expired" => "bg-danger",
+        "pending" => "bg-info text-dark",
+        _ => "bg-secondary"
+    };
+
+    private string StatusLabel(string state, string raw) => state switch
+    {
+        "active" => L["statusActive"],
+        "expiring" => L["statusExpiring"],
+        "expired" => L["statusExpired"],
+        "pending" => L["statusPending"],
+        "suspended" => L["statusSuspended"],
+        _ => string.IsNullOrWhiteSpace(raw) ? "—" : raw
+    };
+
+    // ---------- Modals ----------
+
+    private void OpenRenew(LicenseItemDto license)
+    {
+        renewTarget = license;
+        renewForm = new LicenseRenewFormDto();
+        ResetErrors();
+        showRenew = true;
+    }
+
+    private void OpenRequest()
+    {
+        requestForm = new LicenseRequestFormDto();
+        ResetErrors();
+        showRequest = true;
+    }
+
+    private void CloseForms()
+    {
+        if (isSaving) return;
+        showRenew = false;
+        showRequest = false;
+        renewTarget = null;
+    }
+
+    private void ResetErrors()
+    {
+        errors.Clear();
+        formError = null;
+    }
+
+    private RenderFragment? FieldError(string field) => errors.TryGetValue(field, out var message)
+        ? (builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "text-danger small");
+            builder.AddContent(2, message);
+            builder.CloseElement();
+        })
+        : null;
+
+    private async Task SubmitRenewAsync()
+    {
+        if (renewTarget is null) return;
+        formError = null;
+
+        isSaving = true;
+        try
+        {
+            var response = await LicensesService.RenewAsync(renewTarget.Id, renewForm);
+            await HandleResultAsync(response, L["renewSuccess"]);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SubmitRequestAsync()
+    {
+        formError = null;
+        errors.Clear();
+
+        var required = L["required"].Value;
+        if (string.IsNullOrWhiteSpace(requestForm.Product)) errors["Product"] = required;
+        if (requestForm.Users < 1 || requestForm.Users > 10000) errors["Users"] = L["invalidUsers"];
+        if (errors.Count > 0) return;
+
+        isSaving = true;
+        try
+        {
+            var response = await LicensesService.RequestAsync(requestForm);
+            await HandleResultAsync(response, L["requestSuccess"]);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task HandleResultAsync(ServiceResponsePost response, string fallbackSuccess)
+    {
+        if (response.Flag)
+        {
+            ToastService.ShowSuccess(
+                string.IsNullOrWhiteSpace(response.Message) ? fallbackSuccess : response.Message,
+                ThemeService.CurrentTheme);
+            showRenew = false;
+            showRequest = false;
+            renewTarget = null;
+            await LoadAsync();
+        }
+        else
+        {
+            formError = string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"] : response.Message;
+        }
+    }
+}

@@ -1,0 +1,444 @@
+@page "/users"
+@attribute [Authorize(Roles = "Manager,Administrator")]
+@inject IStringLocalizer<UsersAdminApp> L
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@Title">
+            <ButtonList>
+                <button type="button"
+                        class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-primary")"
+                        @onclick="OpenCreate">
+                    <i class="bi bi-person-plus"></i> @L["addUser"]
+                </button>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                <div class="row g-3 align-items-end pb-2">
+                    <div class="col-md-4">
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               placeholder="@L["search"]"
+                               @bind="SearchTerm"
+                               @bind:event="oninput" />
+                    </div>
+                    <div class="col-md-8 text-muted small">@L["pageSubtitle"]</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        @if (loadFailed)
+        {
+            <div class="alert alert-warning py-2">@L["loadError"]</div>
+        }
+
+        <AppTableComponent TItem="UserListItemDto"
+                           Items="FilteredUsers"
+                           IsLoading="isLoading"
+                           ColumnCount="7">
+
+            <Header>
+                <tr class="total-row">
+                    <th class="border-end">@L["colName"]</th>
+                    <th class="border-end">@L["colEmail"]</th>
+                    <th class="border-end">@L["colCustomer"]</th>
+                    <th class="border-end">@L["colRole"]</th>
+                    <th class="border-end text-center">@L["twoFactor"]</th>
+                    <th class="border-end text-center">@L["colStatus"]</th>
+                    <th class="text-end"></th>
+                </tr>
+            </Header>
+
+            <RowTemplate Context="item">
+                <tr class="@(item.IsActive ? "" : "text-muted")">
+                    <td>@item.FullName</td>
+                    <td>@item.Email</td>
+                    <td>@item.CardCode</td>
+                    <td>@RoleLabel(item.Role)</td>
+                    <td class="text-center">
+                        <i class="bi @(item.TwoFactorEnabled ? "bi-shield-check text-success" : "bi-shield-slash")"></i>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">
+                            @(item.IsActive ? L["statusActive"] : L["statusInactive"])
+                        </span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <button class="btn btn-link btn-sm p-0 me-2 text-decoration-none" title="@L["btnEdit"]"
+                                @onclick="() => OpenEdit(item)">
+                            <i class="bi bi-pencil @(ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")"></i>
+                        </button>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                                title="@(item.IsActive ? L["btnDeactivate"] : L["btnActivate"])"
+                                @onclick="() => AskToggleStatus(item)">
+                            <i class="bi @(item.IsActive ? "bi-person-dash" : "bi-person-check") @(ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")"></i>
+                        </button>
+                    </td>
+                </tr>
+            </RowTemplate>
+
+            <LoadingTemplate>
+                <LoadingPage />
+            </LoadingTemplate>
+
+            <EmptyTemplate>
+                @L["noUsers"]
+            </EmptyTemplate>
+        </AppTableComponent>
+    </div>
+</div>
+
+@* Add / edit user *@
+@if (showForm)
+{
+    <div class="modal fade show d-block" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,.35);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
+                <div class="modal-header py-1">
+                    <h6 class="modal-title fs-5">@(isEdit ? L["editUser"] : L["addUser"])</h6>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">@L["firstName"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="120" @bind-Value="form.FirstName" />
+                            @FieldError("FirstName")
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@L["lastName"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="60" @bind-Value="form.LastName" />
+                            @FieldError("LastName")
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@L["email"]</label>
+                            <InputText class="form-control form-control-sm" disabled="@isEdit" @bind-Value="form.Email" />
+                            @if (isEdit)
+                            {
+                                <div class="form-text">@L["emailReadonlyHint"]</div>
+                            }
+                            @FieldError("Email")
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@L["phone"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="20" @bind-Value="form.PhoneNumber" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@L["nuit"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="10" @bind-Value="form.Nuit" />
+                            @FieldError("Nuit")
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@L["customerCode"]</label>
+                            <InputText class="form-control form-control-sm" maxlength="20" @bind-Value="form.CardCode" />
+                            <div class="form-text">@L["customerCodeHint"]</div>
+                            @FieldError("CardCode")
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@L["role"]</label>
+                            <InputSelect class="form-select form-select-sm" @bind-Value="form.Role">
+                                <option value="User">@L["roleUser"]</option>
+                                <option value="Administrator">@L["roleAdministrator"]</option>
+                                @if (callerIsManager)
+                                {
+                                    <option value="Manager">@L["roleManager"]</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <InputCheckbox class="form-check-input" id="user2fa" @bind-Value="form.TwoFactorEnabled" />
+                                <label class="form-check-label" for="user2fa">@L["twoFactor"]</label>
+                            </div>
+                        </div>
+
+                        @if (!isEdit)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label">@L["password"]</label>
+                                <InputText type="password" class="form-control form-control-sm" autocomplete="new-password" @bind-Value="form.Password" />
+                                <div class="form-text">@L["passwordHint"]</div>
+                                @FieldError("Password")
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@L["confirmPassword"]</label>
+                                <InputText type="password" class="form-control form-control-sm" autocomplete="new-password" @bind-Value="form.ConfirmPassword" />
+                                @FieldError("ConfirmPassword")
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(formError))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0">@formError</div>
+                    }
+                </div>
+
+                <div class="modal-footer py-1">
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-secondary")"
+                            disabled="@isSaving"
+                            @onclick="CloseForm">
+                        @L["btnCancel"]
+                    </button>
+                    <button type="button"
+                            class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-primary")"
+                            disabled="@isSaving"
+                            @onclick="SaveAsync">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        }
+                        @L["btnSave"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Activate / deactivate confirmation *@
+<ConfirmModal @ref="ConfirmModalRef" BorderColor="border-warning">
+    <ModalHeader>
+        <h6 class="modal-title fs-5 mx-auto">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            @(statusTarget?.IsActive == true ? L["confirmDeactivateTitle"] : L["confirmActivateTitle"])
+        </h6>
+    </ModalHeader>
+    <ModalBody>
+        <p>
+            @if (statusTarget is not null)
+            {
+                @(string.Format(statusTarget.IsActive ? L["confirmDeactivateText"].Value : L["confirmActivateText"].Value, statusTarget.FullName))
+            }
+        </p>
+    </ModalBody>
+    <ModalFooter>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                @onclick="ConfirmModalRef.Hide">@L["btnCancel"]</button>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")"
+                @onclick="ConfirmToggleStatusAsync">@L["btnConfirm"]</button>
+    </ModalFooter>
+</ConfirmModal>
+
+@code {
+    private string Title = string.Empty;
+    private List<UserListItemDto> users = new();
+    private bool isLoading = true;
+    private bool loadFailed;
+    private bool callerIsManager;
+
+    private string SearchTerm { get; set; } = string.Empty;
+
+    // Form state
+    private bool showForm;
+    private bool isEdit;
+    private bool isSaving;
+    private UserFormDto form = new();
+    private string? formError;
+    private readonly Dictionary<string, string> errors = new();
+
+    // Status change state
+    private ConfirmModal ConfirmModalRef = default!;
+    private UserListItemDto? statusTarget;
+
+    private List<UserListItemDto> FilteredUsers =>
+        string.IsNullOrWhiteSpace(SearchTerm)
+            ? users
+            : users.Where(u =>
+                    Contains(u.FullName, SearchTerm) ||
+                    Contains(u.Email, SearchTerm) ||
+                    Contains(u.CardCode, SearchTerm))
+                .ToList();
+
+    private static bool Contains(string? value, string term) =>
+        value?.Contains(term, StringComparison.OrdinalIgnoreCase) == true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LayoutState.SetSidebar(true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Title = L["pageTitle"];
+        PageTitleService.SetTitle(Title);
+        PageState.SetTitle(Title);
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        callerIsManager = authState.User.IsInRole("Manager");
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        var result = await UsersService.GetAllAsync();
+        loadFailed = result is null;
+        users = result ?? new();
+        isLoading = false;
+    }
+
+    private string RoleLabel(string role) => role switch
+    {
+        "Manager" => L["roleManager"],
+        "Administrator" => L["roleAdministrator"],
+        "User" => L["roleUser"],
+        _ => role
+    };
+
+    private void OpenCreate()
+    {
+        form = new UserFormDto();
+        isEdit = false;
+        ResetErrors();
+        showForm = true;
+    }
+
+    private void OpenEdit(UserListItemDto user)
+    {
+        form = new UserFormDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            Email = user.Email ?? string.Empty,
+            Nuit = user.Nuit ?? string.Empty,
+            CardCode = user.CardCode ?? string.Empty,
+            PhoneNumber = user.PhoneNumber,
+            Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role,
+            TwoFactorEnabled = user.TwoFactorEnabled
+        };
+        isEdit = true;
+        ResetErrors();
+        showForm = true;
+    }
+
+    private void CloseForm()
+    {
+        if (isSaving) return;
+        showForm = false;
+    }
+
+    private void ResetErrors()
+    {
+        errors.Clear();
+        formError = null;
+    }
+
+    private RenderFragment? FieldError(string field) => errors.TryGetValue(field, out var message)
+        ? (builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "text-danger small");
+            builder.AddContent(2, message);
+            builder.CloseElement();
+        })
+        : null;
+
+    private bool Validate()
+    {
+        errors.Clear();
+        var required = L["required"].Value;
+
+        if (string.IsNullOrWhiteSpace(form.FirstName)) errors["FirstName"] = required;
+        if (string.IsNullOrWhiteSpace(form.LastName)) errors["LastName"] = required;
+        if (string.IsNullOrWhiteSpace(form.Nuit)) errors["Nuit"] = required;
+        if (string.IsNullOrWhiteSpace(form.CardCode)) errors["CardCode"] = required;
+
+        if (!isEdit)
+        {
+            if (string.IsNullOrWhiteSpace(form.Email))
+                errors["Email"] = required;
+            else if (!IsValidEmail(form.Email))
+                errors["Email"] = L["invalidEmail"];
+
+            if (string.IsNullOrEmpty(form.Password))
+                errors["Password"] = required;
+            else if (form.Password.Length < 6)
+                errors["Password"] = L["minLength6"];
+
+            if (form.ConfirmPassword != form.Password)
+                errors["ConfirmPassword"] = L["passwordsDontMatch"];
+        }
+
+        return errors.Count == 0;
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        var value = email.Trim();
+        var at = value.IndexOf('@');
+        return at > 0 && at < value.Length - 3 && value.IndexOf('.', at) > at + 1 && !value.Contains(' ');
+    }
+
+    private async Task SaveAsync()
+    {
+        formError = null;
+        if (!Validate()) return;
+
+        isSaving = true;
+        try
+        {
+            var response = isEdit
+                ? await UsersService.UpdateAsync(form.Id!, form)
+                : await UsersService.CreateAsync(form);
+
+            if (response.Flag)
+            {
+                ToastService.ShowSuccess(
+                    string.IsNullOrWhiteSpace(response.Message) ? L["btnSave"] : response.Message,
+                    ThemeService.CurrentTheme);
+                showForm = false;
+                await LoadAsync();
+            }
+            else
+            {
+                formError = string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"] : response.Message;
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void AskToggleStatus(UserListItemDto user)
+    {
+        statusTarget = user;
+        ConfirmModalRef.Show();
+    }
+
+    private async Task ConfirmToggleStatusAsync()
+    {
+        if (statusTarget is null) return;
+
+        var response = await UsersService.SetStatusAsync(statusTarget.Id, !statusTarget.IsActive);
+        ConfirmModalRef.Hide();
+
+        if (response.Flag)
+        {
+            ToastService.ShowSuccess(response.Message, ThemeService.CurrentTheme);
+            await LoadAsync();
+        }
+        else
+        {
+            ToastService.ShowError(
+                string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"] : response.Message,
+                ThemeService.CurrentTheme);
+        }
+
+        statusTarget = null;
+    }
+}

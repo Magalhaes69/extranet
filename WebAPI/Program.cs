@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Application.Services;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -74,6 +75,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseBlazorFrameworkFiles();

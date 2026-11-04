@@ -50,6 +50,8 @@
 @using WebFrontEnd.Services.Filter
 @using static WebFrontEnd.Pages.Components.Geral.AppTabs
 @using WebFrontEnd.Services.Returns
+@using WebFrontEnd.Services.Users
+@using WebFrontEnd.Services.Users.Dto
 
 @inject ToastService ToastService
 
@@ -70,6 +72,7 @@
 @inject IItemExtensionService ItemExtensionService;
 @inject ISQLQueriesService SQLQueriesService;
 @inject IReturnsService ReturnsService;
+@inject IUsersService UsersService;
 @inject LayoutStateService LayoutState;
 @inject PageTitleService PageTitleService;
 @inject UiStateService UiStateService;
