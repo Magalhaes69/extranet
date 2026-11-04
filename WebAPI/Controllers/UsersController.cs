@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+//using Application.UseCases.onexuser.Create;
 using Application.UseCases.OrdersCarts.CreateOrderCart;
 using Application.UseCases.User.Auth;
 using Application.UseCases.User.CreateUser;
@@ -47,7 +48,7 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<IActionResult> GetProfile([FromQuery] string email, CancellationToken cancellation)
         {
-          
+
             var request = new GetProfileRequest { Email = email };
             var response = await _mediator.Send(request);
 
@@ -63,11 +64,11 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("verify-2fa")]
-        public async Task<IActionResult> Verify2FA(Verify2FARequest request, CancellationToken cancellationToken)
-        {
-            var result = await _mediator.Send(request);
-            return Ok(result);
-        }
+        //public async Task<IActionResult> Verify2FA(Verify2FARequest wl, CancellationToken cancellationToken)
+        //{
+        //    var result = await _mediator.Send(request);
+        //    return Ok(result);
+        ////}
 
         //[HttpPut("updateprofile")]
         //[Authorize]
@@ -109,7 +110,7 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<ActionResult<List<GetUserByIdResponse>>> GetById([FromQuery] string Id, CancellationToken cancellationToken)
         {
-            var request = new GetUserByIdRequest() { Id =Id };
+            var request = new GetUserByIdRequest() { Id = Id };
 
             var response = await _mediator.Send(request, cancellationToken);
             return Ok(response);
@@ -136,6 +137,6 @@ namespace WebAPI.Controllers
                 Data = result
             });
         }
-
+     
     }
 }

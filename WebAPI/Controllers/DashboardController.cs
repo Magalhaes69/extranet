@@ -19,11 +19,11 @@ namespace WebAPI.Controllers
         private readonly IMediator _mediator;
         public DashboardController(IMediator mediator)
         {
-            
+
             _mediator = mediator;
         }
         [HttpGet("summary")]
-        public async Task<IActionResult> GetAllOrder( CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllOrder(CancellationToken cancellationToken)
         {
             var request = new GetCountOrdersRequest { CardCode = "CL10001", Status = string.Empty };
 
