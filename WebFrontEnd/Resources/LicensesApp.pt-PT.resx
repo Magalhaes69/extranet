@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnCancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="btnRenew" xml:space="preserve">
+    <value>Renovar</value>
+  </data>
+  <data name="btnSend" xml:space="preserve">
+    <value>Enviar pedido</value>
+  </data>
+  <data name="colExpiry" xml:space="preserve">
+    <value>Válida até</value>
+  </data>
+  <data name="colKey" xml:space="preserve">
+    <value>Chave</value>
+  </data>
+  <data name="colProduct" xml:space="preserve">
+    <value>Produto</value>
+  </data>
+  <data name="colStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="colUsers" xml:space="preserve">
+    <value>Utilizadores</value>
+  </data>
+  <data name="daysLeft" xml:space="preserve">
+    <value>{0} dias restantes</value>
+  </data>
+  <data name="filterAll" xml:space="preserve">
+    <value>Todos os estados</value>
+  </data>
+  <data name="invalidUsers" xml:space="preserve">
+    <value>Indique um número entre 1 e 10000.</value>
+  </data>
+  <data name="loadError" xml:space="preserve">
+    <value>Não foi possível carregar as licenças.</value>
+  </data>
+  <data name="monthsOption" xml:space="preserve">
+    <value>{0} meses</value>
+  </data>
+  <data name="noLicenses" xml:space="preserve">
+    <value>Sem licenças</value>
+  </data>
+  <data name="notes" xml:space="preserve">
+    <value>Observações (opcional)</value>
+  </data>
+  <data name="pageSubtitle" xml:space="preserve">
+    <value>As licenças disponíveis, o estado de cada uma e a opção de renovar ou requisitar</value>
+  </data>
+  <data name="pageTitle" xml:space="preserve">
+    <value>Licenças</value>
+  </data>
+  <data name="product" xml:space="preserve">
+    <value>Produto</value>
+  </data>
+  <data name="productHint" xml:space="preserve">
+    <value>Indique o produto ou módulo que pretende licenciar.</value>
+  </data>
+  <data name="renewPeriod" xml:space="preserve">
+    <value>Período de renovação</value>
+  </data>
+  <data name="renewSuccess" xml:space="preserve">
+    <value>Pedido de renovação enviado.</value>
+  </data>
+  <data name="renewText" xml:space="preserve">
+    <value>Pedido de renovação da licença {0}.</value>
+  </data>
+  <data name="renewTitle" xml:space="preserve">
+    <value>Renovar licença</value>
+  </data>
+  <data name="requestHint" xml:space="preserve">
+    <value>O pedido fica pendente até ser aprovado pela equipa EBS.</value>
+  </data>
+  <data name="requestLicense" xml:space="preserve">
+    <value>Requisitar licença</value>
+  </data>
+  <data name="requestSuccess" xml:space="preserve">
+    <value>Pedido de licença enviado. Ficará pendente até ser aprovado.</value>
+  </data>
+  <data name="requestTitle" xml:space="preserve">
+    <value>Requisitar licença</value>
+  </data>
+  <data name="required" xml:space="preserve">
+    <value>Campo obrigatório</value>
+  </data>
+  <data name="search" xml:space="preserve">
+    <value>Pesquisar por produto ou chave...</value>
+  </data>
+  <data name="statusActive" xml:space="preserve">
+    <value>Ativa</value>
+  </data>
+  <data name="statusExpired" xml:space="preserve">
+    <value>Expirada</value>
+  </data>
+  <data name="statusExpiring" xml:space="preserve">
+    <value>A expirar</value>
+  </data>
+  <data name="statusPending" xml:space="preserve">
+    <value>Pendente</value>
+  </data>
+  <data name="statusSuspended" xml:space="preserve">
+    <value>Suspensa</value>
+  </data>
+  <data name="unexpectedError" xml:space="preserve">
+    <value>Ocorreu um erro inesperado. Tente novamente.</value>
+  </data>
+  <data name="users" xml:space="preserve">
+    <value>Número de utilizadores</value>
+  </data>
+</root>

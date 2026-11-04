@@ -1,0 +1,578 @@
+@page "/register"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+@using WebFrontEnd.Services.Leads
+@using WebFrontEnd.Services.Leads.Dto
+@inject IStringLocalizer<LeadsApp> L
+@inject ILeadsService LeadsService
+@inject NavigationManager Navigation
+
+<div class="xl-login-page xl-register">
+
+    <!-- Formulário (esquerda) -->
+    <main class="xl-login-main">
+        <div class="xl-login-card">
+
+            <div class="xl-mobile-logo">
+                <i class="bi bi-buildings"></i>
+                <span>Extranet</span>
+            </div>
+
+            <h2 class="xl-login-title">@L["pageTitle"]</h2>
+            <p class="xl-login-subtitle">@L["pageSubtitle"]</p>
+
+            @if (success)
+            {
+                <div class="xl-login-success" role="status">
+                    <i class="bi bi-check-circle"></i>
+                    <span>@message</span>
+                </div>
+
+                <div class="d-grid">
+                    <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
+                        @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                @if (!string.IsNullOrWhiteSpace(message))
+                {
+                    <div class="xl-login-alert" role="alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span>@message</span>
+                    </div>
+                }
+
+                <div class="xl-field">
+                    <label for="regCompany">@L["companyName"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-building xl-input-icon"></i>
+                        <InputText id="regCompany" class="form-control" maxlength="200" autocomplete="organization"
+                                   @bind-Value="form.CompanyName" />
+                    </div>
+                    @FieldError("CompanyName")
+                </div>
+
+                <div class="xl-row">
+                    <div class="xl-field">
+                        <label for="regNuit">@L["nuit"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-card-text xl-input-icon"></i>
+                            <InputText id="regNuit" class="form-control" maxlength="10" @bind-Value="form.Nuit" />
+                        </div>
+                        @FieldError("Nuit")
+                    </div>
+                    <div class="xl-field">
+                        <label for="regContact">@L["contactName"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-person xl-input-icon"></i>
+                            <InputText id="regContact" class="form-control" maxlength="150" autocomplete="name"
+                                       @bind-Value="form.ContactName" />
+                        </div>
+                        @FieldError("ContactName")
+                    </div>
+                </div>
+
+                <div class="xl-row">
+                    <div class="xl-field">
+                        <label for="regEmail">@L["email"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-envelope xl-input-icon"></i>
+                            <InputText id="regEmail" type="email" class="form-control" maxlength="150"
+                                       placeholder="nome@empresa.co.mz" autocomplete="email"
+                                       @bind-Value="form.Email" />
+                        </div>
+                        @FieldError("Email")
+                    </div>
+                    <div class="xl-field">
+                        <label for="regPhone">@L["phone"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-telephone xl-input-icon"></i>
+                            <InputText id="regPhone" type="tel" class="form-control" maxlength="20" autocomplete="tel"
+                                       @bind-Value="form.PhoneNumber" />
+                        </div>
+                        @FieldError("PhoneNumber")
+                    </div>
+                </div>
+
+                <div class="xl-row">
+                    <div class="xl-field">
+                        <label for="regPassword">@L["password"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-lock xl-input-icon"></i>
+                            <InputText id="regPassword"
+                                       type="@(showPassword ? "text" : "password")"
+                                       class="form-control xl-has-toggle"
+                                       placeholder="••••••••"
+                                       autocomplete="new-password"
+                                       @bind-Value="form.Password" />
+                            <button type="button"
+                                    class="xl-toggle-password"
+                                    title="@(showPassword ? "Esconder palavra-passe" : "Mostrar palavra-passe")"
+                                    @onclick="() => showPassword = !showPassword">
+                                <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                            </button>
+                        </div>
+                        @FieldError("Password")
+                    </div>
+                    <div class="xl-field">
+                        <label for="regConfirm">@L["confirmPassword"]</label>
+                        <div class="xl-input-wrap">
+                            <i class="bi bi-lock-fill xl-input-icon"></i>
+                            <InputText id="regConfirm"
+                                       type="@(showPassword ? "text" : "password")"
+                                       class="form-control"
+                                       placeholder="••••••••"
+                                       autocomplete="new-password"
+                                       @bind-Value="form.ConfirmPassword" />
+                        </div>
+                        @FieldError("ConfirmPassword")
+                    </div>
+                </div>
+                <div class="xl-hint">@L["passwordHint"]</div>
+
+                <div class="xl-field">
+                    <label for="regNotes">@L["notes"]</label>
+                    <div class="xl-input-wrap">
+                        <InputTextArea id="regNotes" class="form-control xl-textarea" rows="3" maxlength="1000"
+                                       @bind-Value="form.Notes" />
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="button" class="btn xl-btn-login" disabled="@busy" @onclick="SubmitAsync">
+                        @if (busy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        }
+                        @L["btnCreateAccount"] <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </div>
+
+                <p class="xl-login-help">
+                    @L["alreadyHaveAccount"]
+                    <a href="/login" class="xl-small-link fw-semibold">@L["btnGoToLogin"]</a>
+                </p>
+            }
+        </div>
+    </main>
+
+    <!-- Painel com a imagem (direita) -->
+    <aside class="xl-login-brand">
+        <div class="xl-brand-logo">
+            <i class="bi bi-buildings"></i>
+            <span>Extranet</span>
+        </div>
+
+        <div class="xl-brand-text">
+            <h1>Tudo o que precisa,<br />num só lugar.</h1>
+            <p class="xl-brand-lead">
+                Encomendas, faturas e pagamentos sempre à mão — a qualquer hora, sem telefonemas nem e-mails.
+            </p>
+        </div>
+
+        <img class="xl-brand-illustration" src=@($"{ApiBaseUrl}/images/geral/login.svg") alt="" />
+
+        <div class="xl-brand-bottom">© @DateTime.Now.Year Extranet</div>
+    </aside>
+</div>
+
+<style>
+    .xl-login-page {
+        --brand: #f0a500;
+        --brand-dark: #c98a00;
+        --brand-ink: #1f2933;
+        --panel-bg: #1f2933;
+        --panel-text: #e4e7eb;
+        --panel-muted: #9aa5b1;
+        --page-bg: #f5f7fa;
+        --card-bg: #ffffff;
+        --text: #1f2933;
+        --muted: #616e7c;
+        --border: #d9e2ec;
+        --danger-bg: #fdecec;
+        --danger-text: #b42318;
+        --success-bg: #e7f6ec;
+        --success-text: #17692f;
+    }
+
+    [data-bs-theme="dark"] .xl-login-page {
+        --page-bg: #12161b;
+        --card-bg: #1a1f26;
+        --text: #e4e7eb;
+        --muted: #9aa5b1;
+        --border: #323b45;
+        --danger-bg: #3a1d1d;
+        --danger-text: #f5a3a3;
+        --success-bg: #17301f;
+        --success-text: #8fd7a5;
+    }
+
+    .xl-login-page {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 100vh;
+        width: 100%;
+        background: var(--page-bg);
+        color: var(--text);
+    }
+
+    /* ---------- Formulário (esquerda) ---------- */
+    .xl-login-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .xl-login-card {
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .xl-login-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 6px;
+    }
+
+    .xl-login-subtitle {
+        color: var(--muted);
+        margin: 0 0 24px;
+    }
+
+    .xl-login-alert,
+    .xl-login-success {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-size: .9rem;
+    }
+
+    .xl-login-alert {
+        background: var(--danger-bg);
+        color: var(--danger-text);
+    }
+
+    .xl-login-success {
+        background: var(--success-bg);
+        color: var(--success-text);
+    }
+
+    .xl-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 16px;
+    }
+
+    .xl-field {
+        margin-bottom: 18px;
+    }
+
+        .xl-field label {
+            display: block;
+            font-size: .95rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+    .xl-hint {
+        margin: -8px 0 18px;
+        font-size: .8rem;
+        color: var(--muted);
+    }
+
+    .xl-input-wrap {
+        position: relative;
+    }
+
+    .xl-input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .xl-input-wrap .form-control {
+        height: 52px;
+        padding-left: 48px;
+        font-size: 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        color: var(--text);
+    }
+
+        .xl-input-wrap .form-control.xl-has-toggle {
+            padding-right: 48px;
+        }
+
+        .xl-input-wrap .form-control.xl-textarea {
+            height: auto;
+            padding: 12px 16px;
+        }
+
+        .xl-input-wrap .form-control:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(240,165,0,.2);
+        }
+
+    .xl-toggle-password {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+    }
+
+        .xl-toggle-password:hover {
+            background: rgba(127,127,127,.12);
+            color: var(--text);
+        }
+
+    .xl-field-error {
+        display: block;
+        margin-top: 6px;
+        font-size: .8rem;
+        color: var(--danger-text);
+    }
+
+    .xl-small-link {
+        font-size: .85rem;
+        color: var(--brand-dark);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .xl-small-link:hover {
+            text-decoration: underline;
+        }
+
+    .xl-btn-login {
+        height: 56px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        border: none;
+        background: var(--brand);
+        color: var(--brand-ink);
+        font-weight: 700;
+    }
+
+        .xl-btn-login:hover, .xl-btn-login:focus {
+            background: var(--brand-dark);
+            color: var(--brand-ink);
+        }
+
+    .xl-login-help {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: .85rem;
+        text-align: center;
+    }
+
+    /* ---------- Painel com a imagem (direita) ---------- */
+    .xl-login-brand {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 48px 56px;
+        background: radial-gradient(circle at 80% 10%, rgba(240,165,0,.16), transparent 45%), var(--panel-bg);
+        color: var(--panel-text);
+        overflow: visible;
+    }
+
+    .xl-brand-logo, .xl-mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+        .xl-brand-logo i, .xl-mobile-logo i {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--brand);
+            color: var(--brand-ink);
+            font-size: 1.2rem;
+        }
+
+    .xl-mobile-logo {
+        display: none;
+        margin-bottom: 32px;
+    }
+
+    .xl-brand-text {
+        margin-top: 5vh;
+        max-width: 460px;
+        margin-left: auto;
+        text-align: right;
+    }
+
+        .xl-brand-text h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin: 0 0 14px;
+        }
+
+    .xl-brand-lead {
+        color: var(--panel-muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .xl-brand-illustration {
+        position: absolute;
+        left: clamp(-110px, -6vw, -40px);
+        bottom: 6vh;
+        height: min(56vh, 500px);
+        width: auto;
+        max-width: calc(100% + 60px);
+        pointer-events: none;
+        user-select: none;
+        filter: drop-shadow(0 24px 40px rgba(0,0,0,.35));
+    }
+
+    .xl-brand-bottom {
+        margin-top: auto;
+        color: var(--panel-muted);
+        font-size: .8rem;
+        text-align: right;
+    }
+
+    @@media (max-width: 1279.98px) {
+        .xl-brand-illustration {
+            left: 24px;
+            height: auto;
+            width: calc(100% - 48px);
+            max-height: 52vh;
+        }
+
+        .xl-brand-text h1 {
+            font-size: 2rem;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .xl-login-page {
+            grid-template-columns: 1fr;
+        }
+
+        .xl-login-brand {
+            display: none;
+        }
+
+        .xl-mobile-logo {
+            display: flex;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .xl-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private readonly LeadFormDto form = new();
+    private readonly Dictionary<string, string> errors = new();
+    private bool busy;
+    private bool success;
+    private bool showPassword;
+    private string? message;
+
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
+
+    private RenderFragment? FieldError(string field) => errors.TryGetValue(field, out var text)
+        ? (builder =>
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "xl-field-error");
+            builder.AddContent(2, text);
+            builder.CloseElement();
+        })
+        : null;
+
+    private bool Validate()
+    {
+        errors.Clear();
+        var required = L["required"].Value;
+
+        if (string.IsNullOrWhiteSpace(form.CompanyName)) errors["CompanyName"] = required;
+        if (string.IsNullOrWhiteSpace(form.Nuit)) errors["Nuit"] = required;
+        if (string.IsNullOrWhiteSpace(form.ContactName)) errors["ContactName"] = required;
+        if (string.IsNullOrWhiteSpace(form.PhoneNumber)) errors["PhoneNumber"] = required;
+
+        if (string.IsNullOrWhiteSpace(form.Email))
+            errors["Email"] = required;
+        else if (!IsValidEmail(form.Email))
+            errors["Email"] = L["invalidEmail"];
+
+        if (string.IsNullOrEmpty(form.Password))
+            errors["Password"] = required;
+        else if (form.Password.Length < 6)
+            errors["Password"] = L["minLength6"];
+
+        if (form.ConfirmPassword != form.Password)
+            errors["ConfirmPassword"] = L["passwordsDontMatch"];
+
+        return errors.Count == 0;
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        var value = email.Trim();
+        var at = value.IndexOf('@');
+        return at > 0 && at < value.Length - 3 && value.IndexOf('.', at) > at + 1 && !value.Contains(' ');
+    }
+
+    private async Task SubmitAsync()
+    {
+        message = null;
+        if (!Validate()) return;
+
+        busy = true;
+        try
+        {
+            var response = await LeadsService.CreateAsync(form);
+
+            if (response.Flag)
+            {
+                success = true;
+                message = string.IsNullOrWhiteSpace(response.Message) ? L["successMessage"].Value : response.Message;
+            }
+            else
+            {
+                message = string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"].Value : response.Message;
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void GoToLogin() => Navigation.NavigateTo("/login");
+}

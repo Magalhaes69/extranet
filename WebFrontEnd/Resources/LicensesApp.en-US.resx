@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="btnRenew" xml:space="preserve">
+    <value>Renew</value>
+  </data>
+  <data name="btnSend" xml:space="preserve">
+    <value>Send request</value>
+  </data>
+  <data name="colExpiry" xml:space="preserve">
+    <value>Valid until</value>
+  </data>
+  <data name="colKey" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="colProduct" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="colStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="colUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="daysLeft" xml:space="preserve">
+    <value>{0} days left</value>
+  </data>
+  <data name="filterAll" xml:space="preserve">
+    <value>All statuses</value>
+  </data>
+  <data name="invalidUsers" xml:space="preserve">
+    <value>Enter a number between 1 and 10000.</value>
+  </data>
+  <data name="loadError" xml:space="preserve">
+    <value>Could not load the licenses.</value>
+  </data>
+  <data name="monthsOption" xml:space="preserve">
+    <value>{0} months</value>
+  </data>
+  <data name="noLicenses" xml:space="preserve">
+    <value>No licenses</value>
+  </data>
+  <data name="notes" xml:space="preserve">
+    <value>Notes (optional)</value>
+  </data>
+  <data name="pageSubtitle" xml:space="preserve">
+    <value>Available licenses, the status of each one and the option to renew or request</value>
+  </data>
+  <data name="pageTitle" xml:space="preserve">
+    <value>Licenses</value>
+  </data>
+  <data name="product" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="productHint" xml:space="preserve">
+    <value>Enter the product or module you want to license.</value>
+  </data>
+  <data name="renewPeriod" xml:space="preserve">
+    <value>Renewal period</value>
+  </data>
+  <data name="renewSuccess" xml:space="preserve">
+    <value>Renewal request sent.</value>
+  </data>
+  <data name="renewText" xml:space="preserve">
+    <value>Renewal request for license {0}.</value>
+  </data>
+  <data name="renewTitle" xml:space="preserve">
+    <value>Renew license</value>
+  </data>
+  <data name="requestHint" xml:space="preserve">
+    <value>The request stays pending until it is approved by the EBS team.</value>
+  </data>
+  <data name="requestLicense" xml:space="preserve">
+    <value>Request license</value>
+  </data>
+  <data name="requestSuccess" xml:space="preserve">
+    <value>License request sent. It will stay pending until approved.</value>
+  </data>
+  <data name="requestTitle" xml:space="preserve">
+    <value>Request license</value>
+  </data>
+  <data name="required" xml:space="preserve">
+    <value>Required field</value>
+  </data>
+  <data name="search" xml:space="preserve">
+    <value>Search by product or key...</value>
+  </data>
+  <data name="statusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="statusExpired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="statusExpiring" xml:space="preserve">
+    <value>Expiring soon</value>
+  </data>
+  <data name="statusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="statusSuspended" xml:space="preserve">
+    <value>Suspended</value>
+  </data>
+  <data name="unexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred. Please try again.</value>
+  </data>
+  <data name="users" xml:space="preserve">
+    <value>Number of users</value>
+  </data>
+</root>

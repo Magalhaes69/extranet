@@ -83,6 +83,9 @@
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += Refresh;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAdmin = authState.User.IsInRole("Manager") || authState.User.IsInRole("Administrator");
     }
 
     private void Refresh()
@@ -159,15 +162,38 @@
             Children = new()
             {
                 new(){ Key = "menuConfigure", Url = "/configure-app"},
+                new(){ Key = "menuUsers", Url = "/users", AdminOnly = true },
             }
         },
+
+        new SidebarMenuItem
+{
+    Key = "menuLicenses",
+    Icon = "nav-icon bi bi-key",
+    Url = "/licenses"
+},
         
     };
 
     private string SearchTerm = "";
 
+    private bool isAdmin;
+
     private List<SidebarMenuItem> FilteredMenu =>
-        FilterMenu(Menu);
+        FilterMenu(VisibleMenu(Menu));
+
+    // Hides the entries reserved for Manager/Administrator from everybody else
+    private List<SidebarMenuItem> VisibleMenu(List<SidebarMenuItem> menu) =>
+        menu.Select(item => new SidebarMenuItem
+        {
+            Key = item.Key,
+            Icon = item.Icon,
+            Url = item.Url,
+            AdminOnly = item.AdminOnly,
+            Children = VisibleMenu(item.Children)
+        })
+        .Where(item => isAdmin || !item.AdminOnly)
+        .ToList();
 
     private List<SidebarMenuItem> FilterMenu(List<SidebarMenuItem> menu)
     {
@@ -196,6 +222,7 @@
                     Key = item.Key,
                     Icon = item.Icon,
                     Url = item.Url,
+                    AdminOnly = item.AdminOnly,
                     Children = filteredChildren // ONLY matched children
                 });
             }

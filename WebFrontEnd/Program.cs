@@ -1,4 +1,3 @@
-
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,6 +19,8 @@ using WebFrontEnd.Services.IncomingPayments;
 using WebFrontEnd.Services.Invoices;
 using WebFrontEnd.Services.ItemExtension;
 using WebFrontEnd.Services.ItemGroups;
+using WebFrontEnd.Services.Leads;
+using WebFrontEnd.Services.Licenses;
 using WebFrontEnd.Services.Items;
 using WebFrontEnd.Services.LicenseService;
 using WebFrontEnd.Services.LicenseService.Dto;
@@ -29,6 +30,7 @@ using WebFrontEnd.Services.Quotations;
 using WebFrontEnd.Services.Returns;
 using WebFrontEnd.Services.SQLQueries;
 using WebFrontEnd.Services.Toast;
+using WebFrontEnd.Services.Users;
 using WebFrontEnd.Services.VatGroups;
 using WebFrontEnd.Services.Warehouses;
 using WebFrontEnd.Shared.Dtos;
@@ -66,6 +68,9 @@ builder.Services.AddScoped<ISQLQueriesService, SQLQueriesService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ILicenseKeyService, LicenseKeyService>();
 builder.Services.AddScoped<IReturnsService, ReturnsService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<ILeadsService, LeadsService>();
+builder.Services.AddScoped<ILicensesService, LicensesService>();
 
 builder.Services.AddScoped<OrdersCartService>();
 builder.Services.AddLocalization(options =>
