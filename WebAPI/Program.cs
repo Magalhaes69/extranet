@@ -1,12 +1,10 @@
 using System.Threading.RateLimiting;
 using Application.Services;
-using Microsoft.Extensions.Options;
+using Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Persistence.Extensions;
-using WebAPI.Controllers;
-using WebAPI.Settings;
-using WebFrontEnd.Services.Licenses;
-
-
+using Microsoft.AspNetCore.Authentication;
+using WebAPI.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,45 +15,54 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "InternalApiKey";
+        options.DefaultChallengeScheme = "InternalApiKey";
+    })
+    .AddScheme<AuthenticationSchemeOptions,
+        ApiKeyAuthenticationHandler>(
+            "InternalApiKey",
+            options => { });
+
+builder.Services.AddAuthorization();
+
+
+
 builder.Services.ConfigurePersistenceServices(builder.Configuration);
 builder.Services.ConfigureApplicationApp();
 
-// "Create account": the public form posts to our LeadsController, which forwards to the leads API
-builder.Services.Configure<LeadsApiSettings>(builder.Configuration.GetSection("LeadsApi"));
-builder.Services.AddHttpClient(LeadsController.HttpClientName, (sp, client) =>
-{
-    var settings = sp.GetRequiredService<IOptions<LeadsApiSettings>>().Value;
-    if (!string.IsNullOrWhiteSpace(settings.BaseUrl))
-        client.BaseAddress = new Uri(settings.BaseUrl.TrimEnd('/') + "/");
-    client.Timeout = TimeSpan.FromSeconds(15);
-});
 
-// The endpoint is anonymous, so it is limited per IP address
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy(LeadsController.RateLimitPolicy, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(10),
-                QueueLimit = 0
-            }));
-    options.OnRejected = async (context, cancellationToken) =>
+ 
+
+builder.Services.AddHttpClient<ILeadApiClient, LeadApiClient>(
+    (serviceProvider, client) =>
     {
-        context.HttpContext.Response.ContentType = "application/json";
-        await context.HttpContext.Response.WriteAsync(
-            "{\"flag\":false,\"message\":\"Demasiados pedidos. Tente novamente dentro de alguns minutos.\"}",
-            cancellationToken);
-    };
-});
+        var configuration = serviceProvider
+            .GetRequiredService<IConfiguration>();
+
+        var baseUrl = configuration["LicensingApi:BaseUrl"];
+
+        if (string.IsNullOrWhiteSpace(baseUrl) ||
+            !Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp &&
+             uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidOperationException(
+                "LicensingApi:BaseUrl não está configurada corretamente.");
+        }
+
+        client.BaseAddress = uri;
+
+        // Timeout de 3 minutos
+        client.Timeout = TimeSpan.FromMinutes(3);
+    });
 
 var app = builder.Build();
 
 await DatabaseInitializerExtension.InitializeDatabaseAsync(
-    app.Services, 
+    app.Services,
     builder.Configuration);
 
 
@@ -79,3 +86,5 @@ app.MapFallbackToFile("index.html");
 
 
 app.Run();
+
+
