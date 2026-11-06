@@ -16,7 +16,7 @@
 
         <!-- Header -->
         <div class="p-2 border-bottom">
-            <h6 class="mb-0">Cart</h6>
+            <h6 class="mb-0">Carrinho</h6>
         </div>
 
         @if (CartServices.CurrentCart?.OrderLineCarts?.Any() == true)
@@ -51,7 +51,7 @@
 
                             <!-- Remove button -->
                             <button class="btn btn-sm py-1 btn-outline-danger"
-                                    title="Remove item"
+                                    title="Remover item"
                                     @onclick="() => Remove(item)">
                                 <i class="bi bi-trash"></i>
                             </button>
