@@ -26,8 +26,6 @@ public sealed class LeadApiClient : ILeadApiClient
         string adminEmail,
         string? phoneNumber,
         string adminInitialPassword,
-        DateTime? trialStartDate,
-        DateTime? trialEndDate,
         int status,
         string? notes,
         CancellationToken cancellationToken)
@@ -46,8 +44,6 @@ public sealed class LeadApiClient : ILeadApiClient
             Email = adminEmail.Trim(),
             PhoneNumber = phoneNumber?.Trim() ?? string.Empty,
             Password = adminInitialPassword,
-            TrialStartDate = trialStartDate,
-            TrialEndDate = trialEndDate,
             Status = status,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         };

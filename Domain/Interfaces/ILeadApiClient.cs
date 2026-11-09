@@ -11,8 +11,6 @@ public interface ILeadApiClient
         string adminEmail,
         string? phoneNumber,
         string adminInitialPassword,
-        DateTime? trialStartDate,
-        DateTime? trialEndDate,
         int status,
         string? notes,
         CancellationToken cancellationToken);

@@ -11,10 +11,6 @@ public sealed class CreateOnexClientUserRequest
     public string AdminEmail { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string AdminInitialPassword { get; set; } = string.Empty;
-
-    public DateTime? TrialStartDate { get; set; }
-    public DateTime? TrialEndDate { get; set; }
-
     public int Status { get; set; }
     public string? Notes { get; set; }
 }

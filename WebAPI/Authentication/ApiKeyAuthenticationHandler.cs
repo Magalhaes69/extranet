@@ -24,48 +24,6 @@ public sealed class ApiKeyAuthenticationHandler
         _configuration = configuration;
     }
 
-    //protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-    //{
-    //    if (!Request.Headers.TryGetValue(ApiKeyHeader, out var suppliedKey))
-    //    {
-    //        return Task.FromResult(
-    //            AuthenticateResult.Fail("API Key não fornecida."));
-    //    }
-
-    //    var expectedKey = _configuration["InternalApi:Key"];
-    //    var receivedKey = suppliedKey.ToString();
-
-    //    if (string.IsNullOrWhiteSpace(expectedKey) ||
-    //        string.IsNullOrWhiteSpace(receivedKey))
-    //    {
-    //        return Task.FromResult(
-    //            AuthenticateResult.Fail("API Key inválida."));
-    //    }
-
-    //    var expectedBytes = Encoding.UTF8.GetBytes(expectedKey);
-    //    var receivedBytes = Encoding.UTF8.GetBytes(receivedKey);
-
-    //    if (expectedBytes.Length != receivedBytes.Length ||
-    //        !CryptographicOperations.FixedTimeEquals(
-    //            expectedBytes, receivedBytes))
-    //    {
-    //        return Task.FromResult(
-    //            AuthenticateResult.Fail("API Key inválida."));
-    //    }
-
-    //    var identity = new ClaimsIdentity(
-    //        new[] { new Claim(ClaimTypes.Name, "InternalApiClient") },
-    //        Scheme.Name);
-
-    //    var principal = new ClaimsPrincipal(identity);
-
-    //    var ticket = new AuthenticationTicket(
-    //        principal,
-    //        Scheme.Name);
-
-    //    return Task.FromResult(
-    //        AuthenticateResult.Success(ticket));
-    // }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
