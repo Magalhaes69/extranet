@@ -9,9 +9,9 @@ namespace WebFrontEnd.Extensions
     {
         public async static Task SetDefaultCulture(this WebAssemblyHost host)
         {
-           
+
             var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
-            var cultureName = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "blazorCulture.get"); 
+            var cultureName = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "blazorCulture.get");
 
             CultureInfo cultureInfo;
             if (!string.IsNullOrWhiteSpace(cultureName))
@@ -20,7 +20,7 @@ namespace WebFrontEnd.Extensions
             }
             else
             {
-                cultureInfo = new CultureInfo(LocalizerSettings.NeutralCulture.Name);
+                cultureInfo = new CultureInfo(LocalizerSettings.NeutralCulture.Culture);
             }
 
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;

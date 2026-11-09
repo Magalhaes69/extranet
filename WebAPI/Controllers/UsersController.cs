@@ -63,12 +63,12 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpPost("verify-2fa")]
-        //public async Task<IActionResult> Verify2FA(Verify2FARequest wl, CancellationToken cancellationToken)
-        //{
-        //    var result = await _mediator.Send(request);
-        //    return Ok(result);
-        ////}
+        // [HttpPost("verify-2fa")]
+        // public async Task<IActionResult> Verify2FA(Verify2FARequest wl, CancellationToken cancellationToken)
+        // {
+        //     var result = await _mediator.Send(request);
+        //     return Ok(result);
+        // }
 
         //[HttpPut("updateprofile")]
         //[Authorize]
