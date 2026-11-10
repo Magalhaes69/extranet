@@ -1,0 +1,311 @@
+@* Moldura partilhada das páginas de autenticação sem formulário.
+   Mesma composição do Login.razor / Register.razor: cartão à esquerda, painel da marca à direita.
+   Só carrega as regras necessárias a páginas de mensagem — campos e inputs ficam de fora. *@
+
+<div class="xl-login-page">
+
+    <!-- Conteúdo (esquerda) -->
+    <main class="xl-login-main">
+        <div class="xl-login-card">
+
+            <div class="xl-mobile-logo">
+                <i class="bi bi-buildings"></i>
+                <span>Extranet</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <h2 class="xl-login-title">@Title</h2>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <p class="xl-login-subtitle">@Subtitle</p>
+            }
+
+            @ChildContent
+        </div>
+    </main>
+
+    <!-- Painel com a imagem (direita) -->
+    <aside class="xl-login-brand">
+        <div class="xl-brand-logo">
+            <i class="bi bi-buildings"></i>
+            <span>Extranet</span>
+        </div>
+
+        <div class="xl-brand-text">
+            <h1>Tudo o que precisa,<br />num só lugar.</h1>
+            <p class="xl-brand-lead">
+                Encomendas, faturas e pagamentos sempre à mão — a qualquer hora, sem telefonemas nem e-mails.
+            </p>
+        </div>
+
+        <img class="xl-brand-illustration" src=@($"{ApiBaseUrl}/images/geral/login.svg") alt="" />
+
+        <div class="xl-brand-bottom">© @DateTime.Now.Year Extranet</div>
+    </aside>
+</div>
+
+<style>
+    .xl-login-page {
+        --brand: #f0a500;
+        --brand-dark: #c98a00;
+        --brand-ink: #1f2933;
+        --panel-bg: #1f2933;
+        --panel-text: #e4e7eb;
+        --panel-muted: #9aa5b1;
+        --page-bg: #f5f7fa;
+        --card-bg: #ffffff;
+        --text: #1f2933;
+        --muted: #616e7c;
+        --border: #d9e2ec;
+        --danger-bg: #fdecec;
+        --danger-text: #b42318;
+        --success-bg: #e7f6ec;
+        --success-text: #17692f;
+    }
+
+    [data-bs-theme="dark"] .xl-login-page {
+        --page-bg: #12161b;
+        --card-bg: #1a1f26;
+        --text: #e4e7eb;
+        --muted: #9aa5b1;
+        --border: #323b45;
+        --danger-bg: #3a1d1d;
+        --danger-text: #f5a3a3;
+        --success-bg: #17301f;
+        --success-text: #8fd7a5;
+    }
+
+    .xl-login-page {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 100vh;
+        width: 100%;
+        background: var(--page-bg);
+        color: var(--text);
+    }
+
+    /* ---------- Conteúdo (esquerda) ---------- */
+    .xl-login-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .xl-login-card {
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .xl-login-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 6px;
+    }
+
+    .xl-login-subtitle {
+        color: var(--muted);
+        margin: 0 0 28px;
+    }
+
+    .xl-login-alert,
+    .xl-login-success {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-size: .9rem;
+    }
+
+    .xl-login-alert {
+        background: var(--danger-bg);
+        color: var(--danger-text);
+    }
+
+    .xl-login-success {
+        background: var(--success-bg);
+        color: var(--success-text);
+    }
+
+    /* Ícone grande no topo das páginas de mensagem */
+    .xl-login-mark {
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 24px;
+        border-radius: 16px;
+        font-size: 2rem;
+        background: var(--success-bg);
+        color: var(--success-text);
+    }
+
+        .xl-login-mark.xl-mark-warning {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+        }
+
+    .xl-login-text {
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0 0 16px;
+    }
+
+    .xl-login-strong {
+        color: var(--text);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .xl-btn-login {
+        height: 56px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        border: none;
+        background: var(--brand);
+        color: var(--brand-ink);
+        font-weight: 700;
+    }
+
+        .xl-btn-login:hover, .xl-btn-login:focus {
+            background: var(--brand-dark);
+            color: var(--brand-ink);
+        }
+
+    .xl-small-link {
+        font-size: .85rem;
+        color: var(--brand-dark);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .xl-small-link:hover {
+            text-decoration: underline;
+        }
+
+    .xl-login-help {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: .85rem;
+        text-align: center;
+    }
+
+    /* ---------- Painel com a imagem (direita) ---------- */
+    .xl-login-brand {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 48px 56px;
+        background: radial-gradient(circle at 80% 10%, rgba(240,165,0,.16), transparent 45%), var(--panel-bg);
+        color: var(--panel-text);
+        overflow: visible;
+    }
+
+    .xl-brand-logo, .xl-mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+        .xl-brand-logo i, .xl-mobile-logo i {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--brand);
+            color: var(--brand-ink);
+            font-size: 1.2rem;
+        }
+
+    .xl-mobile-logo {
+        display: none;
+        margin-bottom: 32px;
+    }
+
+    .xl-brand-text {
+        margin-top: 5vh;
+        max-width: 460px;
+        margin-left: auto;
+        text-align: right;
+    }
+
+        .xl-brand-text h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin: 0 0 14px;
+        }
+
+    .xl-brand-lead {
+        color: var(--panel-muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .xl-brand-illustration {
+        position: absolute;
+        left: clamp(-110px, -6vw, -40px);
+        bottom: 6vh;
+        height: min(56vh, 500px);
+        width: auto;
+        max-width: calc(100% + 60px);
+        pointer-events: none;
+        user-select: none;
+        filter: drop-shadow(0 24px 40px rgba(0,0,0,.35));
+    }
+
+    .xl-brand-bottom {
+        margin-top: auto;
+        color: var(--panel-muted);
+        font-size: .8rem;
+        text-align: right;
+    }
+
+    @@media (max-width: 1279.98px) {
+        .xl-brand-illustration {
+            left: 24px;
+            height: auto;
+            width: calc(100% - 48px);
+            max-height: 52vh;
+        }
+
+        .xl-brand-text h1 {
+            font-size: 2rem;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .xl-login-page {
+            grid-template-columns: 1fr;
+        }
+
+        .xl-login-brand {
+            display: none;
+        }
+
+        .xl-mobile-logo {
+            display: flex;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
+}

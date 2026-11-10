@@ -426,6 +426,15 @@
                 return;
             }
 
+            // Email por confirmar: não autentica, encaminha para a página que explica
+            // que foi enviado o email de ativação. Só dispara em false explícito —
+            // enquanto a API não enviar o campo, EmailConfirmed chega null e o login segue.
+            if (result.EmailConfirmed == false)
+            {
+                nav.NavigateTo($"/confirm-email?email={Uri.EscapeDataString(result.Email ?? login.email)}");
+                return;
+            }
+
             var authStateProvider = (CustomAuthStateProvider)authenticationState;
             authStateProvider.SetUser(result);
 

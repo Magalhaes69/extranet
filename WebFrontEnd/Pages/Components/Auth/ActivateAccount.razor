@@ -1,0 +1,60 @@
+@page "/activate-account"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+@inject IStringLocalizer<LeadsApp> L
+@inject NavigationManager Navigation
+
+@* Destino do link do email de ativação (CreateOnexClientUserHandler monta
+   {FrontendUrl}/activate-account?userId=...&token=...).
+   Não há endpoint anónimo que confirme o email, por isso esta página não chama a API:
+   só distingue um link legítimo de um acesso direto e encaminha para o login. *@
+
+<PageTitle>@(IsValidLink ? L["activateTitle"] : L["invalidLink"])</PageTitle>
+
+<AuthShell Title="@(IsValidLink ? L["activateTitle"] : L["invalidLink"])">
+
+    @if (IsValidLink)
+    {
+        <div class="xl-login-mark">
+            <i class="bi bi-check-circle"></i>
+        </div>
+
+        <p class="xl-login-text">@L["activateText"]</p>
+
+        <div class="d-grid">
+            <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
+                @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="xl-login-mark xl-mark-warning">
+            <i class="bi bi-exclamation-circle"></i>
+        </div>
+
+        <p class="xl-login-text">@L["invalidLinkText"]</p>
+
+        <div class="d-grid">
+            <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
+                @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+        </div>
+
+        <p class="xl-login-help">
+            @L["alreadyHaveAccount"]
+            <a href="/register" class="xl-small-link fw-semibold">@L["btnCreateAccount"]</a>
+        </p>
+    }
+
+</AuthShell>
+
+@code {
+    [SupplyParameterFromQuery(Name = "userId")] public string? UserId { get; set; }
+    [SupplyParameterFromQuery(Name = "token")] public string? Token { get; set; }
+
+    private bool IsValidLink =>
+        !string.IsNullOrWhiteSpace(UserId) && !string.IsNullOrWhiteSpace(Token);
+
+    private void GoToLogin() => Navigation.NavigateTo("/login");
+}

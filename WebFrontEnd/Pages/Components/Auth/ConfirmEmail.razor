@@ -1,0 +1,42 @@
+@page "/confirm-email"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+@inject IStringLocalizer<LeadsApp> L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["confirmEmailTitle"]</PageTitle>
+
+<AuthShell Title="@L["confirmEmailTitle"]">
+
+    <div class="xl-login-mark">
+        <i class="bi bi-envelope-check"></i>
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(Email))
+    {
+        <p class="xl-login-text">@L["confirmEmailSentGeneric"]</p>
+    }
+    else
+    {
+        <p class="xl-login-text">
+            @L["confirmEmailSentTo"]
+            <span class="xl-login-strong">@Email</span>
+        </p>
+    }
+
+    <p class="xl-login-text">@L["confirmEmailExpiry"]</p>
+    <p class="xl-login-text">@L["confirmEmailSpam"]</p>
+
+    <div class="d-grid">
+        <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
+            @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+    </div>
+
+</AuthShell>
+
+@code {
+    [SupplyParameterFromQuery(Name = "email")] public string? Email { get; set; }
+
+    private void GoToLogin() => Navigation.NavigateTo("/login");
+}
