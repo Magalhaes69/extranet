@@ -21,140 +21,125 @@
             <h2 class="xl-login-title">@L["pageTitle"]</h2>
             <p class="xl-login-subtitle">@L["pageSubtitle"]</p>
 
-            @if (success)
+            @if (!string.IsNullOrWhiteSpace(message))
             {
-                <div class="xl-login-success" role="status">
-                    <i class="bi bi-check-circle"></i>
+                <div class="xl-login-alert" role="alert">
+                    <i class="bi bi-exclamation-circle"></i>
                     <span>@message</span>
                 </div>
-
-                <div class="d-grid">
-                    <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
-                        @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
-                    </button>
-                </div>
             }
-            else
-            {
-                @if (!string.IsNullOrWhiteSpace(message))
-                {
-                    <div class="xl-login-alert" role="alert">
-                        <i class="bi bi-exclamation-circle"></i>
-                        <span>@message</span>
-                    </div>
-                }
 
+            <div class="xl-field">
+                <label for="regCompany">@L["companyName"]</label>
+                <div class="xl-input-wrap">
+                    <i class="bi bi-building xl-input-icon"></i>
+                    <InputText id="regCompany" class="form-control" maxlength="200" autocomplete="organization"
+                               @bind-Value="form.CompanyName" />
+                </div>
+                @FieldError("CompanyName")
+            </div>
+
+            <div class="xl-row">
                 <div class="xl-field">
-                    <label for="regCompany">@L["companyName"]</label>
+                    <label for="regNuit">@L["nuit"]</label>
                     <div class="xl-input-wrap">
-                        <i class="bi bi-building xl-input-icon"></i>
-                        <InputText id="regCompany" class="form-control" maxlength="200" autocomplete="organization"
-                                   @bind-Value="form.CompanyName" />
+                        <i class="bi bi-card-text xl-input-icon"></i>
+                        <InputText id="regNuit" class="form-control" maxlength="9" inputmode="numeric"
+                                   placeholder="9 dígitos" @bind-Value="form.Nuit" />
                     </div>
-                    @FieldError("CompanyName")
+                    @FieldError("Nuit")
                 </div>
-
-                <div class="xl-row">
-                    <div class="xl-field">
-                        <label for="regNuit">@L["nuit"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-card-text xl-input-icon"></i>
-                            <InputText id="regNuit" class="form-control" maxlength="10" @bind-Value="form.Nuit" />
-                        </div>
-                        @FieldError("Nuit")
-                    </div>
-                    <div class="xl-field">
-                        <label for="regContact">@L["contactName"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-person xl-input-icon"></i>
-                            <InputText id="regContact" class="form-control" maxlength="150" autocomplete="name"
-                                       @bind-Value="form.ContactName" />
-                        </div>
-                        @FieldError("ContactName")
-                    </div>
-                </div>
-
-                <div class="xl-row">
-                    <div class="xl-field">
-                        <label for="regEmail">@L["email"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-envelope xl-input-icon"></i>
-                            <InputText id="regEmail" type="email" class="form-control" maxlength="150"
-                                       placeholder="nome@empresa.co.mz" autocomplete="email"
-                                       @bind-Value="form.Email" />
-                        </div>
-                        @FieldError("Email")
-                    </div>
-                    <div class="xl-field">
-                        <label for="regPhone">@L["phone"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-telephone xl-input-icon"></i>
-                            <InputText id="regPhone" type="tel" class="form-control" maxlength="20" autocomplete="tel"
-                                       @bind-Value="form.PhoneNumber" />
-                        </div>
-                        @FieldError("PhoneNumber")
-                    </div>
-                </div>
-
-                <div class="xl-row">
-                    <div class="xl-field">
-                        <label for="regPassword">@L["password"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-lock xl-input-icon"></i>
-                            <InputText id="regPassword"
-                                       type="@(showPassword ? "text" : "password")"
-                                       class="form-control xl-has-toggle"
-                                       placeholder="••••••••"
-                                       autocomplete="new-password"
-                                       @bind-Value="form.Password" />
-                            <button type="button"
-                                    class="xl-toggle-password"
-                                    title="@(showPassword ? "Esconder palavra-passe" : "Mostrar palavra-passe")"
-                                    @onclick="() => showPassword = !showPassword">
-                                <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
-                            </button>
-                        </div>
-                        @FieldError("Password")
-                    </div>
-                    <div class="xl-field">
-                        <label for="regConfirm">@L["confirmPassword"]</label>
-                        <div class="xl-input-wrap">
-                            <i class="bi bi-lock-fill xl-input-icon"></i>
-                            <InputText id="regConfirm"
-                                       type="@(showPassword ? "text" : "password")"
-                                       class="form-control"
-                                       placeholder="••••••••"
-                                       autocomplete="new-password"
-                                       @bind-Value="form.ConfirmPassword" />
-                        </div>
-                        @FieldError("ConfirmPassword")
-                    </div>
-                </div>
-                <div class="xl-hint">@L["passwordHint"]</div>
-
                 <div class="xl-field">
-                    <label for="regNotes">@L["notes"]</label>
+                    <label for="regContact">@L["contactName"]</label>
                     <div class="xl-input-wrap">
-                        <InputTextArea id="regNotes" class="form-control xl-textarea" rows="3" maxlength="1000"
-                                       @bind-Value="form.Notes" />
+                        <i class="bi bi-person xl-input-icon"></i>
+                        <InputText id="regContact" class="form-control" maxlength="150" autocomplete="name"
+                                   @bind-Value="form.ContactName" />
                     </div>
+                    @FieldError("ContactName")
                 </div>
+            </div>
 
-                <div class="d-grid">
-                    <button type="button" class="btn xl-btn-login" disabled="@busy" @onclick="SubmitAsync">
-                        @if (busy)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                        }
-                        @L["btnCreateAccount"] <i class="bi bi-arrow-right ms-1"></i>
-                    </button>
+            <div class="xl-row">
+                <div class="xl-field">
+                    <label for="regEmail">@L["email"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-envelope xl-input-icon"></i>
+                        <InputText id="regEmail" type="email" class="form-control" maxlength="150"
+                                   placeholder="nome@empresa.co.mz" autocomplete="email"
+                                   @bind-Value="form.Email" />
+                    </div>
+                    @FieldError("Email")
                 </div>
+                <div class="xl-field">
+                    <label for="regPhone">@L["phone"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-telephone xl-input-icon"></i>
+                        <InputText id="regPhone" type="tel" class="form-control" maxlength="20" autocomplete="tel"
+                                   @bind-Value="form.PhoneNumber" />
+                    </div>
+                    @FieldError("PhoneNumber")
+                </div>
+            </div>
 
-                <p class="xl-login-help">
-                    @L["alreadyHaveAccount"]
-                    <a href="/login" class="xl-small-link fw-semibold">@L["btnGoToLogin"]</a>
-                </p>
-            }
+            <div class="xl-row">
+                <div class="xl-field">
+                    <label for="regPassword">@L["password"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-lock xl-input-icon"></i>
+                        <InputText id="regPassword"
+                                   type="@(showPassword ? "text" : "password")"
+                                   class="form-control xl-has-toggle"
+                                   placeholder="••••••••"
+                                   autocomplete="new-password"
+                                   @bind-Value="form.Password" />
+                        <button type="button"
+                                class="xl-toggle-password"
+                                title="@(showPassword ? "Esconder palavra-passe" : "Mostrar palavra-passe")"
+                                @onclick="() => showPassword = !showPassword">
+                            <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                        </button>
+                    </div>
+                    @FieldError("Password")
+                </div>
+                <div class="xl-field">
+                    <label for="regConfirm">@L["confirmPassword"]</label>
+                    <div class="xl-input-wrap">
+                        <i class="bi bi-lock-fill xl-input-icon"></i>
+                        <InputText id="regConfirm"
+                                   type="@(showPassword ? "text" : "password")"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   autocomplete="new-password"
+                                   @bind-Value="form.ConfirmPassword" />
+                    </div>
+                    @FieldError("ConfirmPassword")
+                </div>
+            </div>
+            <div class="xl-hint">@L["passwordHint"]</div>
+
+            <div class="xl-field">
+                <label for="regNotes">@L["notes"]</label>
+                <div class="xl-input-wrap">
+                    <InputTextArea id="regNotes" class="form-control xl-textarea" rows="3" maxlength="1000"
+                                   @bind-Value="form.Notes" />
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button type="button" class="btn xl-btn-login" disabled="@busy" @onclick="SubmitAsync">
+                    @if (busy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    @L["btnCreateAccount"] <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+            </div>
+
+            <p class="xl-login-help">
+                @L["alreadyHaveAccount"]
+                <a href="/login" class="xl-small-link fw-semibold">@L["btnGoToLogin"]</a>
+            </p>
         </div>
     </main>
 
@@ -499,7 +484,6 @@
     private readonly LeadFormDto form = new();
     private readonly Dictionary<string, string> errors = new();
     private bool busy;
-    private bool success;
     private bool showPassword;
     private string? message;
 
@@ -521,24 +505,41 @@
         var required = L["required"].Value;
 
         if (string.IsNullOrWhiteSpace(form.CompanyName)) errors["CompanyName"] = required;
-        if (string.IsNullOrWhiteSpace(form.Nuit)) errors["Nuit"] = required;
         if (string.IsNullOrWhiteSpace(form.ContactName)) errors["ContactName"] = required;
         if (string.IsNullOrWhiteSpace(form.PhoneNumber)) errors["PhoneNumber"] = required;
+
+        // O NUIT tem de ter exactamente 9 dígitos: é a regra do LicenseKey,
+        // que também o exige único. A unicidade só se sabe no servidor.
+        if (string.IsNullOrWhiteSpace(form.Nuit))
+            errors["Nuit"] = required;
+        else if (!IsValidNuit(form.Nuit))
+            errors["Nuit"] = L["nuitDigits"];
 
         if (string.IsNullOrWhiteSpace(form.Email))
             errors["Email"] = required;
         else if (!IsValidEmail(form.Email))
             errors["Email"] = L["invalidEmail"];
 
+        // Mesmas exigências do LicenseKey: 6 caracteres, uma maiúscula e uma minúscula.
         if (string.IsNullOrEmpty(form.Password))
             errors["Password"] = required;
         else if (form.Password.Length < 6)
             errors["Password"] = L["minLength6"];
+        else if (!form.Password.Any(char.IsUpper))
+            errors["Password"] = L["passwordUppercase"];
+        else if (!form.Password.Any(char.IsLower))
+            errors["Password"] = L["passwordLowercase"];
 
         if (form.ConfirmPassword != form.Password)
             errors["ConfirmPassword"] = L["passwordsDontMatch"];
 
         return errors.Count == 0;
+    }
+
+    private static bool IsValidNuit(string nuit)
+    {
+        var value = nuit.Trim();
+        return value.Length == 9 && value.All(char.IsAsciiDigit);
     }
 
     private static bool IsValidEmail(string email)
@@ -560,19 +561,17 @@
 
             if (response.Flag)
             {
-                success = true;
-                message = string.IsNullOrWhiteSpace(response.Message) ? L["successMessage"].Value : response.Message;
+                // A conta fica por confirmar: o backend envia um email de ativação.
+                Navigation.NavigateTo(
+                    $"/confirm-email?email={Uri.EscapeDataString(form.Email.Trim())}");
+                return;
             }
-            else
-            {
-                message = string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"].Value : response.Message;
-            }
+
+            message = string.IsNullOrWhiteSpace(response.Message) ? L["unexpectedError"].Value : response.Message;
         }
         finally
         {
             busy = false;
         }
     }
-
-    private void GoToLogin() => Navigation.NavigateTo("/login");
 }

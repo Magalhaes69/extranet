@@ -160,7 +160,7 @@
     <value>Palavra-passe</value>
   </data>
   <data name="passwordHint" xml:space="preserve">
-    <value>Mínimo de 6 caracteres.</value>
+    <value>Mínimo de 6 caracteres, com pelo menos uma maiúscula e uma minúscula.</value>
   </data>
   <data name="passwordsDontMatch" xml:space="preserve">
     <value>As palavras-passe não coincidem.</value>
@@ -176,5 +176,41 @@
   </data>
   <data name="unexpectedError" xml:space="preserve">
     <value>Não foi possível criar a conta. Tente novamente.</value>
+  </data>
+  <data name="confirmEmailTitle" xml:space="preserve">
+    <value>Confirme o seu email</value>
+  </data>
+  <data name="confirmEmailSentTo" xml:space="preserve">
+    <value>Enviámos um email de confirmação para</value>
+  </data>
+  <data name="confirmEmailSentGeneric" xml:space="preserve">
+    <value>Enviámos um email de confirmação para o endereço que indicou.</value>
+  </data>
+  <data name="confirmEmailExpiry" xml:space="preserve">
+    <value>O link de confirmação expira em 24 horas.</value>
+  </data>
+  <data name="confirmEmailSpam" xml:space="preserve">
+    <value>Se não o encontrar na caixa de entrada, verifique a pasta de spam.</value>
+  </data>
+  <data name="activateTitle" xml:space="preserve">
+    <value>Conta criada</value>
+  </data>
+  <data name="activateText" xml:space="preserve">
+    <value>A sua conta Extranet já está registada. Pode iniciar sessão com o email e a palavra-passe que definiu no registo.</value>
+  </data>
+  <data name="invalidLink" xml:space="preserve">
+    <value>Link inválido ou expirado</value>
+  </data>
+  <data name="invalidLinkText" xml:space="preserve">
+    <value>Este link de ativação não é válido ou já expirou. Tente iniciar sessão ou crie uma conta nova.</value>
+  </data>
+  <data name="nuitDigits" xml:space="preserve">
+    <value>O NUIT deve ter exactamente 9 dígitos.</value>
+  </data>
+  <data name="passwordUppercase" xml:space="preserve">
+    <value>A palavra-passe deve conter pelo menos uma letra maiúscula.</value>
+  </data>
+  <data name="passwordLowercase" xml:space="preserve">
+    <value>A palavra-passe deve conter pelo menos uma letra minúscula.</value>
   </data>
 </root>

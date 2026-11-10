@@ -104,10 +104,14 @@ namespace WebAPI.Controllers
 
                 return response.StatusCode switch
                 {
+                    // Sem mensagem aproveitável não se sabe se é mesmo um duplicado: um 409 também
+                    // chega quando a API de leads falha a provisionar. Daí um texto que serve aos dois
+                    // casos, em vez de afirmar que a conta já existe.
                     HttpStatusCode.Conflict => Conflict(new ServiceResponse
                     {
                         Flag = false,
-                        Message = ExtractMessage(body) ?? "Já existe uma conta com estes dados."
+                        Message = ExtractMessage(body)
+                            ?? "Não foi possível criar a conta com estes dados. Verifique o NUIT e o email, ou tente mais tarde."
                     }),
                     HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity => BadRequest(new ServiceResponse
                     {
@@ -161,7 +165,52 @@ namespace WebAPI.Controllers
             return at > 0 && at < value.Length - 3 && value.IndexOf('.', at) > at + 1 && !value.Contains(' ');
         }
 
-        /// <summary>Reads a human message from the usual shapes: { message }, ProblemDetails or validation errors.</summary>
+        /// <summary>
+        /// Marcas de erro técnico que nunca devem chegar a um visitante anónimo: falam da
+        /// infraestrutura (base de dados, rede, máquinas, excepções) e não do que ele escreveu.
+        /// Uma mensagem com qualquer uma destas é descartada e o chamador usa o texto genérico;
+        /// o original fica no log, que é onde serve para diagnosticar.
+        /// </summary>
+        private static readonly string[] TechnicalMarkers =
+        {
+            "sql", "database", "connection", "connectionstring", "data source",
+            "trusted_connection", "initial catalog", "provider:", "instance",
+            "remote connections", "timeout expired", "deadlock",
+            "exception", "stack trace", "stacktrace", "   at ",
+            "system.", "microsoft.", "npgsql", "entityframework",
+            "localhost", "127.0.0.1", "http://", "https://",
+            "c:\\", "d:\\", "/var/", "/home/",
+            "inner error", "see the inner"
+        };
+
+        /// <summary>
+        /// Uma mensagem só segue para o visitante se falar dos dados dele. Falha em segurança:
+        /// perante dúvida (vazia, demasiado longa, com marcas técnicas) devolve false.
+        /// </summary>
+        private static bool IsSafeForVisitor(string? message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return false;
+
+            // Mensagens de negócio e de validação são curtas. Um texto longo costuma ser
+            // uma excepção formatada, por isso não arrisca.
+            if (message.Length > 200) return false;
+
+            foreach (var marker in TechnicalMarkers)
+            {
+                if (message.Contains(marker, StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Reads a human message from the usual shapes: { message }, ProblemDetails or validation errors.
+        /// Devolve o primeiro candidato que <see cref="IsSafeForVisitor"/> aprove — um texto técnico
+        /// é saltado, não interrompe a procura, e se nenhum servir devolve null para o chamador
+        /// usar a mensagem genérica. "title" fica de fora de propósito: é um rótulo de categoria
+        /// ("Business Rule Violation") que nada diz a quem está a criar a conta.
+        /// </summary>
         private static string? ExtractMessage(string body)
         {
             if (string.IsNullOrWhiteSpace(body)) return null;
@@ -172,13 +221,13 @@ namespace WebAPI.Controllers
                 if (doc.RootElement.ValueKind != JsonValueKind.Object) return null;
                 var root = doc.RootElement;
 
-                foreach (var name in new[] { "message", "detail", "title" })
+                foreach (var name in new[] { "message", "detail" })
                 {
                     foreach (var property in root.EnumerateObject())
                     {
                         if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase) &&
                             property.Value.ValueKind == JsonValueKind.String &&
-                            !string.IsNullOrWhiteSpace(property.Value.GetString()))
+                            IsSafeForVisitor(property.Value.GetString()))
                         {
                             return Truncate(property.Value.GetString()!, 300);
                         }
@@ -191,7 +240,7 @@ namespace WebAPI.Controllers
                         .SelectMany(e => e.Value.ValueKind == JsonValueKind.Array ? e.Value.EnumerateArray() : Enumerable.Empty<JsonElement>())
                         .Where(v => v.ValueKind == JsonValueKind.String)
                         .Select(v => v.GetString())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Where(IsSafeForVisitor)
                         .Take(3);
 
                     var joined = string.Join(" ", messages);

@@ -160,7 +160,7 @@
     <value>Password</value>
   </data>
   <data name="passwordHint" xml:space="preserve">
-    <value>At least 6 characters.</value>
+    <value>At least 6 characters, including one uppercase and one lowercase letter.</value>
   </data>
   <data name="passwordsDontMatch" xml:space="preserve">
     <value>Passwords do not match.</value>
@@ -176,5 +176,41 @@
   </data>
   <data name="unexpectedError" xml:space="preserve">
     <value>Could not create the account. Please try again.</value>
+  </data>
+  <data name="confirmEmailTitle" xml:space="preserve">
+    <value>Confirm your e-mail</value>
+  </data>
+  <data name="confirmEmailSentTo" xml:space="preserve">
+    <value>We have sent a confirmation e-mail to</value>
+  </data>
+  <data name="confirmEmailSentGeneric" xml:space="preserve">
+    <value>We have sent a confirmation e-mail to the address you provided.</value>
+  </data>
+  <data name="confirmEmailExpiry" xml:space="preserve">
+    <value>The confirmation link expires in 24 hours.</value>
+  </data>
+  <data name="confirmEmailSpam" xml:space="preserve">
+    <value>If you cannot find it in your inbox, please check your spam folder.</value>
+  </data>
+  <data name="activateTitle" xml:space="preserve">
+    <value>Account created</value>
+  </data>
+  <data name="activateText" xml:space="preserve">
+    <value>Your Extranet account is registered. You can sign in with the e-mail and password you chose when registering.</value>
+  </data>
+  <data name="invalidLink" xml:space="preserve">
+    <value>Invalid or expired link</value>
+  </data>
+  <data name="invalidLinkText" xml:space="preserve">
+    <value>This activation link is not valid or has already expired. Try signing in or create a new account.</value>
+  </data>
+  <data name="nuitDigits" xml:space="preserve">
+    <value>The NUIT must be exactly 9 digits.</value>
+  </data>
+  <data name="passwordUppercase" xml:space="preserve">
+    <value>The password must contain at least one uppercase letter.</value>
+  </data>
+  <data name="passwordLowercase" xml:space="preserve">
+    <value>The password must contain at least one lowercase letter.</value>
   </data>
 </root>

@@ -160,7 +160,7 @@
     <value>Senha</value>
   </data>
   <data name="passwordHint" xml:space="preserve">
-    <value>Mínimo de 6 caracteres.</value>
+    <value>Mínimo de 6 caracteres, com pelo menos uma maiúscula e uma minúscula.</value>
   </data>
   <data name="passwordsDontMatch" xml:space="preserve">
     <value>As senhas não coincidem.</value>
@@ -176,5 +176,41 @@
   </data>
   <data name="unexpectedError" xml:space="preserve">
     <value>Não foi possível criar a conta. Tente novamente.</value>
+  </data>
+  <data name="confirmEmailTitle" xml:space="preserve">
+    <value>Confirme o seu e-mail</value>
+  </data>
+  <data name="confirmEmailSentTo" xml:space="preserve">
+    <value>Enviamos um e-mail de confirmação para</value>
+  </data>
+  <data name="confirmEmailSentGeneric" xml:space="preserve">
+    <value>Enviamos um e-mail de confirmação para o endereço informado.</value>
+  </data>
+  <data name="confirmEmailExpiry" xml:space="preserve">
+    <value>O link de confirmação expira em 24 horas.</value>
+  </data>
+  <data name="confirmEmailSpam" xml:space="preserve">
+    <value>Se não encontrar na caixa de entrada, verifique a pasta de spam.</value>
+  </data>
+  <data name="activateTitle" xml:space="preserve">
+    <value>Conta criada</value>
+  </data>
+  <data name="activateText" xml:space="preserve">
+    <value>A sua conta Extranet já está registrada. Você pode entrar com o e-mail e a senha que definiu no cadastro.</value>
+  </data>
+  <data name="invalidLink" xml:space="preserve">
+    <value>Link inválido ou expirado</value>
+  </data>
+  <data name="invalidLinkText" xml:space="preserve">
+    <value>Este link de ativação não é válido ou já expirou. Tente entrar ou crie uma nova conta.</value>
+  </data>
+  <data name="nuitDigits" xml:space="preserve">
+    <value>O NUIT deve ter exatamente 9 dígitos.</value>
+  </data>
+  <data name="passwordUppercase" xml:space="preserve">
+    <value>A senha deve conter pelo menos uma letra maiúscula.</value>
+  </data>
+  <data name="passwordLowercase" xml:space="preserve">
+    <value>A senha deve conter pelo menos uma letra minúscula.</value>
   </data>
 </root>
