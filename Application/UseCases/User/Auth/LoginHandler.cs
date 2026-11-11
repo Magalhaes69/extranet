@@ -22,13 +22,25 @@ namespace Application.UseCases.User.Auth
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
         {
             var user = _userManager.FindByEmailAsync(request.Email).Result;
-            if(user is null) 
+            if(user is null)
                 throw new Exception("Invalid credentials");
 
             var validadPassword =await _userManager.CheckPasswordAsync(user, request.Password);
 
             if(!validadPassword)
                 throw new Exception("Invalid credentials");
+
+            // Verificar se o email foi confirmado
+            if (!user.EmailConfirmed)
+            {
+                return new LoginResponse
+                {
+                    Success = false,
+                    EmailConfirmed = false,
+                    Email = user.Email!,
+                    Message = "Por favor, confirme o seu email antes de aceder à plataforma. Verifique a sua caixa de entrada."
+                };
+            }
 
             if (user.TwoFactorEnabled)
             {

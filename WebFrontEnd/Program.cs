@@ -46,7 +46,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.Configure<LicenseSettings>(
     builder.Configuration.GetSection("License"));
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// Ler a BaseUrl da API a partir do appsettings.json
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
 
 builder.Services.AddScoped<MessageDialogService>();
@@ -102,7 +104,8 @@ builder.Services.AddScoped<UiStateService>();
 builder.Services.AddSingleton<LicenseState>();
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+    client.BaseAddress = new Uri(apiBaseUrl);
 })
 .AddHttpMessageHandler<AuthHandler>();
 
