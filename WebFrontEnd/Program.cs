@@ -13,6 +13,7 @@ using WebFrontEnd.Services.Dashboard;
 using WebFrontEnd.Services.Help;
 using WebFrontEnd.Services.LicenseService;
 using WebFrontEnd.Services.LicenseService.Dto;
+using WebFrontEnd.Services.Requests;
 using WebFrontEnd.Services.Toast;
 using WebFrontEnd.Services.Users;
 
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ILicenseKeyService, LicenseKeyService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IRequestsService, RequestsService>();
 builder.Services.AddLocalization(options =>
 {
     options.ResourcesPath = "Resources";

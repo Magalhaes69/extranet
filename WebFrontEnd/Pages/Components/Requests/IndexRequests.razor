@@ -1,7 +1,9 @@
 @page "/requests"
 @attribute [Authorize]
-@inject HttpClient Http
+@inject IRequestsService RequestsService
 @inject NavigationManager Navigation
+@using WebFrontEnd.Services.Requests
+@using WebFrontEnd.Services.Requests.Dtos
 
 <PageTitle>Minhas Solicitações</PageTitle>
 
@@ -166,16 +168,16 @@
 }
 
 @code {
-    private List<RequestItem> requests = new();
+    private List<RequestListItemDto> requests = new();
     private bool isLoading = true;
     private string searchTerm = string.Empty;
     private string statusFilter = string.Empty;
     private bool showNewRequestModal;
     private bool isSaving;
     private string? errorMessage;
-    private NewRequestForm newRequest = new();
+    private CreateRequestDto newRequest = new();
 
-    private List<RequestItem> FilteredRequests =>
+    private List<RequestListItemDto> FilteredRequests =>
         requests
             .Where(r => string.IsNullOrWhiteSpace(statusFilter) || r.Status == statusFilter)
             .Where(r => string.IsNullOrWhiteSpace(searchTerm) ||
@@ -200,11 +202,7 @@
         isLoading = true;
         try
         {
-            var response = await Http.GetAsync("client/Requests");
-            if (response.IsSuccessStatusCode)
-            {
-                requests = await response.Content.ReadFromJsonAsync<List<RequestItem>>() ?? new();
-            }
+            requests = await RequestsService.GetAllRequestsAsync();
         }
         catch (Exception ex)
         {
@@ -218,7 +216,7 @@
 
     private void OpenNewRequestModal()
     {
-        newRequest = new NewRequestForm { Quantity = 1 };
+        newRequest = new CreateRequestDto { Quantity = 1 };
         errorMessage = null;
         showNewRequestModal = true;
     }
@@ -248,14 +246,9 @@
         isSaving = true;
         try
         {
-            var response = await Http.PostAsJsonAsync("client/Requests", new
-            {
-                productName = newRequest.ProductName,
-                quantity = newRequest.Quantity,
-                notes = newRequest.Notes
-            });
+            var success = await RequestsService.CreateRequestAsync(newRequest);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 ToastService.ShowSuccess("Solicitação enviada com sucesso!", ThemeService.CurrentTheme);
                 showNewRequestModal = false;
@@ -303,20 +296,4 @@
         "Completed" => "Concluída",
         _ => status
     };
-
-    private class RequestItem
-    {
-        public Guid Id { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public DateTime SubmittedAt { get; set; }
-    }
-
-    private class NewRequestForm
-    {
-        public string ProductName { get; set; } = string.Empty;
-        public int Quantity { get; set; } = 1;
-        public string? Notes { get; set; }
-    }
 }
