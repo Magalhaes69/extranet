@@ -104,30 +104,40 @@ public sealed class CreateOnexClientUserHandler
             };
         }
 
-        // 5. Criar Lead no PROJ1
+        // 5. Obter o código do Lead.
+        // Quem já criou o Lead manda o código no pedido e este passo é saltado — é o
+        // caso do LicenseKey, que chama aqui a seguir a gravá-lo. Criar outro Lead
+        // nesse caso poria as duas aplicações a chamarem-se uma à outra sem fim.
         string cardCode;
 
-        try
+        if (!string.IsNullOrWhiteSpace(request.CardCode))
         {
-            cardCode = await _leadApiClient.CreateLeadAndGetCodeAsync(
-                companyName,
-                taxNumber,
-                contactName,
-                email,
-                request.PhoneNumber,
-                password,
-                request.Status,
-                request.Notes,
-                cancellationToken);
+            cardCode = request.CardCode;
         }
-        catch (OperationCanceledException)
+        else
         {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            return Failure(email, string.Empty,
-                $"Não foi possível criar o Lead no PROJ1: {ex.Message}");
+            try
+            {
+                cardCode = await _leadApiClient.CreateLeadAndGetCodeAsync(
+                    companyName,
+                    taxNumber,
+                    contactName,
+                    email,
+                    request.PhoneNumber,
+                    password,
+                    request.Status,
+                    request.Notes,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return Failure(email, string.Empty,
+                    $"Não foi possível criar o Lead no PROJ1: {ex.Message}");
+            }
         }
 
         if (string.IsNullOrWhiteSpace(cardCode))
