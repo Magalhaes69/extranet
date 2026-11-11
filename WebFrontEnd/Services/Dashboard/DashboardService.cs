@@ -1,42 +1,61 @@
-﻿
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using WebFrontEnd.Services.Dashboard.Dtos;
 
 namespace WebFrontEnd.Services.Dashboard
 {
     public class DashboardService : IDashboardService
     {
-
         private readonly HttpClient _httpClient;
-        private const string BaseUrl = "api/Dashboard";
+        private const string BaseUrl = "api/client/dashboard";
 
         public DashboardService(IHttpClientFactory factory)
         {
-            this._httpClient = factory.CreateClient("API");
+            _httpClient = factory.CreateClient("API");
         }
-        public async Task<GetCountDto> GetCountOrderAsync(string CardCode, string Status)
+
+        public async Task<ClientDashboardDto?> GetClientDashboardAsync(CancellationToken ct = default)
         {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/summary");
+            try
+            {
+                var response = await _httpClient.GetAsync(BaseUrl, ct);
 
-            if (!response.IsSuccessStatusCode)
-                return new GetCountDto();
-           var get= await response.Content.ReadFromJsonAsync<GetCountDto>()
-                                 ?? new GetCountDto();
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync(ct);
+                    Console.WriteLine($"Dashboard failed ({(int)response.StatusCode}): {body}");
+                    return null;
+                }
 
-            return get;
+                return await response.Content.ReadFromJsonAsync<ClientDashboardDto>(cancellationToken: ct);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar dashboard: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<DashboardMetricDto?> GetMetricAsync(string key, CancellationToken ct = default)
         {
-            using var response = await _httpClient.GetAsync($"{BaseUrl}/metrics/{key}", ct);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var body = await response.Content.ReadAsStringAsync(ct);
-                Console.WriteLine($"Dashboard metric '{key}' failed ({(int)response.StatusCode}): {body}");
+                var response = await _httpClient.GetAsync($"{BaseUrl}/metrics/{key}", ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync(ct);
+                    Console.WriteLine($"Dashboard metric '{key}' failed ({(int)response.StatusCode}): {body}");
+                    return null;
+                }
+
+                return await response.Content.ReadFromJsonAsync<DashboardMetricDto>(cancellationToken: ct);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar métrica '{key}': {ex.Message}");
                 return null;
             }
-
-            return await response.Content.ReadFromJsonAsync<DashboardMetricDto>(cancellationToken: ct);
         }
     }
 }
+
