@@ -68,132 +68,50 @@
 
 
 @code {
-    private bool isSalesOpen = false;
-    private bool isPaymentOpen = false;
-    private bool isItemsOpen = false;
-    private bool isSettingsOpen = false;
-
-
-    private void OnCultureChanged()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         ThemeService.OnThemeChanged += Refresh;
-
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        isAdmin = authState.User.IsInRole("Manager") || authState.User.IsInRole("Administrator");
     }
 
     private void Refresh()
     {
         InvokeAsync(StateHasChanged);
     }
-    private void ToggleSales()
-    {
-        isSalesOpen = !isSalesOpen;
-    }
 
-    private void TogglePayment()
-    {
-        isPaymentOpen = !isPaymentOpen;
-    }
-    private void ToggleItemExtensions()
-    {
-        isItemsOpen = !isItemsOpen;
-    }
-    private void ToggleSettings()
-    {
-        isSettingsOpen = !isSettingsOpen;
-    }
-
-    #region Menu
+    #region Menu - Portal do Cliente
 
     private List<SidebarMenuItem> Menu = new()
     {
         new SidebarMenuItem
         {
-            Key = "menuPrincipal",
-            Icon = "nav-icon bi bi-house",
+            Key = "menuDashboard",
+            Icon = "nav-icon bi bi-speedometer2",
             Url = "/"
         },
         new SidebarMenuItem
         {
-            Key = "menuVendasGroup",
-            Icon = "nav-icon bi bi-cart",
-            Children = new()
-            {
-                new() { Key = "menuQuotation", Url = "/quotations" },
-                new() { Key = "menuOrder", Url = "/orders" },
-                new() { Key = "createOrder", Url = "/add-orders" },
-                //new() { Key = "menucreateOrderByCat", Url = "/catalog-item" },
-                new() { Key = "menuReturns", Url = "/returns" },
-                new() { Key = "menuDeliveries", Url = "/delivery" },
-                new() { Key = "APInvoices", Url = "/invoices" },
-                new() { Key = "menuCredit", Url = "/credits" },
-            }
+            Key = "menuPedidos",
+            Icon = "nav-icon bi bi-file-text",
+            Url = "/requests"
         },
         new SidebarMenuItem
         {
-            Key = "menuPaymentGroup",
-            Icon = "nav-icon bi bi-credit-card-2-front",
-            Children = new()
-            {
-                new() { Key = "menuPayments", Url = "/payments" }
-            }
+            Key = "menuPagamentos",
+            Icon = "nav-icon bi bi-credit-card",
+            Url = "/payments"
         },
-        // new SidebarMenuItem
-        // {
-        //     Key = "menuItemExtension",
-        //     Icon = "nav-icon bi bi-box-seam",
-        //     Children = new()
-        //     {
-        //         new() { Key = "menuListItemExtension", Url = "/extensions/list-item-extension" },
-        //         new() { Key = "menuCreateItemExtension", Url = "/extensions/itemextension" }
-        //     }
-        // },
         new SidebarMenuItem
         {
-            Key="menuAdministratorGroup",
+            Key = "menuDefinicoes",
             Icon = "nav-icon bi bi-gear",
-            Children = new()
-            {
-                new(){ Key = "menuConfigure", Url = "/configure-app"},
-                new(){ Key = "menuUsers", Url = "/users", AdminOnly = true },
-            }
-        },
-
-        new SidebarMenuItem
-{
-    Key = "menuLicenses",
-    Icon = "nav-icon bi bi-key",
-    Url = "/licenses"
-},
-        
+            Url = "/settings"
+        }
     };
 
     private string SearchTerm = "";
 
-    private bool isAdmin;
-
     private List<SidebarMenuItem> FilteredMenu =>
-        FilterMenu(VisibleMenu(Menu));
-
-    // Hides the entries reserved for Manager/Administrator from everybody else
-    private List<SidebarMenuItem> VisibleMenu(List<SidebarMenuItem> menu) =>
-        menu.Select(item => new SidebarMenuItem
-        {
-            Key = item.Key,
-            Icon = item.Icon,
-            Url = item.Url,
-            AdminOnly = item.AdminOnly,
-            Children = VisibleMenu(item.Children)
-        })
-        .Where(item => isAdmin || !item.AdminOnly)
-        .ToList();
+        FilterMenu(Menu);
 
     private List<SidebarMenuItem> FilterMenu(List<SidebarMenuItem> menu)
     {
