@@ -1,11 +1,14 @@
 using System.Threading.RateLimiting;
-using Application.Interfaces;
 using Application.Services;
 using Domain.Interfaces;
+using Domain.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
+using Persistence.Context;
 using Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
 using WebAPI.Authentication;
 using WebAPI.Controllers;
 using WebAPI.Settings;
@@ -66,32 +69,6 @@ builder.Services.ConfigureApplicationApp();
  
 
 builder.Services.AddHttpClient<ILeadApiClient, LeadApiClient>(
-    (serviceProvider, client) =>
-    {
-        var configuration = serviceProvider
-            .GetRequiredService<IConfiguration>();
-
-        var baseUrl = configuration["LicensingApi:BaseUrl"];
-
-        if (string.IsNullOrWhiteSpace(baseUrl) ||
-            !Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp &&
-             uri.Scheme != Uri.UriSchemeHttps))
-        {
-            throw new InvalidOperationException(
-                "LicensingApi:BaseUrl não está configurada corretamente.");
-        }
-
-        client.BaseAddress = uri;
-
-        // Timeout de 3 minutos
-        client.Timeout = TimeSpan.FromMinutes(3);
-    });
-
-// Consulta das licenças do cliente no LicenseKey. Mesma API e mesma secção de
-// configuração do ILeadApiClient: o cliente usa URLs relativos (api/client/licenses/{cardCode})
-// e envia a LicensingApi:ApiKey no header X-Api-Key.
-builder.Services.AddHttpClient<IClientLicenseApiClient, ClientLicenseApiClient>(
     (serviceProvider, client) =>
     {
         var configuration = serviceProvider
