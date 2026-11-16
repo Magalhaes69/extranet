@@ -1,0 +1,57 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ebscore",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "C:\\Users\\Antonio Magalhaes\\source\\repos\\EbsCore-main\\WebAPI\\WebAPI.csproj",
+        "--launch-profile",
+        "https"
+      ],
+      "port": 7042,
+      "url": "https://localhost:7042"
+    },
+    {
+      "name": "licensekey",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "C:\\Users\\Antonio Magalhaes\\source\\repos\\LicenseKey\\WebAPI\\WebAPI.csproj",
+        "--launch-profile",
+        "https"
+      ],
+      "port": 7032,
+      "url": "https://localhost:7032"
+    },
+    {
+      "name": "extranet",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "C:\\Users\\Antonio Magalhaes\\source\\repos\\ExtranetSAP\\WebAPI\\WebAPI.csproj",
+        "--launch-profile",
+        "https"
+      ],
+      "port": 7118,
+      "url": "https://localhost:7118"
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "C:\\Users\\Antonio Magalhaes\\source\\repos\\ExtranetSAP\\WebFrontEnd\\WebFrontEnd.csproj",
+        "--launch-profile",
+        "https"
+      ],
+      "port": 7083,
+      "url": "https://localhost:7083"
+    }
+  ]
+}

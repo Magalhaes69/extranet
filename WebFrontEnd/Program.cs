@@ -9,32 +9,13 @@ using WebFrontEnd.Helps;
 using WebFrontEnd.Services;
 using WebFrontEnd.Services.AppSettings;
 using WebFrontEnd.Services.Auth;
-using WebFrontEnd.Services.BusinessPartners;
-using WebFrontEnd.Services.CreditNotes;
 using WebFrontEnd.Services.Dashboard;
-using WebFrontEnd.Services.DeliveryNotes;
 using WebFrontEnd.Services.Help;
-using WebFrontEnd.Services.IncomingPayments;
-
-using WebFrontEnd.Services.Invoices;
-using WebFrontEnd.Services.ItemExtension;
-using WebFrontEnd.Services.ItemGroups;
-using WebFrontEnd.Services.Leads;
-using WebFrontEnd.Services.Licenses;
-using WebFrontEnd.Services.Items;
 using WebFrontEnd.Services.LicenseService;
 using WebFrontEnd.Services.LicenseService.Dto;
-using WebFrontEnd.Services.Orders;
-using WebFrontEnd.Services.OrdersCarts;
-using WebFrontEnd.Services.Quotations;
-using WebFrontEnd.Services.Returns;
-using WebFrontEnd.Services.SQLQueries;
+using WebFrontEnd.Services.Requests;
 using WebFrontEnd.Services.Toast;
 using WebFrontEnd.Services.Users;
-using WebFrontEnd.Services.VatGroups;
-using WebFrontEnd.Services.Warehouses;
-using WebFrontEnd.Shared.Dtos;
-using static System.Net.WebRequestMethods;
 
 
 
@@ -51,30 +32,13 @@ var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? builder.HostEnv
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
 
+// Serviços essenciais
 builder.Services.AddScoped<MessageDialogService>();
-builder.Services.AddScoped<IOrderService, OrderServices>();
-builder.Services.AddScoped<IItemsService, ItemsService>();
-builder.Services.AddScoped<IVatGroupsService, VatGroupsService>();
-builder.Services.AddScoped<IBusinessPartnersService, BusinessPartnersService>();
-builder.Services.AddScoped<IWarehousesService, WarehousesService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IInvoicesService, InvoicesService>();
-builder.Services.AddScoped<IIncomingPaymentsService, IncomingPaymentsService>();
-builder.Services.AddScoped<IQuotationsService, QuotationsService>();
-builder.Services.AddScoped<IDeliveryNotesService, DeliveryNotesService>();
-builder.Services.AddScoped<ICreditNotesService, CreditNotesService>();
-builder.Services.AddScoped<IItemGroupsService, ItemGroupsService>();
-builder.Services.AddScoped<IOrdersCartService, OrdersCartService>();
-builder.Services.AddScoped<IItemExtensionService, ItemExtensionService>();
-builder.Services.AddScoped<ISQLQueriesService, SQLQueriesService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ILicenseKeyService, LicenseKeyService>();
-builder.Services.AddScoped<IReturnsService, ReturnsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
-builder.Services.AddScoped<ILeadsService, LeadsService>();
-builder.Services.AddScoped<ILicensesService, LicensesService>();
-
-builder.Services.AddScoped<OrdersCartService>();
+builder.Services.AddScoped<IRequestsService, RequestsService>();
 builder.Services.AddLocalization(options =>
 {
     options.ResourcesPath = "Resources";
