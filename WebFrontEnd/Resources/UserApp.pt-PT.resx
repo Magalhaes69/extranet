@@ -136,7 +136,7 @@
     <value>Primeiro nome</value>
   </data>
   <data name="forgotPassword" xml:space="preserve">
-    <value>Esqueceu a tua senha</value>
+    <value>Esqueceu-se da palavra-passe</value>
   </data>
   <data name="homePage" xml:space="preserve">
     <value> Página principal</value>
@@ -157,19 +157,19 @@
     <value>Nuit</value>
   </data>
   <data name="password" xml:space="preserve">
-    <value>Senha</value>
+    <value>Palavra-passe</value>
   </data>
   <data name="perfilGroup" xml:space="preserve">
     <value>Conta de utilizador</value>
   </data>
   <data name="remember" xml:space="preserve">
-    <value>Mantenha-me conectado</value>
+    <value>Manter sessão iniciada</value>
   </data>
   <data name="surname" xml:space="preserve">
     <value>Apelido</value>
   </data>
   <data name="titleLogin" xml:space="preserve">
-    <value>Faça login para iniciar a sua sessão</value>
+    <value>Inicie sessão para aceder ao portal</value>
   </data>
   <data name="twoFactorAuth" xml:space="preserve">
     <value>Autenticação de dois fatores</value>

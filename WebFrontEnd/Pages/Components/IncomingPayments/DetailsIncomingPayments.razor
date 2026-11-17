@@ -1,0 +1,352 @@
+﻿@page "/incomingPayments-details/{DocNum:int}/{Series:int}/{DocType}"
+@using WebFrontEnd.Services.IncomingPayments.Dto
+@using WebFrontEnd.Services.SQLQueries.Dto
+@attribute [Authorize]
+@if (_isLoading)
+{
+    <LoadingPage />
+}
+else
+{
+        <AppPageDetailsLayout Title=@Title>
+
+        <HeaderContent>
+            <HeaderDetailsIncomingPaymentComponent CardCode="@_viewModel.CardCode"
+                                    CardName="@_viewModel.CardName"
+                                    DocCurrency="@_viewModel.DocCurrency"
+                                    Cancelled="@_viewModel.Cancelled"
+                                    TotalCash="@_viewModel.CashSum"
+                                    TotalTransfer="@_viewModel.TransferSum" />
+        </HeaderContent>
+
+        <Body>
+
+            <AppTabs Tabs="@tabs"
+                     ActiveTab="@activeSection"
+                     ActiveTabChanged="ScrollTo" />
+            <div class="app-content">
+                <div class="container-fluid">
+                    <div id="geral" class="card mb-2">
+                        <div class="card-body pt-3">
+                            <div class="row mb-1">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label"> @LanIncomingPayments["billTo"]:</label>
+                                <div class="col-12 col-sm-4">
+                                    <InputText class="form-control form-control-sm" @bind-Value="_viewModel.PayToCode" disabled />
+                                </div>
+                                <label for="Series" class="col-sm-2 col-form-label">@LanSales["salesSeries"]:</label>
+                                <div class="col-12 col-sm-2">
+                                    <InputText class="form-control form-control form-control-sm" @bind-Value="_viewModel.SeriesName" disabled />
+                                </div>
+                                <div class="col-12 col-sm-2">
+                                    <InputNumber class="form-control form-control form-control-sm" @bind-Value="_viewModel.DocNum" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row mb-1">
+                                <label for="Address" class="col-sm-2 col-form-label"></label>
+                                <div class="col-12 col-sm-4">
+                                    <InputText class="form-control form-control-sm" @bind-Value="_viewModel.Address" disabled />
+                                </div>
+
+                                <label for="DocDate" class="col-sm-2 col-form-label">@LanIncomingPayments["documentDate"]:</label>
+                                <div class="col-sm-4">
+                                    <input class="form-control form-control-sm"
+                                           Value="@(UiConverters.ToDate(_viewModel.DocDate))"
+                                               disabled />
+                                </div>
+                            </div>
+
+                            <div class="row mb-1">
+
+                                <label for="DocCurrency" class="col-sm-2 col-form-label"> @LanIncomingPayments["documentCurrency"]:</label>
+                                    <div class="col-12 col-sm-4">
+                                        <InputText class="form-control form-control-sm" @bind-Value="_viewModel.DocCurrency" disabled />
+                                    </div>
+                                <label for="VatDate" class="col-sm-2 col-form-label">@LanIncomingPayments["docDue"]:</label>
+                                <div class="col-sm-4">
+                                    <input class="form-control form-control-sm"
+                                           Value="@(UiConverters.ToDate(_viewModel.DueDate))"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="row mb-1">
+                                <label for="DocCurrency" class="col-sm-2 col-form-label"> @LanSales["contactPerson"]:</label>
+                                <div class="col-12 col-sm-4">
+                                    <InputText class="form-control form-control-sm" @bind-Value="_viewModel.ContactName" disabled />
+                                </div>
+                                <label for="VatDate" class="col-sm-2 col-form-label">@LanIncomingPayments["taxDate"] :</label>
+                                <div class="col-sm-4">
+                                    <input class="form-control form-control-sm"
+                                           Value="@(UiConverters.ToDate(_viewModel.TaxDate))"
+                                           disabled />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-1 sapTitle">@LanSales["tabDetailsContents"]</h5>
+                    <div id="conteudo" class="card mb-2">
+                        <div class="card-body pt-">
+                            <AppTableDetails TableClass="@(ThemeService.CurrentTheme == "dark" ? "table-dark" : "table-light")">
+                                <HeaderGroup>
+                                    <colgroup>
+                                        <col style="width: 50px;" />
+                                        <col style="width: 50px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 80px;" />
+                                    </colgroup>
+                                </HeaderGroup>
+                                <Header>
+                                <tr>
+                                    <th class="border-end sticky-left"><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                                    <th scope="col" class="border-end" style="position: relative;">#<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanIncomingPayments["docType"]<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanIncomingPayments["docNum"]<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanIncomingPayments["docDate"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["totalDoc"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["balanceDue"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["cashDiscount"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["totalP"]<div class="resizer"></div></th>
+                                    <th scope="col" class=" border-end" style="position: relative;">@LanIncomingPayments["docDue"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["totalBeforeDiscount"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["totalDiscount"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanIncomingPayments["docRemarks"]<div class="resizer"></div></th>
+                                </tr>
+                                </Header>
+
+                                <RowTemplate>
+                                        @if (_viewModel.PaymentInvoices is not null)
+                                    {
+                                        @foreach (var item in _viewModel.PaymentInvoices)
+                                        {
+                                            ElementReference btnRef;
+                                            <tr>
+                                                <td><InputCheckbox @bind-Value="item.Selected" /></td>
+                                                <td>@(item.LineNum + 1)</td>
+                                                <td>@UiConverters.ToDocType(item.InvoiceType!)</td>
+                                                <td class="clickable-row">
+                                                    <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                                                            @ref="btnRef"
+                                                            @onclick="(e) => ShowDetails(btnRef, item.DocEntry)">
+                                                        <i class="bi bi-chevron-right text-warning"></i> @item.DocNum
+                                                    </button>
+                                                 </td>
+                                                <td >@UiConverters.ToDate(item.DocDate)</td>
+                                                <td class="text-end">@UiConverters.ToCurrency(item.DocTotal ?? 0, item.DocCurrency!)</td>
+                                                <td class="text-end">@UiConverters.ToCurrency((item.DocTotal - item.PaidToDate) ?? 0, item.DocCurrency!)</td>
+                                                <td class="text-end">@UiConverters.ToFormat(item.DiscountPercent ?? 0)</td>
+                                                <td class="text-end">@UiConverters.ToFormat(item.SumApplied ?? 0)</td>
+                                                <td>@UiConverters.ToDate(item.DocDueDate)</td>
+                                                <td class="text-end">@UiConverters.ToFormat(item.AppliedFC ?? 0)</td>
+                                                <td class="text-end">@UiConverters.ToFormat(item.TotalDiscount ?? 0)</td>
+                                                <td class="text-end">@item.Comments</td>
+                                            </tr>
+                                        }
+                                    }
+                                </RowTemplate>
+                            </AppTableDetails>
+
+                           
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </Body>
+
+    </AppPageDetailsLayout>
+}
+<DetailsModal IsVisible="@showDetailsModal"
+                     Title="A/R Invoice"
+                     Top="modalTop"
+                     Left="modalLeft"
+                     IsVisibleChanged="@((v) => showDetailsModal = v)"
+                     OnViewMore="ViewInvoiceDetails">
+    <BodyDetails>
+        <div class="field-label">@LanSales["docmentNo"]:</div>
+        <div class="field-value">@invoicesDto.DocNum</div>
+
+        <div class="field-label">@LanSales["custumerCode"]:</div>
+        <div class="field-value">@invoicesDto.CardCode</div>
+
+        <div class="field-label">@LanSales["customerName"]:</div>
+        <div class="field-value">@invoicesDto.CardName</div>
+
+        <div class="field-label">@LanSales["launchDate"]:</div>
+        <div class="field-value">@UiConverters.ToDate(invoicesDto.DocDate)</div>
+
+        <div class="field-label">@LanSales["validUntil"]:</div>
+        <div class="field-value">@UiConverters.ToDate(invoicesDto.DocDueDate)</div>
+
+        <div class="field-label">@LanSales["ststusLine"]:</div>
+        <div class="field-value">@UiConverters.ToDocStatus(invoicesDto.DocumentStatus!, invoicesDto.Cancelled!)</div>
+
+        <div class="field-label">@LanSales["docTotal"]:</div>
+        <div class="field-value text-end">@UiConverters.ToCurrency(invoicesDto.DocTotal ?? 0, invoicesDto.DocCurrency!)</div>
+    </BodyDetails>
+    <Footer>
+        <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="ViewInvoiceDetails">
+            View More
+        </button>
+    </Footer>
+
+</DetailsModal>
+
+@code {
+
+    [Parameter]
+    public int DocNum { get; set; }
+    [Parameter]public int Series { get; set; }
+    [Parameter]public string DocType { get; set; }
+
+    private bool _isLoading = true;
+    private ViewDetailsIncomingPaymentsDto _viewModel = new();
+    private string Title = string.Empty;
+    private List<TabItem> tabs = new();
+    private string activeSection = "geral";
+    private bool showLim = false;
+    private bool ShowDocTypeAndTotals = true;
+    private List<GetSeriesDynamicResult> SeriesList = new();
+    private ContactEmployeesResponse getContact = new();
+    private bool showDetailsModal = false;
+    private double modalTop;
+    private double modalLeft;
+    private int selectedInvoiceId;
+    private GetAllInvoicesDto invoicesDto = new();
+    private string CardCode = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LayoutState.SetSidebar(true);
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        CardCode = user.GetCardCode();
+        PageTitleService.SetTitle(LanGeneral["IncomingPaymentIndexTitleNavbar"]);
+        PageState.SetTitle(LanGeneral["IncomingPaymentIndexTitleNavbar"]);
+        tabs = new()
+        {
+            new TabItem {Id = "geral", Label=  LanSales["tabDetailsGeneral"]},
+            new TabItem {Id="conteudo", Label = LanSales["tabDetailsContents"]}
+        };
+        await LoadDate();
+    }
+    private bool AllSelected
+    {
+        get => _viewModel.PaymentInvoices!.All(l => l.Selected);
+        set
+        {
+            foreach (var line in _viewModel.PaymentInvoices!)
+            {
+                line.Selected = value;
+            }
+        }
+    }
+
+    private async Task LoadDate()
+    {
+        var request = new GetByDocNumIncomingPaymentsRequest
+        {
+            CardCode = CardCode,
+            DocNum = DocNum,
+            Series = Series,
+            DocType = DocType
+        };
+        _isLoading = true;
+        _viewModel = await IncomingPaymentsService.GetByDocNum(request);
+        Title = $"{LanSales["incomingPayment"]} {_viewModel.DocNum}";
+        await LoadSeries();
+        if (SeriesList.Count > 0)
+            _viewModel.SeriesName = SeriesList.Where(s => s.Series == _viewModel.Series).FirstOrDefault()?.SeriesName;
+
+        var query = new ContactEmployeesRequest
+        {
+            SqlCode = "GetContactEmployees",
+            CntctCode = _viewModel!.ContactPersonCode!.Value
+        };
+        getContact = await SQLQueriesService.ExecuteQueryContactAsync(query) ?? new ContactEmployeesResponse();
+        if(getContact is not null)
+        {
+
+            _viewModel.ContactName = getContact.Name;
+        }
+        _isLoading = false;
+    }
+    private async Task ScrollTo(string id)
+    {
+        activeSection = id;
+        await js.InvokeVoidAsync("scrollToSection", id);
+    }
+
+    private async Task LoadSeries()
+    {
+
+        var querys = new GetSeriesDynamicRequest
+        {
+            SqlCode = "GetSeriesDynamic",
+            Value = "24"
+        };
+        SeriesList = await SQLQueriesService.ExecuteQueryAsync(querys) ?? new List<GetSeriesDynamicResult>();
+    }
+    private async Task ShowDetails(ElementReference element, int docEntry)
+    {
+        selectedInvoiceId = docEntry;
+       
+        invoicesDto = await InvoicesService.GetByDocEntryInvoicesAsync(CardCode, selectedInvoiceId);
+
+        var pos = await js.InvokeAsync<DomRect>("getElementPosition", element);
+        
+        showDetailsModal = true;
+        await Task.Yield();
+        if(pos is null)
+        {
+            return;
+        }
+        const double modalWidth = 320; // Set the width of the modal
+        const double modalHeight = 300; // Set the height of the modal
+
+        double viewportHeight = await js.InvokeAsync<double>("getWindowHeight");
+        modalLeft = pos.Left + 5;
+        modalTop = pos.Top;
+
+        var windowSize = await js.InvokeAsync<WindowSize>("getWindowSize");
+        
+        if (modalLeft + modalWidth > windowSize.Width)
+        {
+            modalLeft = pos.Left - modalWidth - 10; // open left side instead
+        }
+
+        // Fix vertical overflow (IMPORTANT)
+        if (modalTop + modalHeight > viewportHeight)
+        {
+            modalTop = viewportHeight - modalHeight - 10; // push upward
+        }
+
+        //showDetailsModal = true;
+    }
+    private async Task ViewInvoiceDetails()
+    {
+        if(selectedInvoiceId == 0)
+        {
+            return;
+        }
+        nav.NavigateTo($"/invoices-details/{selectedInvoiceId}");
+        await Task.CompletedTask;
+    }
+
+}

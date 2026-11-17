@@ -1,0 +1,101 @@
+﻿@using WebFrontEnd.Services.Dashboard.Dtos
+@implements IDisposable
+
+<div class="kpi-card kpi-@Accent">
+    <div class="kpi-head">
+        <span class="kpi-icon"><i class="bi @Icon"></i></span>
+        <span class="kpi-title">@Title</span>
+    </div>
+
+    @if (loading)
+    {
+        <div class="kpi-body">
+            <div class="skeleton skeleton-value"></div>
+            @if (ShowAmount)
+            {
+                <div class="skeleton skeleton-amount"></div>
+            }
+        </div>
+        <div class="kpi-foot"><div class="skeleton skeleton-foot"></div></div>
+    }
+    else if (metric is null)
+    {
+        <div class="kpi-body kpi-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Não foi possível carregar</span>
+        </div>
+        <div class="kpi-foot">
+            <button class="btn btn-sm btn-link p-0" @onclick="LoadAsync">
+                <i class="bi bi-arrow-clockwise"></i> Tentar novamente
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="kpi-body">
+            <a class="kpi-value" href="@Href">@((metric.Count).ToString("N0"))</a>
+            @if (ShowAmount && metric.Amount is not null)
+            {
+                <div class="kpi-amount">@metric.Amount.Value.ToString("N2") @metric.Currency</div>
+            }
+            @if (!string.IsNullOrEmpty(Caption))
+            {
+                <div class="kpi-caption">@Caption</div>
+            }
+        </div>
+        <div class="kpi-foot">
+            <span><i class="bi bi-clock"></i> @loadedAt.ToString("HH:mm")</span>
+            <a href="@Href" class="kpi-link">Ver <i class="bi bi-arrow-right"></i></a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string MetricKey { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = "bi-receipt";
+    [Parameter] public string Href { get; set; } = "#";
+    [Parameter] public string Accent { get; set; } = "primary"; // primary | success | warning | danger | info
+    [Parameter] public bool ShowAmount { get; set; } = true;
+    [Parameter] public string? Caption { get; set; }
+
+    private DashboardMetricDto? metric;
+    private bool loading = true;
+    private DateTime loadedAt;
+    private readonly CancellationTokenSource cts = new();
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            metric = await DashboardService.GetMetricAsync(MetricKey, cts.Token);
+            loadedAt = DateTime.Now;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"KpiCard '{MetricKey}' failed: {ex.Message}");
+            metric = null;
+        }
+        finally
+        {
+            loading = false;
+        }
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        cts.Cancel();
+        cts.Dispose();
+    }
+}
