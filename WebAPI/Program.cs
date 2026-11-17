@@ -57,6 +57,20 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
+
+    // Política do registo público de contas (api/Leads): por IP, mais apertada
+    // que o limite global, porque o endpoint é anónimo e cria dados em dois sistemas.
+    options.AddPolicy(LeadsController.RateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 10,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(5)
+            }));
 });
 
 builder.Services.ConfigurePersistenceServices(builder.Configuration);
@@ -115,33 +129,10 @@ builder.Services.AddHttpClient<IClientLicenseApiClient, ClientLicenseApiClient>(
     });
 
 // Registo público de contas (LeadsController): secção "LeadsApi" do appsettings
-// com o endereço do LicenseKey, o caminho do endpoint, a chave e as regras do trial.
+// com as regras do trial. A chamada ao LicenseKey faz-se pelo ILeadApiClient,
+// registado acima com a secção "LicensingApi".
 builder.Services.Configure<LeadsApiSettings>(
     builder.Configuration.GetSection("LeadsApi"));
-
-// Cliente que o LeadsController usa para reencaminhar o registo. O CreatePath é
-// relativo, por isso o BaseAddress tem de ficar definido aqui.
-builder.Services.AddHttpClient(
-    LeadsController.HttpClientName,
-    (serviceProvider, client) =>
-    {
-        var settings = serviceProvider
-            .GetRequiredService<IOptions<LeadsApiSettings>>()
-            .Value;
-
-        if (!string.IsNullOrWhiteSpace(settings.BaseUrl) &&
-            Uri.TryCreate(settings.BaseUrl, UriKind.Absolute, out var uri) &&
-            (uri.Scheme == Uri.UriSchemeHttp ||
-             uri.Scheme == Uri.UriSchemeHttps))
-        {
-            client.BaseAddress = uri;
-        }
-
-        // O controller trata a BaseUrl em falta devolvendo 503, por isso aqui não se lança:
-        // uma excepção na configuração do cliente rebentaria o pedido em vez de responder.
-
-        client.Timeout = TimeSpan.FromMinutes(3);
-    });
 
 var app = builder.Build();
 
