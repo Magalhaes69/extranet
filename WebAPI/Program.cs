@@ -1,4 +1,4 @@
-using System.Threading.RateLimiting;
+using Application.Interfaces;
 using Application.Services;
 using Domain.Interfaces;
 using Domain.Models;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Persistence.Context;
 using Persistence.Extensions;
-using Microsoft.AspNetCore.Authentication;
+using System.Threading.RateLimiting;
 using WebAPI.Authentication;
 using WebAPI.Controllers;
 using WebAPI.Settings;
@@ -65,8 +65,36 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.ConfigurePersistenceServices(builder.Configuration);
 builder.Services.ConfigureApplicationApp();
 
+builder.Services.AddHttpClient<IClientLicenseApiClient, ClientLicenseApiClient>(
+    (serviceProvider, client) =>
+    {
+        var configuration =
+            serviceProvider.GetRequiredService<IConfiguration>();
 
- 
+        var baseUrl = configuration["LicensingApi:BaseUrl"];
+        var apiKey = configuration["LicensingApi:ApiKey"];
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            throw new InvalidOperationException(
+                "LicensingApi:BaseUrl não configurado.");
+
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
+            throw new InvalidOperationException(
+                "LicensingApi:BaseUrl inválido.");
+
+        client.BaseAddress = new Uri(
+            baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/");
+
+        client.Timeout = TimeSpan.FromSeconds(30);
+
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation(
+                "X-Internal-Api-Key",
+                apiKey);
+        }
+    });
+
 
 builder.Services.AddHttpClient<ILeadApiClient, LeadApiClient>(
     (serviceProvider, client) =>
@@ -92,33 +120,33 @@ builder.Services.AddHttpClient<ILeadApiClient, LeadApiClient>(
     });
 
 // Registo público de contas (LeadsController): secção "LeadsApi" do appsettings
-// com o endereço do LicenseKey, o caminho do endpoint, a chave e as regras do trial.
-builder.Services.Configure<LeadsApiSettings>(
-    builder.Configuration.GetSection("LeadsApi"));
+//// com o endereço do LicenseKey, o caminho do endpoint, a chave e as regras do trial.
+//builder.Services.Configure<LeadsApiSettings>(
+//    builder.Configuration.GetSection("LeadsApi"));
 
-// Cliente que o LeadsController usa para reencaminhar o registo. O CreatePath é
-// relativo, por isso o BaseAddress tem de ficar definido aqui.
-builder.Services.AddHttpClient(
-    LeadsController.HttpClientName,
-    (serviceProvider, client) =>
-    {
-        var settings = serviceProvider
-            .GetRequiredService<IOptions<LeadsApiSettings>>()
-            .Value;
+//// Cliente que o LeadsController usa para reencaminhar o registo. O CreatePath é
+//// relativo, por isso o BaseAddress tem de ficar definido aqui.
+//builder.Services.AddHttpClient(
+//    LeadsController.HttpClientName,
+//    (serviceProvider, client) =>
+//    {
+//        var settings = serviceProvider
+//            .GetRequiredService<IOptions<LeadsApiSettings>>()
+//            .Value;
 
-        if (!string.IsNullOrWhiteSpace(settings.BaseUrl) &&
-            Uri.TryCreate(settings.BaseUrl, UriKind.Absolute, out var uri) &&
-            (uri.Scheme == Uri.UriSchemeHttp ||
-             uri.Scheme == Uri.UriSchemeHttps))
-        {
-            client.BaseAddress = uri;
-        }
+//        if (!string.IsNullOrWhiteSpace(settings.BaseUrl) &&
+//            Uri.TryCreate(settings.BaseUrl, UriKind.Absolute, out var uri) &&
+//            (uri.Scheme == Uri.UriSchemeHttp ||
+//             uri.Scheme == Uri.UriSchemeHttps))
+//        {
+//            client.BaseAddress = uri;
+//        }
 
-        // O controller trata a BaseUrl em falta devolvendo 503, por isso aqui não se lança:
-        // uma excepção na configuração do cliente rebentaria o pedido em vez de responder.
+//        // O controller trata a BaseUrl em falta devolvendo 503, por isso aqui não se lança:
+//        // uma excepção na configuração do cliente rebentaria o pedido em vez de responder.
 
-        client.Timeout = TimeSpan.FromMinutes(3);
-    });
+//        client.Timeout = TimeSpan.FromMinutes(3);
+//    });
 
 var app = builder.Build();
 

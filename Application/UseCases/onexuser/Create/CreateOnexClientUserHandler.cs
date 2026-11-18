@@ -1,6 +1,5 @@
-﻿
-using System.Text;
-using System.Text.Encodings.Web;
+﻿using System.Text;
+using Application.Shared.Emails;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
@@ -14,7 +13,7 @@ public sealed class CreateOnexClientUserHandler
     : IRequestHandler<CreateOnexClientUserRequest, CreateOnexClientUserResponse>
 {
     private const int ActivationExpiryHours = 24;
-   private readonly IBaseUserRepository _userRepository;
+    private readonly IBaseUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILeadApiClient _leadApiClient;
     private readonly UserManager<AppUser> _userManager;
@@ -59,7 +58,7 @@ public sealed class CreateOnexClientUserHandler
 
         if (string.IsNullOrWhiteSpace(contactName)) missingFields.Add(nameof(request.ContactName));
 
-        if (string.IsNullOrWhiteSpace(companyName))   missingFields.Add(nameof(request.CompanyName));
+        if (string.IsNullOrWhiteSpace(companyName)) missingFields.Add(nameof(request.CompanyName));
 
         if (missingFields.Count > 0)
         {
@@ -210,7 +209,7 @@ public sealed class CreateOnexClientUserHandler
         try
         {
             // Gerar token original do Identity
-            var confirmationToken =await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             // Codificar para utilização no URL
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(confirmationToken));
@@ -222,8 +221,16 @@ public sealed class CreateOnexClientUserHandler
                     ["token"] = encodedToken
                 });
 
-            var emailBody = BuildActivationEmail(user.FirstName ?? "Utilizador", "OnexClient",activationUrl, ActivationExpiryHours);
-            await _emailService.SendAsync(email,"Activação da sua conta OnexClient",emailBody);
+            var emailBody = ActivationEmailBuilder.Build(
+                user.FirstName ?? "Utilizador",
+                "OnexClient",
+                activationUrl,
+                ActivationExpiryHours,
+                "A sua conta foi criada com sucesso. Clique no botão abaixo para confirmar o seu endereço de email.");
+            await _emailService.SendAsync(
+                email,
+                "Activação da sua conta OnexClient",
+                emailBody);
 
             return new CreateOnexClientUserResponse
             {
@@ -258,141 +265,7 @@ public sealed class CreateOnexClientUserHandler
         }
     }
 
-    // 11. Construir HTML do email
-    private static string BuildActivationEmail(
-       string userName,
-       string appName,
-       string activationUrl,
-       int expiryHours)
-    {
-        var sb = new StringBuilder();
-
-        var safeName = HtmlEncoder.Default.Encode(userName);
-        var safeApp = HtmlEncoder.Default.Encode(appName);
-        var safeUrl = HtmlEncoder.Default.Encode(activationUrl);
-
-        const string orange = "#fd7e14";
-        const string black = "#263238";
-
-        sb.Append("<!DOCTYPE html>");
-        sb.Append("<html lang='pt'>");
-
-        sb.Append("<head>");
-        sb.Append("<meta charset='UTF-8'>");
-        sb.Append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
-        sb.Append("<title>Confirmação da conta</title>");
-        sb.Append("</head>");
-
-        sb.Append("<body style='margin:0;background:#f4f4f4;");
-        sb.Append("font-family:Arial,sans-serif;padding:20px;'>");
-
-        sb.Append("<table width='100%' cellpadding='0' cellspacing='0' border='0'>");
-        sb.Append("<tr><td align='center'>");
-
-        sb.Append("<table width='600' cellpadding='0' cellspacing='0' border='0' ");
-        sb.Append("style='max-width:600px;width:100%;background:#ffffff;");
-        sb.Append("border-radius:8px;overflow:hidden;'>");
-
-        // CABEÇALHO - LARANJA
-        sb.Append("<tr>");
-        sb.Append("<td style='background:" + orange + ";padding:22px 25px;color:#ffffff;'>");
-
-        sb.Append($"<h2 style='margin:0;font-size:22px;'>{safeApp}</h2>");
-
-        sb.Append("<p style='margin:5px 0 0;font-size:12px;color:#ffffff;'>");
-        sb.Append("Portal do Cliente");
-        sb.Append("</p>");
-
-        sb.Append("</td>");
-        sb.Append("</tr>");
-
-        // CONTEÚDO PRINCIPAL - BRANCO
-        sb.Append("<tr>");
-        sb.Append("<td style='padding:35px 30px;'>");
-
-        sb.Append("<h2 style='color:#263238;font-size:21px;margin-top:0;'>");
-        sb.Append("Confirmação da conta");
-        sb.Append("</h2>");
-
-        sb.Append($"<p style='font-size:14px;color:#555;'>Olá {safeName},</p>");
-
-        sb.Append("<p style='font-size:14px;color:#555;line-height:23px;'>");
-        sb.Append("A sua conta foi criada com sucesso. ");
-        sb.Append("Para começar a utilizar a plataforma, confirme o seu endereço ");
-        sb.Append("de email através do botão abaixo.");
-        sb.Append("</p>");
-
-        // BOTÃO DE CONFIRMAÇÃO
-        // BOTÃO DE CONFIRMAÇÃO - COMPATÍVEL COM ZIMBRA
-        sb.Append("<table role='presentation' align='center' ");
-        sb.Append("border='0' cellpadding='0' cellspacing='0' ");
-        sb.Append("style='margin:30px auto;'>");
-
-        sb.Append("<tr>");
-
-        sb.Append("<td align='center' bgcolor='#fd7e14' ");
-        sb.Append("style='background-color:#fd7e14;padding:0;'>");
-
-        sb.Append($"<a href='{safeUrl}' target='_blank' ");
-        sb.Append("style='display:inline-block;padding:15px 30px;");
-        sb.Append("font-family:Arial,sans-serif;font-size:14px;");
-        sb.Append("font-weight:bold;color:#ffffff;text-decoration:none;");
-        sb.Append("background-color:#fd7e14;border:1px solid #fd7e14;'>");
-
-        sb.Append("CONFIRMAR A MINHA CONTA");
-
-        sb.Append("</a>");
-
-        sb.Append("</td>");
-        sb.Append("</tr>");
-        sb.Append("</table>");
-
-        // VALIDADE DO LINK
-        sb.Append("<p style='font-size:13px;color:#999;'>");
-        sb.Append($"Este link expirará em {expiryHours} horas.");
-        sb.Append("</p>");
-
-        // LINK ALTERNATIVO
-        sb.Append("<p style='font-size:12px;color:#888;line-height:20px;'>");
-        sb.Append("Caso o botão não funcione, copie o link seguinte e cole-o ");
-        sb.Append("no seu navegador:");
-        sb.Append("</p>");
-
-        sb.Append($"<p style='font-size:11px;color:{orange};word-break:break-all;'>");
-        sb.Append(safeUrl);
-        sb.Append("</p>");
-
-        sb.Append("</td>");
-        sb.Append("</tr>");
-
-        // RODAPÉ - PRETO
-        sb.Append("<tr>");
-        sb.Append("<td style='background:" + black + ";padding:20px;");
-        sb.Append("text-align:center;color:#ffffff;'>");
-
-        sb.Append("<p style='font-size:12px;margin:0 0 8px;'>");
-        sb.Append($"© {DateTime.UtcNow.Year} {safeApp}. Todos os direitos reservados.");
-        sb.Append("</p>");
-
-        sb.Append("<p style='font-size:11px;color:#b0bec5;margin:0;'>");
-        sb.Append("Este é um email automático. Por favor, não responda.");
-        sb.Append("</p>");
-
-        sb.Append("</td>");
-        sb.Append("</tr>");
-
-        sb.Append("</table>");
-
-        sb.Append("</td></tr>");
-        sb.Append("</table>");
-
-        sb.Append("</body>");
-        sb.Append("</html>");
-
-        return sb.ToString();
-    }
-
-    // 12. Resposta de erro
+    // 11. Resposta de erro
     private static CreateOnexClientUserResponse Failure(
         string email,
         string cardCode,
@@ -411,4 +284,3 @@ public sealed class CreateOnexClientUserHandler
 }
 
 
- 
