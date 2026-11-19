@@ -1,25 +1,22 @@
-﻿@using WebFrontEnd.Services.CultureServices
+﻿@page "/settings"
+@using WebFrontEnd.Services.CultureServices
 @using WebFrontEnd.Services.Enums
 @inject IStringLocalizer<UserApp> UserLan
 @inject IStringLocalizer<App> Lan
 @implements IDisposable
 @attribute [Authorize]
 
-@if (IsVisible)
-{
-    <div class="modal fade show d-block" tabindex="-1"  style="@(ThemeService.CurrentTheme == "dark"? "background: rgba(0,0,0,0.5);" : "")">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
-            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
-                <div class="modal-header py-1">
-                    <h5 class="modal-title">
-                        @UserLan["userSettings"]
-                    </h5>
-                </div>
-                <EditForm Model="appUser" Enhance OnValidSubmit="HandleUpdateUser">
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <AppContentHeader Title="@UserLan["userSettings"]" />
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card @(ThemeService.CurrentTheme == "dark" ? "modal-dark" : "")">
+                <EditForm Model="appUser" OnValidSubmit="HandleUpdateUser">
                     <!-- Body -->
-                    <div class="modal-body p-0">
+                    <div class="card-body p-0">
                         <div class="container-fluid">
-                            <div class="row g-0 modal-layout">
+                            <div class="row g-0 settings-layout">
 
                                 <!-- LEFT SIDEBAR -->
                                 <div class="col-12 col-md-4 col-lg-3 @(ThemeService.CurrentTheme == "dark" ? "sidebar" : "")">
@@ -250,7 +247,7 @@
                         </div>
                     </div>
                     <!-- Footer -->
-                    <div class="modal-footer py-1">
+                    <div class="card-footer d-flex justify-content-end gap-2 py-2">
                         <button class="btn py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : "btn-secondary")  btn-sm rounded-1" @onclick="ShowFechar">@Lan["btnClose"]</button>
                         @if (ToastService.ShowSaveButton)
                         {
@@ -263,11 +260,9 @@
             </div>
         </div>
     </div>
-}
+</div>
 
 @code {
-    private bool IsVisible = false;
-
     private AppUserCreateDto appUser = new();
     CultureWithName SelectedCulture = null!;
     private MenuItem selectedMenu = MenuItem.Perfil;
@@ -288,10 +283,8 @@
         selectedMenu = menu;
     }
 
-    public async Task ShowModal()
+    private async Task LoadProfile()
     {
-        IsVisible = true;
-
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         appUser.Email = user.GetEmail();
@@ -314,11 +307,8 @@
         StateHasChanged();
     }
 
-    private void ShowFechar()
-    {
-        IsVisible = false;
-        StateHasChanged();
-    }
+    // Fechar = voltar à página principal (as definições já não são uma janela).
+    private void ShowFechar() => nav.NavigateTo("/");
 
     private string GetWarningButtonClass()
     {
@@ -329,8 +319,10 @@
     protected override async Task OnInitializedAsync()
     {
 
+        PageTitleService.SetTitle(UserLan["userSettings"]);
         ToastService.OnChange += StateHasChanged;
         ThemeService.OnThemeChanged += StateHasChanged;
+        await LoadProfile();
     }
 
     private void ChooseTheme(ThemeType theme)
@@ -369,7 +361,6 @@
         }
         else
             ToastService.ShowError(Lan["errorMessage"], ThemeService.CurrentTheme);
-        ShowFechar();
         return;
     }
 

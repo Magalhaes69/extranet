@@ -127,9 +127,6 @@
 </nav>
 <!--end::Header-->
 
-<SettingUser
-    @ref="Settings"
-    />
 
 <style>
     .shadow-white {
@@ -144,7 +141,6 @@
 @code {
     private AppUserViewDto appUser = new();
     private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
-    private SettingUser Settings;
     bool CanGoBack => History.Count > 1;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -211,10 +207,7 @@
         await js.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-bs-theme','{theme}')");
     }
 
-    private async Task OpenSetting()
-    {
-        await Settings.ShowModal();
-    }
+    private void OpenSetting() => nav.NavigateTo("/settings");
 
     private void Refresh()
     {
