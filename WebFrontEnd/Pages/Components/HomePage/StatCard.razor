@@ -1,0 +1,60 @@
+@* Cartão de indicador do dashboard. Recebe o valor já calculado (sem pedidos próprios). *@
+
+<div class="kpi-card kpi-@Accent">
+    <div class="kpi-head">
+        <span class="kpi-icon"><i class="bi @Icon"></i></span>
+        <span class="kpi-title">@Title</span>
+    </div>
+
+    @if (Loading)
+    {
+        <div class="kpi-body">
+            <div class="skeleton skeleton-value"></div>
+        </div>
+        <div class="kpi-foot"><div class="skeleton skeleton-foot"></div></div>
+    }
+    else if (Value is null)
+    {
+        <div class="kpi-body kpi-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>@Unavailable</span>
+        </div>
+    }
+    else
+    {
+        <div class="kpi-body">
+            @if (!string.IsNullOrEmpty(Href))
+            {
+                <a class="kpi-value" href="@Href">@Value</a>
+            }
+            else
+            {
+                <span class="kpi-value">@Value</span>
+            }
+            @if (!string.IsNullOrEmpty(Caption))
+            {
+                <div class="kpi-caption">@Caption</div>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Href))
+        {
+            <div class="kpi-foot">
+                <span></span>
+                <a href="@Href" class="kpi-link">@LinkText <i class="bi bi-arrow-right"></i></a>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = "bi-bar-chart";
+    /// <summary>null = indisponível (mostra o aviso em vez do valor).</summary>
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string Accent { get; set; } = "primary"; // primary | success | warning | danger | info
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string LinkText { get; set; } = "Ver";
+    [Parameter] public string Unavailable { get; set; } = "Indisponível";
+}

@@ -1,16 +1,25 @@
 ﻿@page "/"
 @using WebFrontEnd.Services.Auth
-@using WebFrontEnd.Services.Dashboard.Dtos
+@using WebFrontEnd.Services.Licenses
+@using WebFrontEnd.Services.Notifications
+@using WebFrontEnd.Services.CompanyUsers
+@using WebFrontEnd.Pages.Components.Licenses
+@inject IStringLocalizer<DashboardApp> L
+@inject IStringLocalizer<LicensesApp> LL
+@inject ILicensesService LicensesApi
+@inject INotificationsService NotificationsApi
+@inject ICompanyUsersService CompanyUsersApi
+@inject AccessService Access
 @implements IDisposable
 @attribute [Authorize]
 
-<div class="dashboard @(IsDark ? "dashboard-dark" : "")">
+<div class="dashboard">
 
     <div class="app-content-header pt-2 pb-1">
         <div class="container-fluid">
             <div class="top-menu sticky-top d-flex justify-content-between align-items-center">
                 <ul class="nav custom-tabs">
-                    @foreach (var section in Sections)
+                    @foreach (var section in VisibleSections)
                     {
                         <li class="nav-item">
                             <a class="nav-link @(activeSection == section.Id ? "active" : "")"
@@ -18,39 +27,214 @@
                         </li>
                     }
                 </ul>
-                <button class="btn btn-sm btn-outline-primary" @onclick="RefreshAll">
-                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                <button class="btn btn-sm btn-outline-primary" @onclick="LoadAsync" disabled="@loading">
+                    <i class="bi bi-arrow-clockwise"></i> @L["btnRefresh"]
                 </button>
             </div>
         </div>
     </div>
 
     <div class="app-content">
-        <div class="container-fluid" @key="refreshKey">
+        <div class="container-fluid">
 
+            <!-- ============ A minha página principal ============ -->
             <section id="home" class="dash-section">
-                <h5 class="dash-section-title">Ações rápidas</h5>
+                <h4 class="mb-3">@string.Format(L["greeting"].Value, userName)</h4>
+
+                @if (overview is { IsTrial: true, TrialEndDate: not null })
+                {
+                    var trialDays = LicenseRules.DaysLeft(overview.TrialEndDate);
+                    <div class="alert @(trialDays <= 0 ? "alert-danger" : trialDays <= LicenseRules.ExpiringDays ? "alert-warning" : "alert-info") d-flex align-items-center py-2" role="alert">
+                        <i class="bi bi-hourglass-split fs-5 me-2"></i>
+                        <div class="small">
+                            @(trialDays <= 0
+                                ? string.Format(LL["trialEnded"].Value, overview.TrialEndDate.Value.ToLocalTime().ToString("dd/MM/yyyy"))
+                                : string.Format(LL["trialEnds"].Value, overview.TrialEndDate.Value.ToLocalTime().ToString("dd/MM/yyyy"), trialDays))
+                        </div>
+                    </div>
+                }
+                @if (ExpiredCount > 0)
+                {
+                    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2" role="alert">
+                        <span><i class="bi bi-x-octagon me-2"></i>@string.Format(LL["alertExpired"].Value, ExpiredCount)</span>
+                        <a class="btn btn-sm btn-outline-danger" href="/licenses">@LL["btnShow"]</a>
+                    </div>
+                }
+                @if (ExpiringCount > 0)
+                {
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center py-2" role="alert">
+                        <span><i class="bi bi-exclamation-triangle me-2"></i>@string.Format(LL["alertExpiring"].Value, ExpiringCount, LicenseRules.ExpiringDays)</span>
+                        <a class="btn btn-sm btn-outline-warning" href="/licenses">@LL["btnShow"]</a>
+                    </div>
+                }
+
+                <h5 class="dash-section-title mt-3">@L["quickActions"]</h5>
                 <div class="kpi-grid">
-                    <a href="/add-orders" class="kpi-card kpi-action">
-                        <span class="kpi-icon"><i class="bi bi-file-earmark-plus"></i></span>
-                        <span class="kpi-title">Criar ordem de compra</span>
+                    @if (hasLicenses && isManager)
+                    {
+                        <a href="/licenses/request" class="kpi-card kpi-action">
+                            <span class="kpi-icon"><i class="bi bi-plus-circle"></i></span>
+                            <span class="kpi-title">@L["actRequestLicense"]</span>
+                        </a>
+                    }
+                    @if (hasLicenses)
+                    {
+                        <a href="/licenses" class="kpi-card kpi-action">
+                            <span class="kpi-icon"><i class="bi bi-patch-check"></i></span>
+                            <span class="kpi-title">@L["actMyLicenses"]</span>
+                        </a>
+                        <a href="/license-requests" class="kpi-card kpi-action">
+                            <span class="kpi-icon"><i class="bi bi-inboxes"></i></span>
+                            <span class="kpi-title">@L["actMyRequests"]</span>
+                        </a>
+                    }
+                    @if (isManager)
+                    {
+                        <a href="/company-users" class="kpi-card kpi-action">
+                            <span class="kpi-icon"><i class="bi bi-people"></i></span>
+                            <span class="kpi-title">@L["actUsers"]</span>
+                        </a>
+                    }
+                    <a href="/settings" class="kpi-card kpi-action">
+                        <span class="kpi-icon"><i class="bi bi-gear"></i></span>
+                        <span class="kpi-title">@L["actSettings"]</span>
                     </a>
+                </div>
+
+                <h5 class="dash-section-title mt-4">@L["summary"]</h5>
+                <div class="kpi-grid">
+                    @if (hasLicenses)
+                    {
+                        <StatCard Title="@L["kpiActiveLicenses"]" Icon="bi-check-circle" Accent="success" Loading="@loading"
+                                  Value="@(overview is null ? null : CountState(LicenseStatus.Active).ToString("N0"))"
+                                  Caption="@L["kpiActiveLicensesCaption"]" Href="/licenses" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiExpiring"]" Icon="bi-exclamation-triangle" Accent="warning" Loading="@loading"
+                                  Value="@(overview is null ? null : ExpiringCount.ToString("N0"))"
+                                  Caption="@string.Format(L["kpiExpiringCaption"].Value, LicenseRules.ExpiringDays)" Href="/licenses" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiOpenRequests"]" Icon="bi-hourglass-split" Accent="info" Loading="@loading"
+                                  Value="@(requests is null ? null : requests.Count(LicenseRules.IsOpen).ToString("N0"))"
+                                  Caption="@L["kpiOpenRequestsCaption"]" Href="/license-requests" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                    }
+                    <StatCard Title="@L["kpiUnread"]" Icon="bi-bell" Accent="primary" Loading="@loading"
+                              Value="@(unread is null ? null : unread.Value.ToString("N0"))"
+                              Caption="@L["kpiUnreadCaption"]" Unavailable="@L["unavailable"]" />
+                    @if (isManager)
+                    {
+                        <StatCard Title="@L["kpiUsers"]" Icon="bi-people" Accent="success" Loading="@loading"
+                                  Value="@(usersCount is null ? null : usersCount.Value.ToString("N0"))"
+                                  Caption="@L["kpiUsersCaption"]" Href="/company-users" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                    }
                 </div>
             </section>
 
-            @foreach (var section in Sections.Where(s => s.Cards.Count > 0))
+            @if (hasLicenses)
             {
-                <section id="@section.Id" class="dash-section">
-                    <h5 class="dash-section-title">@section.Title</h5>
+                <!-- ============ Licenças ============ -->
+                <section id="licencas" class="dash-section">
+                    <h5 class="dash-section-title">@L["secLicenses"]</h5>
                     <div class="kpi-grid">
-                        @foreach (var card in section.Cards)
+                        <StatCard Title="@L["kpiTotal"]" Icon="bi-patch-check" Accent="primary" Loading="@loading"
+                                  Value="@(overview is null ? null : overview.Licenses.Count.ToString("N0"))"
+                                  Href="/licenses" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiActiveLicenses"]" Icon="bi-check-circle" Accent="success" Loading="@loading"
+                                  Value="@(overview is null ? null : CountState(LicenseStatus.Active).ToString("N0"))"
+                                  Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiExpiring"]" Icon="bi-exclamation-triangle" Accent="warning" Loading="@loading"
+                                  Value="@(overview is null ? null : ExpiringCount.ToString("N0"))" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiExpired"]" Icon="bi-x-circle" Accent="danger" Loading="@loading"
+                                  Value="@(overview is null ? null : ExpiredCount.ToString("N0"))" Unavailable="@L["unavailable"]" />
+                    </div>
+
+                    <div class="dash-list">
+                        <div class="dash-list-title"><i class="bi bi-calendar-event me-2"></i>@L["nextExpiries"]</div>
+                        @if (loading)
                         {
-                            <KpiCard MetricKey="@card.Key"
-                                     Title="@card.Title"
-                                     Icon="@card.Icon"
-                                     Href="@card.Href"
-                                     Accent="@card.Accent"
-                                     Caption="@card.Caption" />
+                            <div class="p-3"><div class="skeleton skeleton-amount"></div></div>
+                        }
+                        else if (overview is null)
+                        {
+                            <div class="p-3 text-muted small"><i class="bi bi-exclamation-triangle me-1"></i>@L["unavailable"]</div>
+                        }
+                        else if (UpcomingLicenses.Count == 0)
+                        {
+                            <div class="p-3 text-muted small">@L["noExpiries"]</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tbody>
+                                        @foreach (var license in UpcomingLicenses)
+                                        {
+                                            var state = LicenseRules.StateOf(license);
+                                            <tr>
+                                                <td><a href="/licenses/details/@license.Id" class="font-monospace text-decoration-none"><i class="bi bi-key me-1"></i>@license.MaskedKey</a></td>
+                                                <td><span class="badge @LicenseRules.BadgeClass(state)">@LL[LicenseRules.StateKey(state)]</span></td>
+                                                <td><LicenseExpiry Date="@LicenseRules.NextExpiry(license)" /></td>
+                                                <td class="text-end">
+                                                    @if (isManager && LicenseRules.CanRenew(license))
+                                                    {
+                                                        <a class="btn btn-outline-primary btn-sm py-0" href="/licenses/renew/@license.Id"><i class="bi bi-arrow-repeat me-1"></i>@LL["btnRenew"]</a>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- ============ Pedidos ============ -->
+                <section id="pedidos" class="dash-section">
+                    <h5 class="dash-section-title">@L["secRequests"]</h5>
+                    <div class="kpi-grid">
+                        <StatCard Title="@L["kpiInReview"]" Icon="bi-hourglass-split" Accent="info" Loading="@loading"
+                                  Value="@(requests is null ? null : requests.Count(r => r.Status is 1 or 2).ToString("N0"))"
+                                  Href="/license-requests" LinkText="@L["see"]" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiApproved"]" Icon="bi-check2-circle" Accent="success" Loading="@loading"
+                                  Value="@(requests is null ? null : requests.Count(r => r.Status == 3).ToString("N0"))" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiCompleted"]" Icon="bi-check-all" Accent="primary" Loading="@loading"
+                                  Value="@(requests is null ? null : requests.Count(r => r.Status == 5).ToString("N0"))" Unavailable="@L["unavailable"]" />
+                        <StatCard Title="@L["kpiRejected"]" Icon="bi-x-circle" Accent="danger" Loading="@loading"
+                                  Value="@(requests is null ? null : requests.Count(r => r.Status == 4).ToString("N0"))" Unavailable="@L["unavailable"]" />
+                    </div>
+
+                    <div class="dash-list">
+                        <div class="dash-list-title"><i class="bi bi-clock-history me-2"></i>@L["recentRequests"]</div>
+                        @if (loading)
+                        {
+                            <div class="p-3"><div class="skeleton skeleton-amount"></div></div>
+                        }
+                        else if (requests is null)
+                        {
+                            <div class="p-3 text-muted small"><i class="bi bi-exclamation-triangle me-1"></i>@L["unavailable"]</div>
+                        }
+                        else if (requests.Count == 0)
+                        {
+                            <div class="p-3 text-muted small">@L["noRequests"]</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tbody>
+                                        @foreach (var r in requests.OrderByDescending(x => x.SubmittedAt).Take(5))
+                                        {
+                                            <tr>
+                                                <td class="text-nowrap">@r.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                                <td>
+                                                    <i class="bi @(r.Type == 2 ? "bi-arrow-repeat" : "bi-plus-circle") me-1"></i>
+                                                    @LL[r.Type == 2 ? "typeRenewal" : "typeNew"]
+                                                    <span class="text-muted"> · @(r.Type == 2 ? r.MaskedKey : r.ProductName)</span>
+                                                </td>
+                                                <td><span class="badge @LicenseRules.RequestBadgeClass(r.Status)">@LL[LicenseRules.RequestStatusKey(r.Status)]</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     </div>
                 </section>
@@ -61,20 +245,11 @@
 
 <style>
     .dashboard {
-        --dash-card-bg: #fff;
-        --dash-border: #e9ecef;
-        --dash-muted: #6c757d;
-        --dash-skeleton: #e9ecef;
-        --dash-skeleton-shine: #f8f9fa;
-    }
-
-    .dashboard-dark {
-        --dash-card-bg: #1f2329;
-        --dash-border: #2f353d;
-        --dash-muted: #9aa4af;
-        --dash-skeleton: #2a2f36;
-        --dash-skeleton-shine: #353b44;
-        color: #e9ecef;
+        --dash-card-bg: var(--bs-body-bg);
+        --dash-border: var(--bs-border-color);
+        --dash-muted: var(--bs-secondary-color);
+        --dash-skeleton: var(--bs-tertiary-bg);
+        --dash-skeleton-shine: var(--bs-secondary-bg);
     }
 
     .top-menu {
@@ -162,6 +337,23 @@
         justify-content: center;
         align-items: center;
         text-align: center;
+        min-height: 130px;
+    }
+
+    .dash-list {
+        background: var(--dash-card-bg);
+        border: 1px solid var(--dash-border);
+        border-radius: 12px;
+        box-shadow: 0 3px 8px rgba(0,0,0,.06);
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .dash-list-title {
+        font-weight: 600;
+        font-size: .9rem;
+        padding: .75rem 1rem;
+        border-bottom: 1px solid var(--dash-border);
     }
 
     .kpi-head {
@@ -266,38 +458,59 @@
 </style>
 
 @code {
-    private sealed record KpiDef(string Key, string Title, string Icon, string Href, string Accent, string? Caption = null);
-    private sealed record SectionDef(string Id, string Title, List<KpiDef> Cards);
+    private sealed record SectionDef(string Id, string Title);
 
     private string activeSection = "home";
-    private int refreshKey;
-    private bool IsDark => ThemeService.CurrentTheme == "dark";
+    private bool loading = true;
+    private bool isManager;
+    private bool hasLicenses;
+    private string userName = string.Empty;
 
-    private List<SectionDef> Sections => new()
+    private LicenseOverviewDto? overview;
+    private List<LicenseRequestDto>? requests;
+    private int? unread;
+    private int? usersCount;
+
+    private List<SectionDef> VisibleSections
     {
-        new("home", LanGeneral["dashboardTitlePrincipalPage"], new()),
-
-        new("vendas", "Vendas", new()
+        get
         {
-            new("orders-open",     "Ordens em aberto",   "bi-receipt",           "/orders",     "primary", "Valor total"),
-            new("quotations-open", "Cotações em aberto", "bi-file-earmark-text", "/quotations", "info",    "Valor total"),
-            new("deliveries-open", "Guias de entrega",   "bi-truck",             "/delivery", "success", "Em aberto"),
-        }),
+            var list = new List<SectionDef> { new("home", LanGeneral["dashboardTitlePrincipalPage"]) };
+            if (hasLicenses)
+            {
+                list.Add(new("licencas", L["secLicenses"]));
+                list.Add(new("pedidos", L["secRequests"]));
+            }
+            return list;
+        }
+    }
 
-        new("financeiro", "Financeiro", new()
-        {
-            new("invoices-open",    "Faturas em aberto", "bi-file-earmark-ruled", "/invoices",                "warning", "Valor em aberto"),
-            new("invoices-overdue", "Faturas vencidas",  "bi-exclamation-octagon", "/invoices",      "danger",  "Valor vencido"),
-            new("creditnotes-year", "Notas de crédito",  "bi-arrow-counterclockwise", "/credits",        "info",    "Este ano"),
-            new("payments-year",    "Pagamentos",        "bi-cash-coin",          "/payments",                "success", "Este ano"),
-        }),
-    };
+    private int CountState(LicenseStatus s) => overview?.Licenses.Count(l => LicenseRules.StateOf(l) == s) ?? 0;
+    private int ExpiringCount => CountState(LicenseStatus.Expiring);
+    private int ExpiredCount => CountState(LicenseStatus.Expired);
 
-    protected override void OnInitialized()
+    // Licenças em uso por ordem de expiração (as mais urgentes primeiro).
+    private List<LicenseDto> UpcomingLicenses =>
+        (overview?.Licenses ?? new())
+            .Where(l => LicenseRules.NextExpiry(l).HasValue &&
+                        LicenseRules.StateOf(l) is LicenseStatus.Active or LicenseStatus.Expiring or LicenseStatus.Expired)
+            .OrderBy(l => LicenseRules.NextExpiry(l))
+            .Take(5)
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
     {
         PageTitleService.SetTitle(LanGeneral["homePageTitle"]);
         PageState.SetTitle(LanGeneral["homePageTitle"]);
         ThemeService.OnThemeChanged += Refresh;
+
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        userName = auth.User.Identity?.Name ?? string.Empty;
+
+        isManager = await Access.IsManagerAsync();
+        hasLicenses = await Access.HasProcessAsync("licenses");
+
+        await LoadAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -309,7 +522,24 @@
         }
     }
 
-    private void RefreshAll() => refreshKey++; // recreates every KpiCard -> each reloads
+    /// <summary>Carrega todos os indicadores em paralelo; cada um falha de forma independente.</summary>
+    private async Task LoadAsync()
+    {
+        loading = true;
+        StateHasChanged();
+
+        var overviewTask = hasLicenses ? LicensesApi.GetOverviewAsync() : Task.FromResult<LicenseOverviewDto?>(null);
+        var requestsTask = hasLicenses ? LicensesApi.GetRequestsAsync() : Task.FromResult<List<LicenseRequestDto>?>(null);
+        var notificationsTask = NotificationsApi.GetAsync();
+        var usersTask = isManager ? CompanyUsersApi.GetAllAsync() : Task.FromResult<List<CompanyUserDto>?>(null);
+
+        overview = await overviewTask;
+        requests = await requestsTask;
+        unread = (await notificationsTask)?.Unread;
+        usersCount = (await usersTask)?.Count(u => u.IsActive);
+
+        loading = false;
+    }
 
     private void Refresh() => InvokeAsync(StateHasChanged);
 
