@@ -59,7 +59,7 @@ namespace WebFrontEnd.Services.Orders
                 return new ServiceResponsePost()
                 {
                     Flag = false,
-                    Message = "Error occured. Try again later..."
+                    Message = "Ocorreu um erro. Tente novamente mais tarde..."
                 };
             }
 
@@ -169,7 +169,7 @@ namespace WebFrontEnd.Services.Orders
                 return new ServiceResponsePost()
                 {
                     Flag = false,
-                    Message = "Error occured. Try again later..."
+                    Message = "Ocorreu um erro. Tente novamente mais tarde..."
                 };
             }
         }

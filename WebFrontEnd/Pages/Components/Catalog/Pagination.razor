@@ -1,8 +1,8 @@
-﻿<nav aria-label="Page navigation">
+﻿<nav aria-label="Navegação de páginas">
     <ul class="pagination justify-content-center">
 
         <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
-            <button class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" aria-label="Previous">
+            <button class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" aria-label="Anterior">
                 <span aria-hidden="true">«</span>
             </button>
         </li>
@@ -27,7 +27,7 @@
         }
 
         <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
-            <button class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" aria-label="Next">
+            <button class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" aria-label="Seguinte">
                 <span aria-hidden="true">»</span>
             </button>
         </li>

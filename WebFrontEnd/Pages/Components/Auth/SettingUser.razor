@@ -83,7 +83,7 @@
                                             <!-- Theme list -->
                                             <div class="theme-item @(appUser.Theme == ThemeType.light.ToString() ? "selected text-light" : "")" @onclick="() => ChooseTheme(ThemeType.light)">
                                                 <div class="circle"></div>
-                                                <span>Light</span>
+                                                <span>Claro</span>
                                                 @if (appUser.Theme == ThemeType.light.ToString())
                                                 {
                                                     <i class="bi bi-check-circle-fill check"></i>
@@ -92,7 +92,7 @@
 
                                             <div class="theme-item @(appUser.Theme == ThemeType.dark.ToString() ? "selected text-light" : "") " @onclick="() => ChooseTheme(ThemeType.dark)">
                                                 <div class="circle dark"></div>
-                                                <span>Dark</span>
+                                                <span>Escuro</span>
                                                 @if (appUser.Theme == ThemeType.dark.ToString())
                                                 {
                                                     <i class="bi bi-check-circle-fill check"></i>

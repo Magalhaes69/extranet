@@ -16,7 +16,7 @@
 
         <!-- Header -->
         <div class="p-2 border-bottom">
-            <h6 class="mb-0">Cart</h6>
+            <h6 class="mb-0">Carrinho</h6>
         </div>
 
         @if (CartServices.CurrentCart?.OrderLineCarts?.Any() == true)
@@ -51,7 +51,7 @@
 
                             <!-- Remove button -->
                             <button class="btn btn-sm py-1 btn-outline-danger"
-                                    title="Remove item"
+                                    title="Remover artigo"
                                     @onclick="() => Remove(item)">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -74,12 +74,12 @@
                 <!-- Buttons in same line -->
                 <div class="d-flex justify-content-between gap-2">
                     <button class="btn btn-sm py-1 btn-outline-primary w-50" @onclick="ViewOrder">
-                        View Order
+                        Ver encomenda
                     </button>
 
                     <button class="btn btn-sm py-1 w-50 @(ThemeService.CurrentTheme == "dark" ? " btn-outline-light border border-white" : "btn-outline-success")" 
                     @onclick="FinishOrder">
-                        Finish Order
+                        Concluir encomenda
                     </button>
                 </div>
 
@@ -88,7 +88,7 @@
         else
         {
             <div class="text-center text-muted p-3">
-                Cart is empty
+                O carrinho está vazio
             </div>
         }
     </div>

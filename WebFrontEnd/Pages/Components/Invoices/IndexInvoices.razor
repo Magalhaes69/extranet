@@ -500,7 +500,7 @@
 
 @* ======== Modal Details ============ *@
 <DetailsModal IsVisible="@showDetailsModal"
-                     Title="A/R Invoice"
+                     Title="Fatura de venda"
                      Top="modalTop"
                      Left="modalLeft"
                      IsVisibleChanged="@((v) => showDetailsModal = v)"
@@ -529,7 +529,7 @@
     </BodyDetails>
     <Footer>
         <button class="btn btn-sm py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-light border border-white" : "btn-outline-primary")" @onclick="ViewInvoiceDetails">
-            View More
+            Ver mais
         </button>
     </Footer>
 

@@ -37,7 +37,7 @@ namespace WebFrontEnd.Services.LicenseService
                     return new ApiResponse<PagedObjectResult<LicenseKey>>()
                     {
                         Success = false,
-                        Message = "Error occured. Try again later...",
+                        Message = "Ocorreu um erro. Tente novamente mais tarde...",
                         Data = null
                     };
                 }
@@ -68,7 +68,7 @@ namespace WebFrontEnd.Services.LicenseService
                 return new ServiceResponsePost()
                 {
                     Flag = false,
-                    Message = "Error occured. Try again later..."
+                    Message = "Ocorreu um erro. Tente novamente mais tarde..."
                 };
             }
 

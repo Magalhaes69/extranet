@@ -42,7 +42,7 @@ namespace WebFrontEnd.Services.OrdersCarts
                 return new ServiceResponsePost()
                 {
                     Flag = false,
-                    Message = "Error occured. Try again later..."
+                    Message = "Ocorreu um erro. Tente novamente mais tarde..."
                 };
             }
 

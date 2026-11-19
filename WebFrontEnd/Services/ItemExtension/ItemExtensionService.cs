@@ -77,7 +77,7 @@ namespace WebFrontEnd.Services.ItemExtension
                 return new ServiceResponsePost()
                 {
                     Flag = false,
-                    Message = "Error occured. Try again later..."
+                    Message = "Ocorreu um erro. Tente novamente mais tarde..."
                 };
             }
 
@@ -144,7 +144,7 @@ namespace WebFrontEnd.Services.ItemExtension
                     return Task.FromResult(new ServiceResponseGeneralPost<object>
                     {
                         Flag = false,
-                        Message = "Error occured. Try again later..."
+                        Message = "Ocorreu um erro. Tente novamente mais tarde..."
                     });
                 }
                 var apiResponse = response.Content.ReadAsStringAsync().Result;
@@ -174,14 +174,14 @@ namespace WebFrontEnd.Services.ItemExtension
                     return new ServiceResponseGeneralPost<object>
                     {
                         Flag = false,
-                        Message = "Error occurred. Try again later..."
+                        Message = "Ocorreu um erro. Tente novamente mais tarde..."
                     };
                 }
 
                 var apiResponse = await RedContent(response);
 
                 return General.DeserialzeJsonString<ServiceResponseGeneralPost<object>>(apiResponse)
-                       ?? new ServiceResponseGeneralPost<object> { Flag = false, Message = "Invalid response" };
+                       ?? new ServiceResponseGeneralPost<object> { Flag = false, Message = "Resposta inválida" };
             }
             catch (Exception ex)
             {
