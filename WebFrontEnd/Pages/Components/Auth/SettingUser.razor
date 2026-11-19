@@ -526,7 +526,7 @@
         ToastService.ShowBusyButton = !ToastService.ShowSaveButton;
 
         var response = await AuthService.UpdateProfile(appUser, selectedFile);
-        if (response.Flag)
+        if (response is { Flag: true })
         {
             ToastService.ShowSuccess(Lan["successMessage"], ThemeService.CurrentTheme);
 
