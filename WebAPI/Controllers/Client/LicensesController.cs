@@ -1,14 +1,20 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Application.UseCases.onexuser.ClientLicenseRequests;
+using Application.UseCases.onexuser.GetClientLicensesByCardCode;
+using Domain.Dtos;
+using Domain.Models;
+using Domain.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Domain.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers.Client;
 
 /// <summary>
-/// Controller para gestão de licenças do cliente
-/// Permite visualizar, requisitar e renovar licenças
+/// Licenças do cliente. A consulta e os pedidos (nova licença / renovação) são feitos no
+/// LicenseKey, que é quem trata as licenças. Consultar exige o processo "licenses";
+/// requisitar e renovar exige também ser gestor da empresa.
 /// </summary>
 [ApiController]
 [Route("api/client/[controller]")]
@@ -16,181 +22,205 @@ namespace WebAPI.Controllers.Client;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "process:licenses")]
 public class LicensesController : ControllerBase
 {
+    private const int NewType = 1;
+    private const int RenewalType = 2;
+
     private readonly IMediator _mediator;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<LicensesController> _logger;
 
-    public LicensesController(IMediator mediator, ILogger<LicensesController> logger)
+    public LicensesController(
+        IMediator mediator,
+        UserManager<AppUser> userManager,
+        ILogger<LicensesController> logger)
     {
         _mediator = mediator;
+        _userManager = userManager;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Lista todas as licenças do cliente
-    /// </summary>
+    private string? CardCode => User.FindFirst("CardCode")?.Value;
+
+    /// <summary>Licenças da empresa (com módulos) e estado do período de teste.</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
         try
         {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            if (string.IsNullOrWhiteSpace(cardCode))
-                return Forbid();
+            var overview = await _mediator.Send(new GetClientLicensesQuery(CardCode), cancellationToken);
 
-            // TODO: Implementar GetClientLicensesQuery
-            // var result = await _mediator.Send(
-            //     new GetClientLicensesQuery(cardCode),
-            //     cancellationToken);
-
-            return Ok(new List<object>());
+            // Cliente ainda sem registo no LicenseKey: lista vazia em vez de erro.
+            return Ok(overview ?? new ClientLicenseOverviewDto { Code = CardCode });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao listar licenças");
-            return StatusCode(500, new { message = "Erro ao carregar licenças" });
+            return LicenseKeyUnavailable(ex, "Erro ao carregar licenças");
         }
     }
 
-    /// <summary>
-    /// Obtém detalhes de uma licença específica
-    /// </summary>
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    /// <summary>Detalhe de uma licença.</summary>
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
         try
         {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            if (string.IsNullOrWhiteSpace(cardCode))
-                return Forbid();
+            var overview = await _mediator.Send(new GetClientLicensesQuery(CardCode), cancellationToken);
+            var license = overview?.Licenses.FirstOrDefault(l => l.Id == id);
 
-            // TODO: Implementar GetLicenseByIdQuery
-            return NotFound(new { message = "Licença não encontrada" });
+            return license is null
+                ? NotFound(new { message = "Licença não encontrada" })
+                : Ok(license);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter detalhes da licença");
-            return StatusCode(500, new { message = "Erro ao carregar licença" });
+            return LicenseKeyUnavailable(ex, "Erro ao carregar licença");
         }
     }
 
-    /// <summary>
-    /// Requisita uma nova licença
-    /// </summary>
+    /// <summary>Todos os pedidos (novas licenças e renovações) da empresa.</summary>
+    [HttpGet("requests")]
+    public async Task<IActionResult> GetRequests(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
+        try
+        {
+            return Ok(await _mediator.Send(new GetClientLicenseRequestsQuery(CardCode, null), cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            return LicenseKeyUnavailable(ex, "Erro ao carregar pedidos");
+        }
+    }
+
+    /// <summary>Histórico de pedidos (renovações) de uma licença.</summary>
+    [HttpGet("{id:guid}/history")]
+    public async Task<IActionResult> GetHistory(Guid id, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
+        try
+        {
+            return Ok(await _mediator.Send(new GetClientLicenseRequestsQuery(CardCode, id), cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            return LicenseKeyUnavailable(ex, "Erro ao carregar histórico");
+        }
+    }
+
+    /// <summary>Requisita uma nova licença (só gestores). O pedido fica registado no LicenseKey.</summary>
     [HttpPost("request")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = AppRoleNames.ManagerRoles)]
     public async Task<IActionResult> RequestLicense(
-        [FromBody] CreateLicenseRequestDto request,
+        [FromBody] NewLicenseRequestBody body,
         CancellationToken cancellationToken)
     {
-        try
+        var (name, email) = await RequesterAsync();
+        return await SubmitAsync(new CreateClientLicenseRequestDto
         {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            var userId = User.FindFirst("sub")?.Value;
-
-            if (string.IsNullOrWhiteSpace(cardCode) || string.IsNullOrWhiteSpace(userId))
-                return Forbid();
-
-            // TODO: Implementar RequestLicenseCommand
-            // var result = await _mediator.Send(
-            //     new RequestLicenseCommand(userId, cardCode, request),
-            //     cancellationToken);
-
-            return Ok(new
-            {
-                flag = true,
-                message = "Solicitação enviada com sucesso. Aguarde análise da equipa."
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao requisitar licença");
-            return StatusCode(500, new
-            {
-                flag = false,
-                message = "Erro ao processar solicitação"
-            });
-        }
+            Type = NewType,
+            ProductName = body.ProductName,
+            Users = body.Users,
+            Notes = body.Notes,
+            RequestedByName = name,
+            RequestedByEmail = email
+        }, "Pedido de licença enviado com sucesso. A nossa equipa irá analisá-lo.", cancellationToken);
     }
 
-    /// <summary>
-    /// Renova uma licença existente
-    /// </summary>
-    [HttpPost("{id}/renew")]
+    /// <summary>Pede a renovação de uma licença (só gestores). O pedido fica registado no LicenseKey.</summary>
+    [HttpPost("{id:guid}/renew")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = AppRoleNames.ManagerRoles)]
     public async Task<IActionResult> RenewLicense(
-        string id,
-        [FromBody] RenewLicenseDto request,
+        Guid id,
+        [FromBody] RenewLicenseDto body,
         CancellationToken cancellationToken)
     {
+        var (name, email) = await RequesterAsync();
+        return await SubmitAsync(new CreateClientLicenseRequestDto
+        {
+            Type = RenewalType,
+            LicenseKeyId = id,
+            Months = body.Months,
+            Notes = body.Notes,
+            RequestedByName = name,
+            RequestedByEmail = email
+        }, "Pedido de renovação enviado com sucesso. A nossa equipa irá analisá-lo.", cancellationToken);
+    }
+
+    /// <summary>Faz download do certificado de licença (quando disponível)</summary>
+    [HttpGet("{id}/certificate")]
+    public IActionResult DownloadCertificate(string id)
+    {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
+        // TODO: Implementar download de certificado
+        return NotFound(new { message = "Certificado não disponível" });
+    }
+
+    // ------------------------------------------------------------------ auxiliares
+
+    private async Task<IActionResult> SubmitAsync(
+        CreateClientLicenseRequestDto dto, string successMessage, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(CardCode))
+            return Forbid();
+
         try
         {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            if (string.IsNullOrWhiteSpace(cardCode))
-                return Forbid();
+            var result = await _mediator.Send(new CreateClientLicenseRequestCommand(CardCode, dto), cancellationToken);
 
-            // TODO: Implementar RenewLicenseCommand
-            // var result = await _mediator.Send(
-            //     new RenewLicenseCommand(id, cardCode, request),
-            //     cancellationToken);
+            if (result.Succeeded)
+                return Ok(new { flag = true, message = successMessage, request = result.Request });
 
-            return Ok(new
-            {
-                flag = true,
-                message = "Pedido de renovação enviado com sucesso."
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao renovar licença");
-            return StatusCode(500, new
+            // Erros de validação do LicenseKey (400/404/409) seguem para o utilizador tal como estão.
+            var status = result.StatusCode is 400 or 404 or 409 ? result.StatusCode : 502;
+            return StatusCode(status, new
             {
                 flag = false,
-                message = "Erro ao processar renovação"
+                message = result.Message ?? "Não foi possível registar o pedido. Tente novamente."
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao registar pedido de licença no LicenseKey");
+            return StatusCode(502, new
+            {
+                flag = false,
+                message = "Não foi possível contactar o serviço de licenciamento. Tente novamente mais tarde."
             });
         }
     }
 
-    /// <summary>
-    /// Obtém histórico de uma licença
-    /// </summary>
-    [HttpGet("{id}/history")]
-    public async Task<IActionResult> GetHistory(string id, CancellationToken cancellationToken)
+    private async Task<(string Name, string Email)> RequesterAsync()
     {
-        try
-        {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            if (string.IsNullOrWhiteSpace(cardCode))
-                return Forbid();
-
-            // TODO: Implementar GetLicenseHistoryQuery
-            return Ok(new List<object>());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao obter histórico da licença");
-            return StatusCode(500, new { message = "Erro ao carregar histórico" });
-        }
+        var user = await _userManager.FindByIdAsync(User.FindFirst("UserId")?.Value ?? string.Empty);
+        var name = user is null ? "" : $"{user.FirstName} {user.LastName}".Trim();
+        var email = user?.Email ?? "";
+        return (name, email);
     }
 
-    /// <summary>
-    /// Faz download do certificado de licença (quando disponível)
-    /// </summary>
-    [HttpGet("{id}/certificate")]
-    public async Task<IActionResult> DownloadCertificate(string id, CancellationToken cancellationToken)
+    private IActionResult LicenseKeyUnavailable(Exception ex, string message)
     {
-        try
-        {
-            var cardCode = User.FindFirst("CardCode")?.Value;
-            if (string.IsNullOrWhiteSpace(cardCode))
-                return Forbid();
-
-            // TODO: Implementar download de certificado
-            return NotFound(new { message = "Certificado não disponível" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao fazer download do certificado");
-            return StatusCode(500, new { message = "Erro ao fazer download" });
-        }
+        _logger.LogError(ex, "{Message}", message);
+        return StatusCode(502, new { message = "Não foi possível contactar o serviço de licenciamento." });
     }
+}
+
+public class NewLicenseRequestBody
+{
+    public string ProductName { get; set; } = string.Empty;
+    public int Users { get; set; }
+    public string? Notes { get; set; }
 }
 
 public class RenewLicenseDto

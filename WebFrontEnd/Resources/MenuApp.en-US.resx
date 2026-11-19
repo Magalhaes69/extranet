@@ -189,4 +189,13 @@
   <data name="menuUserManagementGroup" xml:space="preserve">
     <value>User management</value>
   </data>
+  <data name="menuLicensesGroup" xml:space="preserve">
+    <value>Licenses</value>
+  </data>
+  <data name="menuLicensesList" xml:space="preserve">
+    <value>My licenses</value>
+  </data>
+  <data name="menuLicenseRequests" xml:space="preserve">
+    <value>License requests</value>
+  </data>
 </root>

@@ -1,0 +1,429 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="titleList" xml:space="preserve">
+    <value>Licenses</value>
+  </data>
+  <data name="titleDetails" xml:space="preserve">
+    <value>License details</value>
+  </data>
+  <data name="titleRequest" xml:space="preserve">
+    <value>Request a license</value>
+  </data>
+  <data name="titleRenew" xml:space="preserve">
+    <value>Renew license</value>
+  </data>
+  <data name="titleRequests" xml:space="preserve">
+    <value>License requests</value>
+  </data>
+  <data name="btnMyRequests" xml:space="preserve">
+    <value>My requests</value>
+  </data>
+  <data name="btnRequestLicense" xml:space="preserve">
+    <value>Request a license</value>
+  </data>
+  <data name="btnBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="btnView" xml:space="preserve">
+    <value>View details</value>
+  </data>
+  <data name="btnRenew" xml:space="preserve">
+    <value>Renew</value>
+  </data>
+  <data name="btnShow" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="btnCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="btnSubmitRequest" xml:space="preserve">
+    <value>Send request</value>
+  </data>
+  <data name="btnSubmitRenewal" xml:space="preserve">
+    <value>Request renewal</value>
+  </data>
+  <data name="retry" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="errLoad" xml:space="preserve">
+    <value>Could not load the licenses. The licensing service may be unavailable.</value>
+  </data>
+  <data name="errLoadRequests" xml:space="preserve">
+    <value>Could not load the requests.</value>
+  </data>
+  <data name="errNotFound" xml:space="preserve">
+    <value>License not found.</value>
+  </data>
+  <data name="errSave" xml:space="preserve">
+    <value>Could not send the request. Please try again.</value>
+  </data>
+  <data name="trialTitle" xml:space="preserve">
+    <value>Trial period</value>
+  </data>
+  <data name="trialEnds" xml:space="preserve">
+    <value>The trial period ends on {0} ({1} days left).</value>
+  </data>
+  <data name="trialEnded" xml:space="preserve">
+    <value>The trial period ended on {0}.</value>
+  </data>
+  <data name="alertExpired" xml:space="preserve">
+    <value>{0} expired license(s).</value>
+  </data>
+  <data name="alertExpiring" xml:space="preserve">
+    <value>{0} license(s) expiring in the next {1} days.</value>
+  </data>
+  <data name="summaryTotal" xml:space="preserve">
+    <value>Licenses</value>
+  </data>
+  <data name="summaryActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="summaryExpiring" xml:space="preserve">
+    <value>Expiring</value>
+  </data>
+  <data name="summaryExpired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="search" xml:space="preserve">
+    <value>Search by key or module...</value>
+  </data>
+  <data name="filterAll" xml:space="preserve">
+    <value>All statuses</value>
+  </data>
+  <data name="totalLicenses" xml:space="preserve">
+    <value>{0} license(s)</value>
+  </data>
+  <data name="totalRequests" xml:space="preserve">
+    <value>{0} request(s)</value>
+  </data>
+  <data name="colLicense" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="colType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="colStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="colModules" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="colExpiry" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="colActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="colModule" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="colMaxUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="colDate" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="colRequestType" xml:space="preserve">
+    <value>Request type</value>
+  </data>
+  <data name="colPeriod" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="colRequestedBy" xml:space="preserve">
+    <value>Requested by</value>
+  </data>
+  <data name="colDetail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="stateActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="stateExpiring" xml:space="preserve">
+    <value>Expiring</value>
+  </data>
+  <data name="stateExpired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="statePendingIssue" xml:space="preserve">
+    <value>Pending issue</value>
+  </data>
+  <data name="statePendingActivation" xml:space="preserve">
+    <value>Pending activation</value>
+  </data>
+  <data name="stateInactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="stateRevoked" xml:space="preserve">
+    <value>Revoked</value>
+  </data>
+  <data name="licenseType1" xml:space="preserve">
+    <value>Subscription</value>
+  </data>
+  <data name="licenseType2" xml:space="preserve">
+    <value>Perpetual</value>
+  </data>
+  <data name="licenseType3" xml:space="preserve">
+    <value>Enterprise</value>
+  </data>
+  <data name="licenseType4" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="approval0" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="approval1" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="approval2" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="approval3" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="approval" xml:space="preserve">
+    <value>Approval</value>
+  </data>
+  <data name="renewalOpen" xml:space="preserve">
+    <value>Renewal requested</value>
+  </data>
+  <data name="renewalOpenHint" xml:space="preserve">
+    <value>A renewal request is already in progress for this license.</value>
+  </data>
+  <data name="noLicenses" xml:space="preserve">
+    <value>There are no licenses associated with your company yet.</value>
+  </data>
+  <data name="noResults" xml:space="preserve">
+    <value>No results found.</value>
+  </data>
+  <data name="noModules" xml:space="preserve">
+    <value>This license has no modules.</value>
+  </data>
+  <data name="noHistory" xml:space="preserve">
+    <value>There are no requests for this license yet.</value>
+  </data>
+  <data name="noRequests" xml:space="preserve">
+    <value>You have not made any license request yet.</value>
+  </data>
+  <data name="expiredAgo" xml:space="preserve">
+    <value>expired {0} day(s) ago</value>
+  </data>
+  <data name="expiresIn" xml:space="preserve">
+    <value>in {0} day(s)</value>
+  </data>
+  <data name="detailExpired" xml:space="preserve">
+    <value>This license has expired. Request a renewal to keep using the modules.</value>
+  </data>
+  <data name="detailExpiring" xml:space="preserve">
+    <value>This license is about to expire. Request a renewal in time to avoid interruptions.</value>
+  </data>
+  <data name="sectionLicense" xml:space="preserve">
+    <value>License details</value>
+  </data>
+  <data name="sectionModules" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="sectionHistory" xml:space="preserve">
+    <value>Request history</value>
+  </data>
+  <data name="sectionRequest" xml:space="preserve">
+    <value>New license request</value>
+  </data>
+  <data name="sectionRenewal" xml:space="preserve">
+    <value>Renewal request</value>
+  </data>
+  <data name="issuedAt" xml:space="preserve">
+    <value>Issued on</value>
+  </data>
+  <data name="activatedAt" xml:space="preserve">
+    <value>Activated on</value>
+  </data>
+  <data name="revokedAt" xml:space="preserve">
+    <value>Revoked on</value>
+  </data>
+  <data name="modActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="modExpired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="modDisabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="modUnavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="typeNew" xml:space="preserve">
+    <value>New license</value>
+  </data>
+  <data name="typeRenewal" xml:space="preserve">
+    <value>Renewal</value>
+  </data>
+  <data name="months" xml:space="preserve">
+    <value>{0} months</value>
+  </data>
+  <data name="usersCount" xml:space="preserve">
+    <value>{0} user(s)</value>
+  </data>
+  <data name="requestHint" xml:space="preserve">
+    <value>Enter the product and the number of users. Our licensing team will review the request; follow its status in «My requests».</value>
+  </data>
+  <data name="renewHint" xml:space="preserve">
+    <value>Choose the renewal period. Our team will review the request; follow its status in «My requests».</value>
+  </data>
+  <data name="cannotRenew" xml:space="preserve">
+    <value>This license cannot be renewed in its current state.</value>
+  </data>
+  <data name="product" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="period" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="msgRequestSent" xml:space="preserve">
+    <value>License request sent successfully.</value>
+  </data>
+  <data name="msgRenewalSent" xml:space="preserve">
+    <value>Renewal request sent successfully.</value>
+  </data>
+  <data name="reqStatus1" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="reqStatus2" xml:space="preserve">
+    <value>In review</value>
+  </data>
+  <data name="reqStatus3" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="reqStatus4" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="reqStatus5" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="reqStatus6" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+</root>

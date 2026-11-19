@@ -57,6 +57,7 @@ builder.Services.AddScoped<IWarehousesService, WarehousesService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<WebFrontEnd.Services.Auth.AccessService>();
 builder.Services.AddScoped<WebFrontEnd.Services.CompanyUsers.ICompanyUsersService, WebFrontEnd.Services.CompanyUsers.CompanyUsersService>();
+builder.Services.AddScoped<WebFrontEnd.Services.Licenses.ILicensesService, WebFrontEnd.Services.Licenses.LicensesService>();
 builder.Services.AddScoped<IInvoicesService, InvoicesService>();
 builder.Services.AddScoped<IIncomingPaymentsService, IncomingPaymentsService>();
 builder.Services.AddScoped<IQuotationsService, QuotationsService>();

@@ -150,6 +150,17 @@
                 new() { Key = "menuPayments", Url = "/payments" }
             }
         },
+        new SidebarMenuItem
+        {
+            Key = "menuLicensesGroup",
+            Icon = "nav-icon bi bi-patch-check-fill",
+            Process = "licenses",
+            Children = new()
+            {
+                new() { Key = "menuLicensesList", Url = "/licenses" },
+                new() { Key = "menuLicenseRequests", Url = "/license-requests" }
+            }
+        },
         // new SidebarMenuItem
         // {
         //     Key = "menuItemExtension",

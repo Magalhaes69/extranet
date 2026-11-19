@@ -1,0 +1,110 @@
+@page "/licenses/request"
+@using WebFrontEnd.Services.Licenses
+@inject IStringLocalizer<LicensesApp> L
+@inject ILicensesService LicensesApi
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleRequest"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm" href="/licenses">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                <EditForm Model="@_form" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle me-1"></i>@_error
+                        </div>
+                    }
+
+                    <div class="card mb-3">
+                        <div class="card-header fw-semibold">
+                            <i class="bi bi-plus-circle me-2"></i>@L["sectionRequest"]
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">@L["requestHint"]</p>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">@L["product"] <span class="text-danger fw-bold">*</span></label>
+                                <div class="col-sm-6">
+                                    <InputText class="form-control form-control-sm" @bind-Value="_form.ProductName" />
+                                    <ValidationMessage For="@(() => _form.ProductName)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">@L["users"] <span class="text-danger fw-bold">*</span></label>
+                                <div class="col-sm-2">
+                                    <InputNumber class="form-control form-control-sm" @bind-Value="_form.Users" />
+                                    <ValidationMessage For="@(() => _form.Users)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">@L["notes"]</label>
+                                <div class="col-sm-6">
+                                    <InputTextArea class="form-control form-control-sm" rows="4" @bind-Value="_form.Notes" />
+                                    <ValidationMessage For="@(() => _form.Notes)" class="text-danger small" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end pb-4">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="Cancel" disabled="@_saving">
+                            @L["btnCancel"]
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm" disabled="@_saving">
+                            @if (_saving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-send me-1"></i>
+                            }
+                            @L["btnSubmitRequest"]
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly RequestLicenseForm _form = new();
+    private bool _saving;
+    private string? _error;
+
+    protected override void OnInitialized() => PageTitleService.SetTitle(L["titleRequest"]);
+
+    private async Task Save()
+    {
+        _saving = true;
+        _error = null;
+
+        var result = await LicensesApi.RequestAsync(_form);
+
+        _saving = false;
+        if (result.Succeeded)
+        {
+            ToastService.ShowSuccess(L["msgRequestSent"], ThemeService.CurrentTheme);
+            nav.NavigateTo("/license-requests");
+            return;
+        }
+
+        _error = result.Message ?? L["errSave"];
+    }
+
+    private void Cancel() => nav.NavigateTo("/licenses");
+}

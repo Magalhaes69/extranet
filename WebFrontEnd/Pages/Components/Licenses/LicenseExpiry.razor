@@ -1,0 +1,30 @@
+@using WebFrontEnd.Services.Licenses
+@inject IStringLocalizer<LicensesApp> L
+
+@* Data de expiração com os dias restantes e cor de alerta (≤ 30 dias = aviso, passada = vermelho). *@
+
+@if (Date is null)
+{
+    <span class="text-muted">-</span>
+}
+else
+{
+    var days = LicenseRules.DaysLeft(Date);
+    var css = days <= 0 ? "text-danger" : days <= LicenseRules.ExpiringDays ? "text-warning" : "text-muted";
+
+    <div>@Date.Value.ToLocalTime().ToString("dd/MM/yyyy")</div>
+    <small class="@css">
+        @if (days <= 0)
+        {
+            <i class="bi bi-x-circle me-1"></i>@string.Format(L["expiredAgo"].Value, Math.Abs(days ?? 0))
+        }
+        else
+        {
+            <i class="bi @(days <= LicenseRules.ExpiringDays ? "bi-exclamation-triangle" : "bi-clock") me-1"></i>@string.Format(L["expiresIn"].Value, days)
+        }
+    </small>
+}
+
+@code {
+    [Parameter] public DateTime? Date { get; set; }
+}

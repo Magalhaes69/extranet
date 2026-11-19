@@ -1,0 +1,171 @@
+@page "/licenses/renew/{Id:guid}"
+@using WebFrontEnd.Services.Licenses
+@inject IStringLocalizer<LicensesApp> L
+@inject ILicensesService LicensesApi
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleRenew"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm" href="/licenses/details/@Id">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_license is null)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errNotFound"]
+                    </div>
+                }
+                else if (!LicenseRules.CanRenew(_license))
+                {
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle me-1"></i>@L["cannotRenew"]
+                    </div>
+                }
+                else if (_hasOpenRenewal)
+                {
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-hourglass-split me-1"></i>@L["renewalOpenHint"]
+                        <a href="/license-requests" class="alert-link ms-1">@L["btnMyRequests"]</a>
+                    </div>
+                }
+                else
+                {
+                    var nextExpiry = LicenseRules.NextExpiry(_license);
+
+                    <EditForm Model="@_form" OnValidSubmit="Save">
+                        <DataAnnotationsValidator />
+
+                        @if (!string.IsNullOrEmpty(_error))
+                        {
+                            <div class="alert alert-danger py-2 small" role="alert">
+                                <i class="bi bi-exclamation-triangle me-1"></i>@_error
+                            </div>
+                        }
+
+                        <!-- Licença a renovar -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-semibold">
+                                <i class="bi bi-key me-2"></i>@L["sectionLicense"]
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <label class="col-sm-2 col-form-label text-muted">@L["colLicense"]</label>
+                                    <div class="col-sm-4 pt-2 font-monospace">@_license.MaskedKey</div>
+                                    <label class="col-sm-2 col-form-label text-muted">@L["colExpiry"]</label>
+                                    <div class="col-sm-4 pt-2"><LicenseExpiry Date="@nextExpiry" /></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pedido -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-semibold">
+                                <i class="bi bi-arrow-repeat me-2"></i>@L["sectionRenewal"]
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small">@L["renewHint"]</p>
+
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label">@L["period"] <span class="text-danger fw-bold">*</span></label>
+                                    <div class="col-sm-4">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach (var months in LicenseRules.RenewalMonths)
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm @(_form.Months == months ? "btn-primary" : "btn-outline-secondary")"
+                                                        @onclick="() => _form.Months = months">
+                                                    @string.Format(L["months"].Value, months)
+                                                </button>
+                                            }
+                                        </div>
+                                        <ValidationMessage For="@(() => _form.Months)" class="text-danger small" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <label class="col-sm-2 col-form-label">@L["notes"]</label>
+                                    <div class="col-sm-6">
+                                        <InputTextArea class="form-control form-control-sm" rows="4" @bind-Value="_form.Notes" />
+                                        <ValidationMessage For="@(() => _form.Notes)" class="text-danger small" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end pb-4">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="Cancel" disabled="@_saving">
+                                @L["btnCancel"]
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm" disabled="@_saving">
+                                @if (_saving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-send me-1"></i>
+                                }
+                                @L["btnSubmitRenewal"]
+                            </button>
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private readonly RenewLicenseForm _form = new();
+    private LicenseDto? _license;
+    private bool _hasOpenRenewal;
+    private bool _loading = true;
+    private bool _saving;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageTitleService.SetTitle(L["titleRenew"]);
+        _loading = true;
+
+        var licenseTask = LicensesApi.GetByIdAsync(Id);
+        var historyTask = LicensesApi.GetHistoryAsync(Id);
+        _license = await licenseTask;
+        _hasOpenRenewal = (await historyTask ?? new()).Any(r => r.Type == 2 && LicenseRules.IsOpen(r));
+
+        _loading = false;
+    }
+
+    private async Task Save()
+    {
+        _saving = true;
+        _error = null;
+
+        var result = await LicensesApi.RenewAsync(Id, _form);
+
+        _saving = false;
+        if (result.Succeeded)
+        {
+            ToastService.ShowSuccess(L["msgRenewalSent"], ThemeService.CurrentTheme);
+            nav.NavigateTo("/license-requests");
+            return;
+        }
+
+        _error = result.Message ?? L["errSave"];
+    }
+
+    private void Cancel() => nav.NavigateTo($"/licenses/details/{Id}");
+}
