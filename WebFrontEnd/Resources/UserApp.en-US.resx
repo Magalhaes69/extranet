@@ -192,4 +192,46 @@
   <data name="userSettings" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="tabTheme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="tabView" xml:space="preserve">
+    <value>Display settings</value>
+  </data>
+  <data name="viewHint" xml:space="preserve">
+    <value>Adjust density and text size. Changes apply immediately across the whole application.</value>
+  </data>
+  <data name="viewDensity" xml:space="preserve">
+    <value>Density</value>
+  </data>
+  <data name="densityComfortable" xml:space="preserve">
+    <value>Comfortable</value>
+  </data>
+  <data name="densityCompact" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="viewFontSize" xml:space="preserve">
+    <value>Text size</value>
+  </data>
+  <data name="fontSmall" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="fontNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="fontLarge" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="viewMotion" xml:space="preserve">
+    <value>Animations</value>
+  </data>
+  <data name="viewReduceMotion" xml:space="preserve">
+    <value>Reduce animations and transitions</value>
+  </data>
+  <data name="viewSavedHint" xml:space="preserve">
+    <value>These settings are saved automatically in this browser.</value>
+  </data>
+  <data name="viewReset" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
 </root>

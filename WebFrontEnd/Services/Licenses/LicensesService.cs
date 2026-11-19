@@ -218,7 +218,7 @@ namespace WebFrontEnd.Services.Licenses
                     ? await response.Content.ReadFromJsonAsync<T>()
                     : null;
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
             {
                 return null;
             }
@@ -243,7 +243,7 @@ namespace WebFrontEnd.Services.Licenses
 
                 return new LicenseActionResult(false, message);
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
             {
                 return new LicenseActionResult(false);
             }

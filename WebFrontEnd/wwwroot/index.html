@@ -50,6 +50,20 @@
     <!--end::Required Plugin(AdminLTE)-->
 
 
+    <script>
+        // Definições de visualização (densidade, tamanho do texto, animações): aplicadas cedo para evitar "flash".
+        window.applyViewSettings = function () {
+            try {
+                var h = document.documentElement;
+                var map = { density: 'data-density', font: 'data-font', motion: 'data-motion' };
+                Object.keys(map).forEach(function (k) {
+                    var v = localStorage.getItem('view.' + k);
+                    if (v) h.setAttribute(map[k], v); else h.removeAttribute(map[k]);
+                });
+            } catch (e) { }
+        };
+        window.applyViewSettings();
+    </script>
 </head>
 
 <body class="fixed-header layout-fixed sidebar-expand-lg bg-body-tertiary app-loaded">

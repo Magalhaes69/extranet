@@ -468,3 +468,21 @@ code {
 .app-logo-chip { background: #fff; border-radius: .5rem; padding: .25rem .6rem; }
 .xl-brand-logo .xl-logo-img { height: 44px; width: auto; background: #fff; border-radius: 10px; padding: 6px 14px; }
 .xl-mobile-logo .xl-logo-img { height: 38px; width: auto; }
+
+
+/* ===== Definições de visualização ===== */
+html[data-font="small"] { font-size: 14px; }
+html[data-font="large"] { font-size: 18px; }
+
+html[data-density="compact"] .table > :not(caption) > * > * { padding: .25rem .5rem; }
+html[data-density="compact"] .card-body { padding: .75rem; }
+html[data-density="compact"] .card-header, html[data-density="compact"] .card-footer { padding: .4rem .75rem; }
+html[data-density="compact"] .app-sidebar .sidebar-menu .nav-link { padding-top: .3rem; padding-bottom: .3rem; }
+html[data-density="compact"] .alert { padding: .4rem .75rem; margin-bottom: .6rem; }
+html[data-density="compact"] .form-control, html[data-density="compact"] .form-select { padding-top: .2rem; padding-bottom: .2rem; }
+
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+}

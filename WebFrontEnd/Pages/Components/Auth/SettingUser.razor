@@ -6,12 +6,12 @@
 @implements IDisposable
 @attribute [Authorize]
 
-<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+<div class="bg-body mb-4">
     <AppContentHeader Title="@UserLan["userSettings"]" />
 
     <div class="app-content">
         <div class="container-fluid">
-            <div class="card @(ThemeService.CurrentTheme == "dark" ? "modal-dark" : "")">
+            <div class="card @(ThemeService.CurrentTheme == "dark" ? "settings-dark" : "")">
                 <EditForm Model="appUser" OnValidSubmit="HandleUpdateUser">
                     <!-- Body -->
                     <div class="card-body p-0">
@@ -70,14 +70,18 @@
 
                                             <ul class="nav nav-tabs mb-3">
                                                 <li class="nav-item">
-                                                    <button class="nav-link active @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">Tema</button>
+                                                    <button type="button" class="nav-link @(aspectTab == AspectTab.Theme ? "active" : "") @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")"
+                                                            @onclick="() => aspectTab = AspectTab.Theme">@UserLan["tabTheme"]</button>
                                                 </li>
-                                                <li class="nav-item @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">
-                                                    <button class="nav-link">Definições de visualização</button>
+                                                <li class="nav-item">
+                                                    <button type="button" class="nav-link @(aspectTab == AspectTab.View ? "active" : "") @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")"
+                                                            @onclick="() => aspectTab = AspectTab.View">@UserLan["tabView"]</button>
                                                 </li>
                                             </ul>
 
-                                            <!-- Theme list -->
+                                            @if (aspectTab == AspectTab.Theme)
+                                            {
+                                                <!-- Theme list -->
                                             <div class="theme-item @(appUser.Theme == ThemeType.light.ToString() ? "selected text-light" : "")" @onclick="() => ChooseTheme(ThemeType.light)">
                                                 <div class="circle"></div>
                                                 <span>Claro</span>
@@ -95,6 +99,51 @@
                                                     <i class="bi bi-check-circle-fill check"></i>
                                                 }
                                             </div>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-muted small mb-3">@UserLan["viewHint"]</p>
+
+                                                <!-- Densidade -->
+                                                <h6 class="mt-3">@UserLan["viewDensity"]</h6>
+                                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                                    @foreach (var (value, key) in new[] { ("comfortable", "densityComfortable"), ("compact", "densityCompact") })
+                                                    {
+                                                        <button type="button" class="btn btn-sm @(viewDensity == value ? "btn-primary" : "btn-outline-secondary")"
+                                                                @onclick="() => SetDensity(value)">
+                                                            @UserLan[key]
+                                                        </button>
+                                                    }
+                                                </div>
+
+                                                <!-- Tamanho do texto -->
+                                                <h6>@UserLan["viewFontSize"]</h6>
+                                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                                    @foreach (var (value, key) in new[] { ("small", "fontSmall"), ("normal", "fontNormal"), ("large", "fontLarge") })
+                                                    {
+                                                        <button type="button" class="btn btn-sm @(viewFont == value ? "btn-primary" : "btn-outline-secondary")"
+                                                                @onclick="() => SetFont(value)">
+                                                            @UserLan[key]
+                                                        </button>
+                                                    }
+                                                </div>
+
+                                                <!-- Animações -->
+                                                <h6>@UserLan["viewMotion"]</h6>
+                                                <div class="form-check form-switch mb-1">
+                                                    <input class="form-check-input" type="checkbox" role="switch" id="reduce-motion"
+                                                           checked="@(viewMotion == "reduced")"
+                                                           @onchange="OnMotionChanged" />
+                                                    <label class="form-check-label" for="reduce-motion">@UserLan["viewReduceMotion"]</label>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>@UserLan["viewSavedHint"]</small>
+                                                    <div class="mt-2">
+                                                        <button type="button" class="btn btn-link btn-sm px-0" @onclick="ResetViewAsync">@UserLan["viewReset"]</button>
+                                                    </div>
+                                                </div>
+                                            }
                                         }
                                         else if (selectedMenu == MenuItem.Perfil)
                                         {
@@ -323,11 +372,59 @@
         ToastService.OnChange += StateHasChanged;
         ThemeService.OnThemeChanged += StateHasChanged;
         await LoadProfile();
+        await LoadViewAsync();
     }
 
-    private void ChooseTheme(ThemeType theme)
+    private async Task ChooseTheme(ThemeType theme)
     {
         appUser.Theme = theme.ToString();
+
+        // Aplica já o tema escolhido; o botão Guardar grava-o no perfil.
+        var value = theme.ToString();
+        await js.InvokeVoidAsync("localStorage.setItem", "theme", value);
+        await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", value);
+        ThemeService.SetTheme(value);
+    }
+
+    // ---- Definições de visualização (guardadas no navegador e aplicadas a toda a aplicação)
+    private enum AspectTab { Theme, View }
+    private AspectTab aspectTab = AspectTab.Theme;
+    private string viewDensity = "comfortable";
+    private string viewFont = "normal";
+    private string viewMotion = "normal";
+
+    private async Task LoadViewAsync()
+    {
+        viewDensity = await js.InvokeAsync<string?>("localStorage.getItem", "view.density") ?? "comfortable";
+        viewFont = await js.InvokeAsync<string?>("localStorage.getItem", "view.font") ?? "normal";
+        viewMotion = await js.InvokeAsync<string?>("localStorage.getItem", "view.motion") ?? "normal";
+    }
+
+    private Task SetDensity(string value) => SetViewAsync("density", value);
+    private Task SetFont(string value) => SetViewAsync("font", value);
+    private Task OnMotionChanged(ChangeEventArgs e) =>
+        SetViewAsync("motion", e.Value is true ? "reduced" : "normal");
+
+    private async Task SetViewAsync(string name, string value)
+    {
+        switch (name)
+        {
+            case "density": viewDensity = value; break;
+            case "font": viewFont = value; break;
+            case "motion": viewMotion = value; break;
+        }
+        await js.InvokeVoidAsync("localStorage.setItem", $"view.{name}", value);
+        await js.InvokeVoidAsync("applyViewSettings");
+    }
+
+    private async Task ResetViewAsync()
+    {
+        viewDensity = "comfortable";
+        viewFont = "normal";
+        viewMotion = "normal";
+        foreach (var name in new[] { "density", "font", "motion" })
+            await js.InvokeVoidAsync("localStorage.removeItem", $"view.{name}");
+        await js.InvokeVoidAsync("applyViewSettings");
     }
 
     private async Task HandleUpdateUser()

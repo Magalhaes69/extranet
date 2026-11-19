@@ -96,3 +96,10 @@
     margin-left: auto;
     color: white;
 }
+
+/* Cartão da página de definições no tema escuro (sem o brilho da antiga janela modal) */
+.settings-dark {
+    background-color: #0f0f10;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+}
