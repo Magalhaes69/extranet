@@ -13,12 +13,14 @@ namespace Application.UseCases.User.Auth
         private readonly UserManager<AppUser> _userManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IEmailService _emailService;
+        private readonly IUserActivityLogger _activity;
 
-        public LoginHandler(UserManager<AppUser> userManager, IJwtTokenGenerator jwtTokenGenerator, IEmailService emailService)
+        public LoginHandler(UserManager<AppUser> userManager, IJwtTokenGenerator jwtTokenGenerator, IEmailService emailService, IUserActivityLogger activity)
         {
             _userManager = userManager;
             _jwtTokenGenerator = jwtTokenGenerator;
             _emailService = emailService;
+            _activity = activity;
         }
         public async Task<LoginResponse> Handle(LoginRequest request, CancellationToken cancellationToken)
         {
@@ -66,6 +68,7 @@ namespace Application.UseCases.User.Auth
 
             var (roles, processes) = await UserAccessResolver.ResolveAsync(_userManager, user);
             var token = _jwtTokenGenerator.GenerateToken(user, roles, processes);
+            await _activity.LogAsync(user.Id, user.CardCode, UserActivityActions.Login);
             return new LoginResponse
             {
                 Email = user.Email!,

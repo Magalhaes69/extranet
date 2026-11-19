@@ -15,6 +15,19 @@ namespace Persistence.Context
         public DbSet<OrderLineCart> OrderLineCart { get; set; }
         public DbSet<ItemExtension> ItemExtension { get; set; }
         public DbSet<AppSetting> AppSetting { get;set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<UserActivity>(e =>
+            {
+                e.ToTable(nameof(UserActivity));
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => new { x.UserId, x.CreatedAt });
+            });
+        }
 
     }
 }

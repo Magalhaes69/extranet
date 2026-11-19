@@ -3,6 +3,8 @@
 @using WebFrontEnd.Services.Enums
 @inject IStringLocalizer<UserApp> UserLan
 @inject IStringLocalizer<App> Lan
+@using WebFrontEnd.Services.Activity
+@inject IUserActivityService ActivityApi
 @implements IDisposable
 @attribute [Authorize]
 
@@ -39,12 +41,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="menu-item  @(selectedMenu == MenuItem.PaginaPrincipal ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.PaginaPrincipal))">
-                                            <i class="bi bi-house"></i>
-                                            <span>
-                                               @UserLan["homePage"]
-                                               </span>
-                                        </div>
 
                                         <div class="menu-item  @(selectedMenu == MenuItem.Atividades ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Atividades))">
                                             <i class="bi bi-activity"></i>
@@ -250,17 +246,59 @@
                                         }
                                         else if (selectedMenu == MenuItem.Atividades)
                                         {
-                                            <h4>
-                                                @UserLan["userActivities"]</h4>
+                                            <h4>@UserLan["userActivities"]</h4>
                                             <div class="card p-3">
-                                                <p>@UserLan["userActivitiesDesc"]</p>
-                                            </div>
-                                        }
-                                        else if (selectedMenu == MenuItem.PaginaPrincipal)
-                                        {
-                                            <h4>@UserLan["homePage"]</h4>
-                                            <div class="card p-3">
-                                                <p>Configurações da página inicial.</p>
+                                                <p class="text-muted small">@UserLan["userActivitiesDesc"]</p>
+
+                                                @if (activitiesLoading && activities.Count == 0)
+                                                {
+                                                    <div class="text-center py-4"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span></div>
+                                                }
+                                                else if (activitiesError)
+                                                {
+                                                    <div class="alert alert-danger py-2 small mb-0" role="alert">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>@UserLan["activityLoadError"]
+                                                        <button type="button" class="btn btn-link btn-sm" @onclick="() => LoadActivitiesAsync(true)">@UserLan["activityRetry"]</button>
+                                                    </div>
+                                                }
+                                                else if (activities.Count == 0)
+                                                {
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="bi bi-activity fs-2 d-block mb-2"></i>@UserLan["activityEmpty"]
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <ul class="list-group list-group-flush">
+                                                        @foreach (var item in activities)
+                                                        {
+                                                            <li class="list-group-item bg-transparent d-flex align-items-start gap-3 px-0">
+                                                                <i class="bi @ActivityIcon(item.Action) fs-5 mt-1"></i>
+                                                                <div class="flex-grow-1">
+                                                                    <div>@ActivityLabel(item.Action)</div>
+                                                                    @if (!string.IsNullOrWhiteSpace(item.Details))
+                                                                    {
+                                                                        <small class="text-muted">@item.Details</small>
+                                                                    }
+                                                                </div>
+                                                                <small class="text-muted text-nowrap">@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                                                            </li>
+                                                        }
+                                                    </ul>
+
+                                                    @if (activities.Count < activitiesTotal)
+                                                    {
+                                                        <div class="text-center mt-3">
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@activitiesLoading" @onclick="() => LoadActivitiesAsync(false)">
+                                                                @if (activitiesLoading)
+                                                                {
+                                                                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                                                                }
+                                                                @UserLan["activityLoadMore"]
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                }
                                             </div>
                                         }
                                         else if (selectedMenu == MenuItem.Idioma)
@@ -320,17 +358,72 @@
     public enum MenuItem
     {
         Aspeto,
-        PaginaPrincipal,
         Atividades,
         Idioma,
         Perfil
     }
     private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
 
-    private void SelectMenu(MenuItem menu)
+    private async Task SelectMenu(MenuItem menu)
     {
         selectedMenu = menu;
+
+        // A actividade só é pedida à API quando o utilizador abre esta secção.
+        if (menu == MenuItem.Atividades && !activitiesLoaded)
+            await LoadActivitiesAsync(true);
     }
+
+    // ---- Actividade do utilizador
+    private const int ActivityPageSize = 20;
+    private readonly List<ActivityItemDto> activities = new();
+    private int activitiesTotal;
+    private int activitiesPage;
+    private bool activitiesLoading;
+    private bool activitiesLoaded;
+    private bool activitiesError;
+
+    private async Task LoadActivitiesAsync(bool reset)
+    {
+        if (activitiesLoading) return;
+
+        activitiesLoading = true;
+        activitiesError = false;
+        if (reset)
+        {
+            activities.Clear();
+            activitiesPage = 0;
+        }
+        StateHasChanged();
+
+        var page = await ActivityApi.GetAsync(activitiesPage + 1, ActivityPageSize);
+        if (page is null)
+        {
+            activitiesError = true;
+        }
+        else
+        {
+            activitiesPage++;
+            activities.AddRange(page.Items);
+            activitiesTotal = page.Total;
+            activitiesLoaded = true;
+        }
+
+        activitiesLoading = false;
+    }
+
+    private string ActivityLabel(string action) => UserLan["activity_" + action.Replace('.', '_')];
+
+    private static string ActivityIcon(string action) => action switch
+    {
+        "login" => "bi-box-arrow-in-right",
+        "user.created" => "bi-person-plus",
+        "user.updated" => "bi-person-gear",
+        "user.deactivated" => "bi-person-x",
+        "user.activated" => "bi-person-check",
+        "license.requested" => "bi-patch-plus",
+        "license.renewal" => "bi-arrow-repeat",
+        _ => "bi-activity"
+    };
 
     private async Task LoadProfile()
     {

@@ -1,6 +1,7 @@
 using Application.UseCases.onexuser.ClientLicenseRequests;
 using Application.UseCases.onexuser.GetClientLicensesByCardCode;
 using Domain.Dtos;
+using Domain.Interfaces;
 using Domain.Models;
 using Domain.Security;
 using MediatR;
@@ -28,15 +29,18 @@ public class LicensesController : ControllerBase
     private readonly IMediator _mediator;
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<LicensesController> _logger;
+    private readonly IUserActivityLogger _activity;
 
     public LicensesController(
         IMediator mediator,
         UserManager<AppUser> userManager,
-        ILogger<LicensesController> logger)
+        ILogger<LicensesController> logger,
+        IUserActivityLogger activity)
     {
         _mediator = mediator;
         _userManager = userManager;
         _logger = logger;
+        _activity = activity;
     }
 
     private string? CardCode => User.FindFirst("CardCode")?.Value;
@@ -180,7 +184,18 @@ public class LicensesController : ControllerBase
             var result = await _mediator.Send(new CreateClientLicenseRequestCommand(CardCode, dto), cancellationToken);
 
             if (result.Succeeded)
+            {
+                var isRenewal = dto.Type == RenewalType;
+                var details = isRenewal
+                    ? $"{result.Request?.MaskedKey} · {dto.Months}m"
+                    : $"{dto.ProductName} · {dto.Users}";
+                await _activity.LogAsync(
+                    User.FindFirst("UserId")?.Value ?? string.Empty, CardCode,
+                    isRenewal ? UserActivityActions.LicenseRenewalRequested : UserActivityActions.LicenseRequested,
+                    details);
+
                 return Ok(new { flag = true, message = successMessage, request = result.Request });
+            }
 
             // Erros de validação do LicenseKey (400/404/409) seguem para o utilizador tal como estão.
             var status = result.StatusCode is 400 or 404 or 409 ? result.StatusCode : 502;

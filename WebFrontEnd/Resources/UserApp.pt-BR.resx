@@ -184,7 +184,7 @@
     <value>Atividades do utilizador</value>
   </data>
   <data name="userActivitiesDesc" xml:space="preserve">
-    <value>Aqui podes mostrar logs, histórico ou ações do utilizador</value>
+    <value>Histórico das suas ações recentes na aplicação: inícios de sessão, gestão de utilizadores e pedidos de licença.</value>
   </data>
   <data name="userData" xml:space="preserve">
     <value> Dados do utilizador</value>
@@ -233,5 +233,38 @@
   </data>
   <data name="viewReset" xml:space="preserve">
     <value>Repor valores por defeito</value>
+  </data>
+  <data name="activityEmpty" xml:space="preserve">
+    <value>Ainda não há actividade registada.</value>
+  </data>
+  <data name="activityLoadMore" xml:space="preserve">
+    <value>Carregar mais</value>
+  </data>
+  <data name="activityLoadError" xml:space="preserve">
+    <value>Não foi possível carregar a actividade.</value>
+  </data>
+  <data name="activityRetry" xml:space="preserve">
+    <value>Tentar novamente</value>
+  </data>
+  <data name="activity_login" xml:space="preserve">
+    <value>Iniciou sessão</value>
+  </data>
+  <data name="activity_user_created" xml:space="preserve">
+    <value>Criou um utilizador</value>
+  </data>
+  <data name="activity_user_updated" xml:space="preserve">
+    <value>Actualizou um utilizador</value>
+  </data>
+  <data name="activity_user_deactivated" xml:space="preserve">
+    <value>Desactivou um utilizador</value>
+  </data>
+  <data name="activity_user_activated" xml:space="preserve">
+    <value>Activou um utilizador</value>
+  </data>
+  <data name="activity_license_requested" xml:space="preserve">
+    <value>Requisitou uma licença</value>
+  </data>
+  <data name="activity_license_renewal" xml:space="preserve">
+    <value>Pediu a renovação de uma licença</value>
   </data>
 </root>

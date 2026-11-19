@@ -12,10 +12,12 @@ namespace Application.UseCases.User.Verify2FA
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        public Verify2FAHandler(UserManager<AppUser> userManager, IJwtTokenGenerator jwtTokenGenerator)
+        private readonly IUserActivityLogger _activity;
+        public Verify2FAHandler(UserManager<AppUser> userManager, IJwtTokenGenerator jwtTokenGenerator, IUserActivityLogger activity)
         {
             _userManager = userManager;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _activity = activity;
         }
         public async Task<LoginResponse> Handle(Verify2FARequest request, CancellationToken cancellationToken)
         {
@@ -35,6 +37,7 @@ namespace Application.UseCases.User.Verify2FA
 
             var (roles, processes) = await UserAccessResolver.ResolveAsync(_userManager, user);
             var token = _jwtTokenGenerator.GenerateToken(user, roles, processes);
+            await _activity.LogAsync(user.Id, user.CardCode, UserActivityActions.Login);
 
             return new LoginResponse
             {

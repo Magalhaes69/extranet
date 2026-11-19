@@ -1,4 +1,5 @@
 using Domain.Dtos;
+using Domain.Interfaces;
 using Domain.Models;
 using Domain.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,11 +22,13 @@ public class CompanyUsersController : ControllerBase
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<CompanyUsersController> _logger;
+    private readonly IUserActivityLogger _activity;
 
-    public CompanyUsersController(UserManager<AppUser> userManager, ILogger<CompanyUsersController> logger)
+    public CompanyUsersController(UserManager<AppUser> userManager, ILogger<CompanyUsersController> logger, IUserActivityLogger activity)
     {
         _userManager = userManager;
         _logger = logger;
+        _activity = activity;
     }
 
     private string? CardCode => User.FindFirst("CardCode")?.Value;
@@ -110,6 +113,7 @@ public class CompanyUsersController : ControllerBase
         await SyncProcessesAsync(user, request.Processes);
 
         _logger.LogInformation("Utilizador {Email} criado pelo gestor {Manager}", email, manager.Email);
+        await _activity.LogAsync(manager.Id, manager.CardCode, UserActivityActions.UserCreated, email);
 
         return CreatedAtAction(nameof(GetById), new { id = user.Id }, await ToDtoAsync(user));
     }
@@ -139,6 +143,8 @@ public class CompanyUsersController : ControllerBase
         if (!updated.Succeeded)
             return BadRequest(new { message = Describe(updated) });
 
+        var wasActive = !(user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow);
+
         // Activar / desactivar (bloqueio permanente)
         await _userManager.SetLockoutEnabledAsync(user, true);
         await _userManager.SetLockoutEndDateAsync(user, request.IsActive ? null : DateTimeOffset.MaxValue);
@@ -152,6 +158,11 @@ public class CompanyUsersController : ControllerBase
         }
 
         await SyncProcessesAsync(user, request.Processes);
+
+        var action = wasActive == request.IsActive
+            ? UserActivityActions.UserUpdated
+            : request.IsActive ? UserActivityActions.UserActivated : UserActivityActions.UserDeactivated;
+        await _activity.LogAsync(CurrentUserId ?? string.Empty, CardCode, action, user.Email);
 
         return Ok(await ToDtoAsync(user));
     }
