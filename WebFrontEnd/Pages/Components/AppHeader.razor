@@ -91,7 +91,7 @@
             <!--begin::User Menu Dropdown-->
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="@($"{ApiBaseUrl}{appUser.ImageUrl ?? "/images/users/defaul-user.png"}")"
+                    <img src="@($"{ApiBaseUrl.TrimEnd('/')}{(string.IsNullOrWhiteSpace(appUser.ImageUrl) ? "/images/users/defaul-user.png" : appUser.ImageUrl)}")"
                          class="user-image rounded-circle shadow @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white " : "")"
                          alt="" />
                 </a>
@@ -154,6 +154,7 @@
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnChange += UpdateSidebar;
+        LayoutState.OnProfileChanged += ReloadProfile;
 
         ThemeService.OnThemeChanged += Refresh;
         PageState.OnPageTitleChanged += StateHasChanged;
@@ -161,6 +162,12 @@
         History.OnChange += StateHasChanged;
         await LoadUser();
     }
+    private async Task ReloadProfile()
+    {
+        await LoadUser();
+        await InvokeAsync(StateHasChanged);
+    }
+
     private async Task LoadUser()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -219,6 +226,7 @@
         PageState.OnPageTitleChanged -= StateHasChanged;
         History.OnChange -= StateHasChanged;
         LayoutState.OnChange -= UpdateSidebar;
+        LayoutState.OnProfileChanged -= ReloadProfile;
         PageTitleService.OnChange -= StateHasChanged;
     }
     

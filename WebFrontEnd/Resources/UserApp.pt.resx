@@ -267,4 +267,52 @@
   <data name="activity_license_renewal" xml:space="preserve">
     <value>Pediu a renovação de uma licença</value>
   </data>
+  <data name="pwdSection" xml:space="preserve">
+    <value>Alterar palavra-passe</value>
+  </data>
+  <data name="pwdHint" xml:space="preserve">
+    <value>Para alterar a palavra-passe, indique a actual e escolha uma nova.</value>
+  </data>
+  <data name="pwdCurrent" xml:space="preserve">
+    <value>Palavra-passe actual</value>
+  </data>
+  <data name="pwdNew" xml:space="preserve">
+    <value>Nova palavra-passe</value>
+  </data>
+  <data name="pwdConfirm" xml:space="preserve">
+    <value>Confirmar nova palavra-passe</value>
+  </data>
+  <data name="pwdShow" xml:space="preserve">
+    <value>Mostrar palavras-passe</value>
+  </data>
+  <data name="pwdSubmit" xml:space="preserve">
+    <value>Alterar palavra-passe</value>
+  </data>
+  <data name="pwdSuccess" xml:space="preserve">
+    <value>Palavra-passe alterada com sucesso.</value>
+  </data>
+  <data name="pwdRequired" xml:space="preserve">
+    <value>Preencha a palavra-passe actual e a nova.</value>
+  </data>
+  <data name="pwdMismatch" xml:space="preserve">
+    <value>A nova palavra-passe e a confirmação não coincidem.</value>
+  </data>
+  <data name="pwdError" xml:space="preserve">
+    <value>Não foi possível alterar a palavra-passe. Tente novamente.</value>
+  </data>
+  <data name="imgHint" xml:space="preserve">
+    <value>JPG, PNG, GIF ou WEBP, até 5 MB.</value>
+  </data>
+  <data name="imgInvalid" xml:space="preserve">
+    <value>Formato de imagem inválido. Use JPG, PNG, GIF ou WEBP.</value>
+  </data>
+  <data name="imgTooLarge" xml:space="preserve">
+    <value>A imagem deve ter no máximo 5 MB.</value>
+  </data>
+  <data name="activity_password_changed" xml:space="preserve">
+    <value>Alterou a palavra-passe</value>
+  </data>
+  <data name="activity_profile_updated" xml:space="preserve">
+    <value>Actualizou o perfil</value>
+  </data>
 </root>

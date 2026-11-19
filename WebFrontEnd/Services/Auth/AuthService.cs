@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 
@@ -115,6 +116,32 @@ namespace WebFrontEnd.Services.Auth
             catch (Exception ex)
             {
                 return null!;
+            }
+        }
+
+        /// <summary>Altera a palavra-passe do utilizador autenticado.</summary>
+        public async Task<ServiceResponsePost> ChangePassword(string currentPassword, string newPassword)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/change-password",
+                    new { CurrentPassword = currentPassword, NewPassword = newPassword });
+
+                string? message = null;
+                try
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("message", out var m))
+                        message = m.GetString();
+                }
+                catch (System.Text.Json.JsonException) { /* corpo sem JSON */ }
+
+                return new ServiceResponsePost { Flag = response.IsSuccessStatusCode, Message = message ?? string.Empty };
+            }
+            catch (HttpRequestException)
+            {
+                return new ServiceResponsePost { Flag = false, Message = string.Empty };
             }
         }
 

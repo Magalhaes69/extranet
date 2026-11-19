@@ -240,6 +240,5 @@ public class CompanyUsersController : ControllerBase
         catch { return false; }
     }
 
-    private static string Describe(IdentityResult result) =>
-        string.Join(" ", result.Errors.Select(e => e.Description));
+    private static string Describe(IdentityResult result) => IdentityErrorMessages.Describe(result);
 }

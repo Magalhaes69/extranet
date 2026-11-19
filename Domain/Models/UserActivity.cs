@@ -30,6 +30,8 @@ namespace Domain.Models
     public static class UserActivityActions
     {
         public const string Login = "login";
+        public const string PasswordChanged = "password.changed";
+        public const string ProfileUpdated = "profile.updated";
         public const string UserCreated = "user.created";
         public const string UserUpdated = "user.updated";
         public const string UserDeactivated = "user.deactivated";
