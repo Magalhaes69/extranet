@@ -143,6 +143,9 @@ builder.Services.AddHttpClient<IClientLicenseApiClient, ClientLicenseApiClient>(
         client.Timeout = TimeSpan.FromMinutes(3);
     });
 
+// Notificações de licenças e pedidos (gera avisos a partir do LicenseKey).
+builder.Services.AddScoped<LicenseNotificationSync>();
+
 // Registo público de contas (LeadsController): secção "LeadsApi" do appsettings
 // com as regras do trial. A chamada ao LicenseKey faz-se pelo ILeadApiClient,
 // registado acima com a secção "LicensingApi".
