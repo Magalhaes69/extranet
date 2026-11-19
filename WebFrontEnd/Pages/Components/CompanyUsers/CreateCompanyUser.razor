@@ -1,0 +1,56 @@
+@page "/company-users/create"
+@using WebFrontEnd.Services.CompanyUsers
+@inject IStringLocalizer<UserManagementApp> L
+@inject ICompanyUsersService CompanyUsers
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleCreate"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm py-0" href="/company-users">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                <CompanyUserForm Model="_model"
+                                 IsEdit="false"
+                                 Saving="_saving"
+                                 Error="@_error"
+                                 OnSubmit="Save"
+                                 OnCancel="Cancel" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly CompanyUserFormModel _model = new();
+    private bool _saving;
+    private string? _error;
+
+    protected override void OnInitialized() => PageTitleService.SetTitle(L["titleCreate"]);
+
+    private async Task Save()
+    {
+        _saving = true;
+        _error = null;
+
+        var result = await CompanyUsers.CreateAsync(_model);
+
+        _saving = false;
+        if (result.Succeeded)
+        {
+            ToastService.ShowSuccess(L["msgCreated"], ThemeService.CurrentTheme);
+            nav.NavigateTo("/company-users");
+            return;
+        }
+
+        _error = result.Message ?? L["errSave"];
+    }
+
+    private void Cancel() => nav.NavigateTo("/company-users");
+}

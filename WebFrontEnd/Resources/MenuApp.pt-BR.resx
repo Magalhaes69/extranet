@@ -186,4 +186,13 @@
   <data name="menuSectionAdmin" xml:space="preserve">
     <value>ADMINISTRAÇÃO</value>
   </data>
+  <data name="menuUserManagementGroup" xml:space="preserve">
+    <value>Gestão de utilizadores</value>
+  </data>
+  <data name="menuCompanyUsersList" xml:space="preserve">
+    <value>Utilizadores</value>
+  </data>
+  <data name="menuCompanyUsersCreate" xml:space="preserve">
+    <value>Novo utilizador</value>
+  </data>
 </root>

@@ -7,6 +7,10 @@
         public string? Icon { get; set; }
         /// <summary>Chave de tradução do título da secção (cabeçalho) onde o item começa.</summary>
         public string? Section { get; set; }
+        /// <summary>Processo exigido para ver o item (null = sempre visível).</summary>
+        public string? Process { get; set; }
+        /// <summary>Só visível para gestores/administradores da empresa.</summary>
+        public bool ManagerOnly { get; set; }
         public List<SidebarMenuItem> Children { get; set; } = new();
     }
 }

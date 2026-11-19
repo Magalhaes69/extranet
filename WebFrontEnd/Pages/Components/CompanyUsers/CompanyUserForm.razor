@@ -1,0 +1,198 @@
+@using WebFrontEnd.Services.CompanyUsers
+@inject IStringLocalizer<UserManagementApp> L
+
+@* Formulário partilhado pelas páginas de criar e editar utilizador. *@
+
+<EditForm Model="@Model" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="alert alert-danger py-2 small" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i>@Error
+        </div>
+    }
+
+    <!-- Dados do utilizador -->
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">
+            <i class="bi bi-person-vcard me-2"></i>@L["sectionData"]
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">@L["firstName"] <span class="text-danger fw-bold">*</span></label>
+                <div class="col-sm-4">
+                    <InputText class="form-control form-control-sm" @bind-Value="Model.FirstName" />
+                    <ValidationMessage For="@(() => Model.FirstName)" class="text-danger small" />
+                </div>
+
+                <label class="col-sm-2 col-form-label">@L["lastName"] <span class="text-danger fw-bold">*</span></label>
+                <div class="col-sm-4">
+                    <InputText class="form-control form-control-sm" @bind-Value="Model.LastName" />
+                    <ValidationMessage For="@(() => Model.LastName)" class="text-danger small" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">@L["email"] <span class="text-danger fw-bold">*</span></label>
+                <div class="col-sm-4">
+                    <InputText class="form-control form-control-sm" @bind-Value="Model.Email" disabled="@IsEdit" autocomplete="off" />
+                    <ValidationMessage For="@(() => Model.Email)" class="text-danger small" />
+                </div>
+
+                <label class="col-sm-2 col-form-label">@L["phone"]</label>
+                <div class="col-sm-4">
+                    <InputText class="form-control form-control-sm" @bind-Value="Model.PhoneNumber" />
+                    <ValidationMessage For="@(() => Model.PhoneNumber)" class="text-danger small" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">
+                    @(IsEdit ? L["newPassword"] : L["password"])
+                    @if (!IsEdit)
+                    {
+                        <span class="text-danger fw-bold">*</span>
+                    }
+                </label>
+                <div class="col-sm-4">
+                    <div class="input-group input-group-sm">
+                        <InputText type="@(_showPassword ? "text" : "password")"
+                                   class="form-control form-control-sm"
+                                   @bind-Value="Model.Password"
+                                   autocomplete="new-password" />
+                        <button type="button" class="btn btn-outline-secondary" @onclick="() => _showPassword = !_showPassword" tabindex="-1">
+                            <i class="bi @(_showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                        </button>
+                    </div>
+                    @if (IsEdit)
+                    {
+                        <div class="form-text">@L["newPasswordHint"]</div>
+                    }
+                </div>
+
+                <label class="col-sm-2 col-form-label">@L["confirmPassword"]</label>
+                <div class="col-sm-4">
+                    <InputText type="@(_showPassword ? "text" : "password")"
+                               class="form-control form-control-sm"
+                               @bind-Value="Model.ConfirmPassword"
+                               autocomplete="new-password" />
+                </div>
+            </div>
+
+            @if (IsEdit)
+            {
+                <div class="row">
+                    <label class="col-sm-2 col-form-label">@L["status"]</label>
+                    <div class="col-sm-4 d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <InputCheckbox class="form-check-input" id="user-active" @bind-Value="Model.IsActive" />
+                            <label class="form-check-label" for="user-active">@L["active"]</label>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Processos -->
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-diagram-3 me-2"></i>@L["sectionProcesses"]</span>
+            <span>
+                <button type="button" class="btn btn-link btn-sm py-0" @onclick="SelectAll">@L["selectAll"]</button>
+                <button type="button" class="btn btn-link btn-sm py-0 text-muted" @onclick="ClearAll">@L["clearAll"]</button>
+            </span>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small mb-3">@L["processesHint"]</p>
+            <div class="row g-3">
+                @foreach (var process in CompanyProcesses.All)
+                {
+                    var selected = Model.Processes.Contains(process.Key);
+                    <div class="col-md-6 col-xl-3">
+                        <div class="border rounded p-3 h-100 process-card @(selected ? "process-card-active" : "")"
+                             role="button"
+                             @onclick="() => Toggle(process.Key)">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="bi @process.Icon fs-4"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">@L[process.LabelKey]</div>
+                                    <div class="text-muted small">@L[process.DescriptionKey]</div>
+                                </div>
+                                <div class="form-check form-switch m-0" @onclick:stopPropagation>
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           checked="@selected"
+                                           @onchange="() => Toggle(process.Key)" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Processes.Count == 0)
+            {
+                <div class="text-warning small mt-3"><i class="bi bi-info-circle me-1"></i>@L["noProcessWarning"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end pb-4">
+        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="Cancel" disabled="@Saving">
+            @L["btnCancel"]
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm" disabled="@Saving">
+            @if (Saving)
+            {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            }
+            else
+            {
+                <i class="bi bi-check2 me-1"></i>
+            }
+            @L["btnSave"]
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public CompanyUserFormModel Model { get; set; } = new();
+    [Parameter] public bool IsEdit { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool _showPassword;
+
+    private async Task Submit()
+    {
+        Error = null;
+
+        // Na criação a palavra-passe é obrigatória; na edição só se for preenchida.
+        if (!IsEdit && string.IsNullOrWhiteSpace(Model.Password))
+        {
+            Error = L["valPasswordRequired"];
+            return;
+        }
+        if (!string.IsNullOrEmpty(Model.Password) && Model.Password != Model.ConfirmPassword)
+        {
+            Error = L["valPasswordMatch"];
+            return;
+        }
+
+        await OnSubmit.InvokeAsync();
+    }
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+
+    private void Toggle(string key)
+    {
+        if (!Model.Processes.Remove(key))
+            Model.Processes.Add(key);
+    }
+
+    private void SelectAll() => Model.Processes = CompanyProcesses.All.Select(p => p.Key).ToHashSet();
+    private void ClearAll() => Model.Processes.Clear();
+}

@@ -12,7 +12,7 @@
     <AppHeader />
     <Sidebar />
     <main class="app-main" id="main" tabindex="-1">
-        @Body
+        <RouteAccessGuard>@Body</RouteAccessGuard>
     </main>
 
     <Toast />

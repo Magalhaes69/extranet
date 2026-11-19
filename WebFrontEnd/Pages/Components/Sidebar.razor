@@ -3,6 +3,7 @@
 @inject IStringLocalizer<MenuApp> Lan
 
 @using WebFrontEnd.Services.Auth
+@inject AccessService Access
 <!--begin::Sidebar-->
 <aside class="app-sidebar shadow @(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-light")" data-bs-theme="@ThemeService.CurrentTheme">
     <!--begin::Sidebar Brand-->
@@ -84,6 +85,8 @@
     protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += Refresh;
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationChanged;
+        await BuildVisibleMenuAsync();
     }
 
     private void Refresh()
@@ -117,12 +120,14 @@
             Key = "menuPrincipal",
             Icon = "nav-icon bi bi-house-door-fill",
             Section = "menuSectionGeneral",
+            Process = "dashboard",
             Url = "/"
         },
         new SidebarMenuItem
         {
             Key = "menuVendasGroup",
             Icon = "nav-icon bi bi-cart-fill",
+            Process = "requests",
             Children = new()
             {
                 new() { Key = "menuQuotation", Url = "/quotations" },
@@ -139,6 +144,7 @@
         {
             Key = "menuPaymentGroup",
             Icon = "nav-icon bi bi-credit-card-2-front-fill",
+            Process = "payments",
             Children = new()
             {
                 new() { Key = "menuPayments", Url = "/payments" }
@@ -156,9 +162,21 @@
         // },
         new SidebarMenuItem
         {
+            Key = "menuUserManagementGroup",
+            Icon = "nav-icon bi bi-people-fill",
+            Section = "menuSectionAdmin",
+            ManagerOnly = true,
+            Children = new()
+            {
+                new() { Key = "menuCompanyUsersList", Url = "/company-users" },
+                new() { Key = "menuCompanyUsersCreate", Url = "/company-users/create" },
+            }
+        },
+        new SidebarMenuItem
+        {
             Key="menuAdministratorGroup",
             Icon = "nav-icon bi bi-gear-fill",
-            Section = "menuSectionAdmin",
+            ManagerOnly = true,
             Children = new()
             {
                 new(){ Key = "menuConfigure", Url = "/configure-app"},
@@ -169,8 +187,53 @@
 
     private string SearchTerm = "";
 
+    // Menu já filtrado pelas permissões do utilizador (gestor / processos atribuídos).
+    private List<SidebarMenuItem> _visibleMenu = new();
+
     private List<SidebarMenuItem> FilteredMenu =>
-        FilterMenu(Menu);
+        FilterMenu(_visibleMenu);
+
+    private async Task BuildVisibleMenuAsync()
+    {
+        var isManager = await Access.IsManagerAsync();
+        var result = new List<SidebarMenuItem>();
+        string? pendingSection = null;
+
+        foreach (var item in Menu)
+        {
+            if (item.Section is not null)
+                pendingSection = item.Section;
+
+            var visible = item.ManagerOnly
+                ? isManager
+                : item.Process is null || await Access.HasProcessAsync(item.Process);
+
+            if (!visible)
+                continue;
+
+            // O cabeçalho da secção passa para o primeiro item visível dessa secção.
+            result.Add(new SidebarMenuItem
+            {
+                Key = item.Key,
+                Url = item.Url,
+                Icon = item.Icon,
+                Section = pendingSection,
+                Process = item.Process,
+                ManagerOnly = item.ManagerOnly,
+                Children = item.Children
+            });
+            pendingSection = null;
+        }
+
+        _visibleMenu = result;
+    }
+
+    private void OnAuthenticationChanged(Task<AuthenticationState> authState) =>
+        _ = InvokeAsync(async () =>
+        {
+            await BuildVisibleMenuAsync();
+            StateHasChanged();
+        });
 
     private List<SidebarMenuItem> FilterMenu(List<SidebarMenuItem> menu)
     {
@@ -217,5 +280,6 @@
     public void Dispose()
     {
         ThemeService.OnThemeChanged -= Refresh;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationChanged;
     }
 }

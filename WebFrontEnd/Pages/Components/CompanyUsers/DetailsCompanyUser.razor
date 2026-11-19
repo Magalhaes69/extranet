@@ -1,0 +1,121 @@
+@page "/company-users/details/{Id}"
+@using WebFrontEnd.Services.CompanyUsers
+@inject IStringLocalizer<UserManagementApp> L
+@inject ICompanyUsersService CompanyUsers
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleDetails"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm py-0" href="/company-users">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+                @if (_user is { IsManager: false })
+                {
+                    <a class="btn btn-primary btn-sm py-0" href="/company-users/edit/@_user.Id">
+                        <i class="bi bi-pencil me-1"></i>@L["btnEdit"]
+                    </a>
+                }
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_user is null)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errNotFound"]
+                    </div>
+                }
+                else
+                {
+                    <!-- Dados -->
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold"><i class="bi bi-person-vcard me-2"></i>@L["sectionData"]</span>
+                            <span>
+                                @if (_user.IsManager)
+                                {
+                                    <span class="badge text-bg-primary me-1"><i class="bi bi-shield-check me-1"></i>@L["manager"]</span>
+                                }
+                                <span class="badge @(_user.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                    @(_user.IsActive ? L["statusActive"] : L["statusInactive"])
+                                </span>
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label text-muted">@L["firstName"]</label>
+                                <div class="col-sm-4 pt-2">@_user.FirstName</div>
+                                <label class="col-sm-2 col-form-label text-muted">@L["lastName"]</label>
+                                <div class="col-sm-4 pt-2">@_user.LastName</div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label text-muted">@L["email"]</label>
+                                <div class="col-sm-4 pt-2">@_user.Email</div>
+                                <label class="col-sm-2 col-form-label text-muted">@L["phone"]</label>
+                                <div class="col-sm-4 pt-2">@(string.IsNullOrWhiteSpace(_user.PhoneNumber) ? "-" : _user.PhoneNumber)</div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label text-muted">@L["createdOn"]</label>
+                                <div class="col-sm-4 pt-2">@_user.DateCreated.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processos -->
+                    <div class="card mb-3">
+                        <div class="card-header fw-semibold">
+                            <i class="bi bi-diagram-3 me-2"></i>@L["sectionProcesses"]
+                        </div>
+                        <div class="card-body">
+                            @if (_user.IsManager)
+                            {
+                                <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>@L["managerLocked"]</p>
+                            }
+                            <div class="row g-3">
+                                @foreach (var process in CompanyProcesses.All)
+                                {
+                                    var has = _user.Processes.Contains(process.Key);
+                                    <div class="col-md-6 col-xl-3">
+                                        <div class="border rounded p-3 h-100 process-card @(has ? "process-card-active" : "process-card-off")">
+                                            <div class="d-flex align-items-start gap-3">
+                                                <i class="bi @process.Icon fs-4"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold">@L[process.LabelKey]</div>
+                                                    <div class="text-muted small">@L[process.DescriptionKey]</div>
+                                                </div>
+                                                <i class="bi @(has ? "bi-check-circle-fill text-success" : "bi-dash-circle text-muted") fs-5"
+                                                   title="@(has ? L["hasAccess"] : L["noAccess"])"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private CompanyUserDto? _user;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageTitleService.SetTitle(L["titleDetails"]);
+        _loading = true;
+        _user = await CompanyUsers.GetByIdAsync(Id);
+        _loading = false;
+    }
+}

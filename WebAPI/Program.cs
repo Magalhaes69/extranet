@@ -46,7 +46,18 @@ builder.Services
             "InternalApiKey",
             options => { });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Uma policy por processo: gestores passam sempre; os restantes precisam da claim "process".
+    foreach (var process in Domain.Security.AppProcesses.All)
+    {
+        var p = process;
+        options.AddPolicy(
+            Domain.Security.AppProcesses.PolicyName(p),
+            policy => policy.RequireAssertion(ctx =>
+                Domain.Security.AppProcesses.HasAccess(ctx.User, p)));
+    }
+});
 
 // Add Rate Limiter
 builder.Services.AddRateLimiter(options =>

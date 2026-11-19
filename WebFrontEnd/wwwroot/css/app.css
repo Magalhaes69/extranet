@@ -452,3 +452,12 @@ code {
 .app-sidebar .sidebar-menu .nav-link:hover { background-color: rgba(13,110,253,.08); }
 .app-sidebar .sidebar-menu .nav-link.active { background-color: rgba(13,110,253,.14) !important; color: #0d6efd !important; font-weight: 600; box-shadow: inset 3px 0 0 #0d6efd; }
 .app-sidebar .sidebar-menu .nav-treeview .nav-link .nav-icon { font-size: 1.2rem; }
+
+
+/* ===== Gestão de utilizadores da empresa ===== */
+.process-card { cursor: pointer; transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+.process-card:hover { box-shadow: 0 .25rem .6rem rgba(0,0,0,.08); }
+.process-card-active { border-color: #0d6efd !important; background-color: rgba(13,110,253,.06); }
+.process-card-off { cursor: default; opacity: .65; }
+.process-card-off:hover { box-shadow: none; }
+.user-avatar { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background-color: rgba(13,110,253,.12); color: #0d6efd; font-size: .75rem; font-weight: 700; flex-shrink: 0; }

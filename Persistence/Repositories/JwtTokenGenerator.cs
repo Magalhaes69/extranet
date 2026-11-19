@@ -20,9 +20,12 @@ namespace Persistence.Repositories
         {
             _configuration = configuration;
         }
-        public string GenerateToken(AppUser user)
+        public string GenerateToken(AppUser user) =>
+            GenerateToken(user, Array.Empty<string>(), Array.Empty<string>());
+
+        public string GenerateToken(AppUser user, IEnumerable<string> roles, IEnumerable<string> processes)
         {
-            var claims = new[]
+            var claims = new List<Claim>
                 {
                     new Claim("UserId", user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email!),
@@ -30,6 +33,9 @@ namespace Persistence.Repositories
                     new Claim("CardCode", user.CardCode!),
                     new Claim(JwtRegisteredClaimNames.UniqueName, user.Email!)
                 };
+
+            claims.AddRange(roles.Select(r => new Claim("role", r)));
+            claims.AddRange(processes.Select(p => new Claim(Domain.Security.AppProcesses.ClaimType, p)));
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["AppSettings:JWTSecret"]!));
