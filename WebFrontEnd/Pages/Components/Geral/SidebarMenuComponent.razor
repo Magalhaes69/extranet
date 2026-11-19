@@ -2,12 +2,16 @@
 
 @foreach (var item in Items)
 {
+    @if (!string.IsNullOrEmpty(item.Section))
+    {
+        <li class="nav-header">@Lan[item.Section]</li>
+    }
     <li class="nav-item @(IsOpen(item) ? "menu-open" : "")">
 
         <!-- Parent -->
         @if (!string.IsNullOrEmpty(item.Url))
         {
-            <a href="@item.Url" class="nav-link"
+            <NavLink href="@item.Url" class="nav-link" Match="@(item.Url == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
                    @onclick="() => Toggle(item.Key)">
                 <i class="@item.Icon"></i>
                 <p class="small">
@@ -17,7 +21,7 @@
                         <i class="nav-arrow bi bi-chevron-right"></i>
                     }
                 </p>
-            </a>
+            </NavLink>
         }
         else
         {
@@ -42,6 +46,7 @@
                 {
                     <li class="nav-item py-0">
                         <NavLink href="@child.Url" class="nav-link">
+                            <i class="nav-icon bi bi-dot"></i>
                             <p class="small">@Lan[child.Key]</p>
                         </NavLink>
                     </li>

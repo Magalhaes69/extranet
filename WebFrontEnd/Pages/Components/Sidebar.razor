@@ -10,9 +10,10 @@
         <!--begin::Brand Link-->
         <a href="#" class="brand-link">
             <!--begin::Brand Image-->
+            <i class="bi bi-hexagon-fill brand-icon"></i>
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <span class="brand-text fw-light"></span>
+            <span class="brand-text">Extranet <strong>SAP</strong></span>
             <!--end::Brand Text-->
         </a>
         <!--end::Brand Link-->
@@ -25,7 +26,7 @@
             <ul class="nav sidebar-menu flex-column"
                 data-lte-toggle="treeview"
                 role="navigation"
-                aria-label="Main navigation"
+                aria-label="Navegação principal"
                 data-accordion="false"
                 id="navigation">
                 <AuthorizeView>
@@ -114,13 +115,14 @@
         new SidebarMenuItem
         {
             Key = "menuPrincipal",
-            Icon = "nav-icon bi bi-house",
+            Icon = "nav-icon bi bi-house-door-fill",
+            Section = "menuSectionGeneral",
             Url = "/"
         },
         new SidebarMenuItem
         {
             Key = "menuVendasGroup",
-            Icon = "nav-icon bi bi-cart",
+            Icon = "nav-icon bi bi-cart-fill",
             Children = new()
             {
                 new() { Key = "menuQuotation", Url = "/quotations" },
@@ -136,7 +138,7 @@
         new SidebarMenuItem
         {
             Key = "menuPaymentGroup",
-            Icon = "nav-icon bi bi-credit-card-2-front",
+            Icon = "nav-icon bi bi-credit-card-2-front-fill",
             Children = new()
             {
                 new() { Key = "menuPayments", Url = "/payments" }
@@ -155,7 +157,8 @@
         new SidebarMenuItem
         {
             Key="menuAdministratorGroup",
-            Icon = "nav-icon bi bi-gear",
+            Icon = "nav-icon bi bi-gear-fill",
+            Section = "menuSectionAdmin",
             Children = new()
             {
                 new(){ Key = "menuConfigure", Url = "/configure-app"},
@@ -195,6 +198,7 @@
                 {
                     Key = item.Key,
                     Icon = item.Icon,
+                    Section = item.Section,
                     Url = item.Url,
                     Children = filteredChildren // ONLY matched children
                 });

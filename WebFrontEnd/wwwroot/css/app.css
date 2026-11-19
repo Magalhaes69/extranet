@@ -1,4 +1,4 @@
-html, body {
+﻿html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -440,3 +440,15 @@ code {
     text-align: right;
 }
 /*End*/
+
+/* ===== Sidebar profissional ===== */
+.app-sidebar .sidebar-brand { border-bottom: 1px solid rgba(128,128,128,.2); }
+.app-sidebar .brand-link { display: flex; align-items: center; gap: .6rem; padding: .5rem 1rem; text-decoration: none; }
+.app-sidebar .brand-icon { color: #0d6efd; font-size: 1.4rem; }
+.app-sidebar .brand-text { font-size: 1.1rem; font-weight: 300; letter-spacing: .3px; }
+.app-sidebar .sidebar-menu .nav-header { font-size: .68rem; font-weight: 700; letter-spacing: .08em; opacity: .55; padding: 1rem 1rem .35rem; }
+.app-sidebar .sidebar-menu .nav-link { border-radius: .5rem; margin: .1rem .5rem; transition: background-color .15s ease, color .15s ease; }
+.app-sidebar .sidebar-menu .nav-link .nav-icon { font-size: 1.05rem; width: 1.6rem; text-align: center; }
+.app-sidebar .sidebar-menu .nav-link:hover { background-color: rgba(13,110,253,.08); }
+.app-sidebar .sidebar-menu .nav-link.active { background-color: rgba(13,110,253,.14) !important; color: #0d6efd !important; font-weight: 600; box-shadow: inset 3px 0 0 #0d6efd; }
+.app-sidebar .sidebar-menu .nav-treeview .nav-link .nav-icon { font-size: 1.2rem; }
