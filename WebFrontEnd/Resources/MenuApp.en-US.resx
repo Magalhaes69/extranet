@@ -189,10 +189,4 @@
   <data name="menuUserManagementGroup" xml:space="preserve">
     <value>User management</value>
   </data>
-  <data name="menuCompanyUsersList" xml:space="preserve">
-    <value>Users</value>
-  </data>
-  <data name="menuCompanyUsersCreate" xml:space="preserve">
-    <value>New user</value>
-  </data>
 </root>

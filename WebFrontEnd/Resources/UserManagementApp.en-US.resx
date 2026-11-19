@@ -130,7 +130,7 @@
     <value>Edit user</value>
   </data>
   <data name="btnNew" xml:space="preserve">
-    <value>New user</value>
+    <value>Add new user</value>
   </data>
   <data name="btnBack" xml:space="preserve">
     <value>Back</value>
