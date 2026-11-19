@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnRefresh" xml:space="preserve">
+    <value>Atualizar</value>
+  </data>
+  <data name="greeting" xml:space="preserve">
+    <value>Olá, {0}!</value>
+  </data>
+  <data name="quickActions" xml:space="preserve">
+    <value>Ações rápidas</value>
+  </data>
+  <data name="summary" xml:space="preserve">
+    <value>Resumo</value>
+  </data>
+  <data name="actRequestLicense" xml:space="preserve">
+    <value>Requisitar licença</value>
+  </data>
+  <data name="actMyLicenses" xml:space="preserve">
+    <value>As minhas licenças</value>
+  </data>
+  <data name="actMyRequests" xml:space="preserve">
+    <value>Os meus pedidos</value>
+  </data>
+  <data name="actUsers" xml:space="preserve">
+    <value>Gerir utilizadores</value>
+  </data>
+  <data name="actSettings" xml:space="preserve">
+    <value>Definições</value>
+  </data>
+  <data name="kpiActiveLicenses" xml:space="preserve">
+    <value>Licenças ativas</value>
+  </data>
+  <data name="kpiActiveLicensesCaption" xml:space="preserve">
+    <value>Em utilização</value>
+  </data>
+  <data name="kpiExpiring" xml:space="preserve">
+    <value>A expirar</value>
+  </data>
+  <data name="kpiExpiringCaption" xml:space="preserve">
+    <value>Nos próximos {0} dias</value>
+  </data>
+  <data name="kpiExpired" xml:space="preserve">
+    <value>Expiradas</value>
+  </data>
+  <data name="kpiTotal" xml:space="preserve">
+    <value>Total de licenças</value>
+  </data>
+  <data name="kpiOpenRequests" xml:space="preserve">
+    <value>Pedidos em curso</value>
+  </data>
+  <data name="kpiOpenRequestsCaption" xml:space="preserve">
+    <value>Submetidos, em análise ou aprovados</value>
+  </data>
+  <data name="kpiUnread" xml:space="preserve">
+    <value>Notificações por ler</value>
+  </data>
+  <data name="kpiUnreadCaption" xml:space="preserve">
+    <value>No sino do cabeçalho</value>
+  </data>
+  <data name="kpiUsers" xml:space="preserve">
+    <value>Utilizadores ativos</value>
+  </data>
+  <data name="kpiUsersCaption" xml:space="preserve">
+    <value>Da sua empresa</value>
+  </data>
+  <data name="secLicenses" xml:space="preserve">
+    <value>Licenças</value>
+  </data>
+  <data name="secRequests" xml:space="preserve">
+    <value>Pedidos</value>
+  </data>
+  <data name="nextExpiries" xml:space="preserve">
+    <value>Próximas expirações</value>
+  </data>
+  <data name="noExpiries" xml:space="preserve">
+    <value>Não há licenças com data de expiração.</value>
+  </data>
+  <data name="recentRequests" xml:space="preserve">
+    <value>Pedidos recentes</value>
+  </data>
+  <data name="noRequests" xml:space="preserve">
+    <value>Ainda não fez nenhum pedido de licença.</value>
+  </data>
+  <data name="kpiInReview" xml:space="preserve">
+    <value>Em análise</value>
+  </data>
+  <data name="kpiApproved" xml:space="preserve">
+    <value>Aprovados</value>
+  </data>
+  <data name="kpiCompleted" xml:space="preserve">
+    <value>Concluídos</value>
+  </data>
+  <data name="kpiRejected" xml:space="preserve">
+    <value>Rejeitados</value>
+  </data>
+  <data name="see" xml:space="preserve">
+    <value>Ver</value>
+  </data>
+  <data name="unavailable" xml:space="preserve">
+    <value>Indisponível</value>
+  </data>
+</root>
