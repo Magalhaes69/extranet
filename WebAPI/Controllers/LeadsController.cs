@@ -1,5 +1,5 @@
-using System.Net;
-using System.Text.Json;
+using Application.UseCases.onexuser.Create;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,27 +10,29 @@ using WebAPI.Settings;
 namespace WebAPI.Controllers
 {
     /// <summary>
-    /// Public "create account" endpoint. It validates what the visitor typed, decides the trial dates and status
-    /// itself and forwards the request to the leads API. The browser never talks to the leads API directly.
+    /// Public "create account" endpoint used by the register page. It validates what the
+    /// visitor typed and runs the same use case the LicenseKey integration uses
+    /// (<see cref="CreateOnexClientUserRequest"/>): the Lead is created in the LicenseKey,
+    /// whose Code becomes the CardCode of the local user, created pending email confirmation.
+    /// There is no local fallback: without the LicenseKey there is no account.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [AllowAnonymous]
     public class LeadsController : ControllerBase
     {
-        public const string HttpClientName = "LeadsApi";
         public const string RateLimitPolicy = "leads";
 
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IMediator _mediator;
         private readonly LeadsApiSettings _settings;
         private readonly ILogger<LeadsController> _logger;
 
         public LeadsController(
-            IHttpClientFactory httpClientFactory,
+            IMediator mediator,
             IOptions<LeadsApiSettings> settings,
             ILogger<LeadsController> logger)
         {
-            _httpClientFactory = httpClientFactory;
+            _mediator = mediator;
             _settings = settings.Value;
             _logger = logger;
         }
@@ -55,85 +57,57 @@ namespace WebAPI.Controllers
             if (validationError is not null)
                 return BadRequest(new ServiceResponse { Flag = false, Message = validationError });
 
-            if (string.IsNullOrWhiteSpace(_settings.BaseUrl))
-            {
-                _logger.LogError("LeadsApi:BaseUrl is not configured.");
-                return StatusCode(StatusCodes.Status503ServiceUnavailable,
-                    new ServiceResponse { Flag = false, Message = "O registo de contas não está disponível de momento." });
-            }
+            _logger.LogInformation("Creating account via LicenseKey for {Email}", request.Email);
 
-            var today = DateTime.UtcNow.Date;
-            var payload = new
+            var command = new CreateOnexClientUserRequest
             {
-                companyName = request.CompanyName!.Trim(),
-                nuit = request.Nuit!.Trim(),
-                contactName = request.ContactName!.Trim(),
-                email = request.Email!.Trim(),
-                phoneNumber = request.PhoneNumber!.Trim(),
-                trialStartDate = today,
-                trialEndDate = today.AddDays(_settings.TrialDays),
-                status = _settings.TrialStatus,
-                notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
-                password = request.Password
+                CompanyName = request.CompanyName!.Trim(),
+                TaxNumber = request.Nuit!.Trim(),
+                ContactName = request.ContactName!.Trim(),
+                AdminEmail = request.Email!.Trim(),
+                PhoneNumber = request.PhoneNumber!.Trim(),
+                AdminInitialPassword = request.Password!,
+                // O estado do trial decide-se aqui (secção "LeadsApi"), nunca pelo visitante.
+                Status = _settings.TrialStatus,
+                Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim()
+                // CardCode fica vazio de propósito: é o caso de uso que cria o Lead
+                // no LicenseKey e usa o Code devolvido.
             };
 
-            try
+            var result = await _mediator.Send(command, cancellationToken);
+
+            if (result.Succeeded && result.Created)
             {
-                var client = _httpClientFactory.CreateClient(HttpClientName);
-                using var message = new HttpRequestMessage(HttpMethod.Post, _settings.CreatePath)
+                return Ok(new ServiceResponse
                 {
-                    Content = JsonContent.Create(payload)
-                };
-                if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
-                    message.Headers.TryAddWithoutValidation(_settings.ApiKeyHeader, _settings.ApiKey);
-
-                using var response = await client.SendAsync(message, cancellationToken);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return Ok(new ServiceResponse
-                    {
-                        Flag = true,
-                        Message = "Conta criada com sucesso. Já pode iniciar sessão."
-                    });
-                }
-
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
-                // Never log the request (it has the password). The leads API answer is enough to diagnose.
-                _logger.LogWarning("Leads API answered {StatusCode}: {Body}", (int)response.StatusCode, Truncate(body, 500));
-
-                return response.StatusCode switch
-                {
-                    // Sem mensagem aproveitável não se sabe se é mesmo um duplicado: um 409 também
-                    // chega quando a API de leads falha a provisionar. Daí um texto que serve aos dois
-                    // casos, em vez de afirmar que a conta já existe.
-                    HttpStatusCode.Conflict => Conflict(new ServiceResponse
-                    {
-                        Flag = false,
-                        Message = ExtractMessage(body)
-                            ?? "Não foi possível criar a conta com estes dados. Verifique o NUIT e o email, ou tente mais tarde."
-                    }),
-                    HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity => BadRequest(new ServiceResponse
-                    {
-                        Flag = false,
-                        Message = ExtractMessage(body) ?? "Os dados enviados não são válidos."
-                    }),
-                    _ => StatusCode(StatusCodes.Status502BadGateway, new ServiceResponse
-                    {
-                        Flag = false,
-                        Message = "Não foi possível criar a conta de momento. Tente mais tarde."
-                    })
-                };
-            }
-            catch (Exception ex) when ((ex is HttpRequestException || ex is TaskCanceledException) && !cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogError(ex, "Could not reach the leads API.");
-                return StatusCode(StatusCodes.Status502BadGateway, new ServiceResponse
-                {
-                    Flag = false,
-                    Message = "Não foi possível criar a conta de momento. Tente mais tarde."
+                    Flag = true,
+                    Message = "Conta criada. Verifique o seu email para a ativar."
                 });
             }
+
+            if (result.Succeeded && !result.Created)
+            {
+                // O utilizador já existia. Para quem está a registar-se é um conflito,
+                // e a mensagem do caso de uso diz se falta apenas confirmar o email.
+                return Conflict(new ServiceResponse
+                {
+                    Flag = false,
+                    Message = IsSafeForVisitor(result.Message)
+                        ? result.Message
+                        : "Já existe uma conta com este email."
+                });
+            }
+
+            _logger.LogWarning("Account creation failed for {Email}: {Message}",
+                request.Email, Truncate(result.Message ?? string.Empty, 500));
+
+            return BadRequest(new ServiceResponse
+            {
+                Flag = false,
+                Message = IsSafeForVisitor(result.Message)
+                    ? result.Message!
+                    : "Não foi possível criar a conta de momento. Tente mais tarde."
+            });
         }
 
         private static string? Validate(CreateLeadRequest? request)
@@ -202,57 +176,6 @@ namespace WebAPI.Controllers
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Reads a human message from the usual shapes: { message }, ProblemDetails or validation errors.
-        /// Devolve o primeiro candidato que <see cref="IsSafeForVisitor"/> aprove — um texto técnico
-        /// é saltado, não interrompe a procura, e se nenhum servir devolve null para o chamador
-        /// usar a mensagem genérica. "title" fica de fora de propósito: é um rótulo de categoria
-        /// ("Business Rule Violation") que nada diz a quem está a criar a conta.
-        /// </summary>
-        private static string? ExtractMessage(string body)
-        {
-            if (string.IsNullOrWhiteSpace(body)) return null;
-
-            try
-            {
-                using var doc = JsonDocument.Parse(body);
-                if (doc.RootElement.ValueKind != JsonValueKind.Object) return null;
-                var root = doc.RootElement;
-
-                foreach (var name in new[] { "message", "detail" })
-                {
-                    foreach (var property in root.EnumerateObject())
-                    {
-                        if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase) &&
-                            property.Value.ValueKind == JsonValueKind.String &&
-                            IsSafeForVisitor(property.Value.GetString()))
-                        {
-                            return Truncate(property.Value.GetString()!, 300);
-                        }
-                    }
-                }
-
-                if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Object)
-                {
-                    var messages = errors.EnumerateObject()
-                        .SelectMany(e => e.Value.ValueKind == JsonValueKind.Array ? e.Value.EnumerateArray() : Enumerable.Empty<JsonElement>())
-                        .Where(v => v.ValueKind == JsonValueKind.String)
-                        .Select(v => v.GetString())
-                        .Where(IsSafeForVisitor)
-                        .Take(3);
-
-                    var joined = string.Join(" ", messages);
-                    if (!string.IsNullOrWhiteSpace(joined)) return Truncate(joined, 300);
-                }
-            }
-            catch (JsonException)
-            {
-                // Not JSON: do not show raw server text to a visitor
-            }
-
-            return null;
         }
 
         private static string Truncate(string value, int max) =>

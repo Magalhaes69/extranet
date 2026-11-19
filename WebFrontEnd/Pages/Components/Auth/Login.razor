@@ -85,9 +85,7 @@
             </EditForm>
 
             <div class="xl-login-help">
-                <a href="/register" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-person-plus me-1"></i> Criar conta
-                </a>
+                Não tem conta? <a href="/register" class="xl-register-link">Criar conta</a>
             </div>
         </div>
     </main>
@@ -286,8 +284,22 @@
         padding-top: 20px;
         border-top: 1px solid var(--border);
         color: var(--muted);
-        font-size: .85rem;
+        font-size: .95rem;
         text-align: center;
+    }
+
+    .xl-register-link {
+        color: var(--brand-dark);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .xl-register-link:hover {
+            text-decoration: underline;
+        }
+
+    [data-bs-theme="dark"] .xl-login-page .xl-register-link {
+        color: var(--brand);
     }
 
     /* ---------- Painel com a imagem (direita) ---------- */

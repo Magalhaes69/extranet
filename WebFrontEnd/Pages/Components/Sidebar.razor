@@ -10,9 +10,10 @@
         <!--begin::Brand Link-->
         <a href="#" class="brand-link">
             <!--begin::Brand Image-->
+            <i class="bi bi-hexagon-fill brand-icon"></i>
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <span class="brand-text fw-light"></span>
+            <span class="brand-text">Extranet <strong>SAP</strong></span>
             <!--end::Brand Text-->
         </a>
         <!--end::Brand Link-->
@@ -25,7 +26,7 @@
             <ul class="nav sidebar-menu flex-column"
                 data-lte-toggle="treeview"
                 role="navigation"
-                aria-label="Main navigation"
+                aria-label="Navegação principal"
                 data-accordion="false"
                 id="navigation">
                 <AuthorizeView>
@@ -68,7 +69,19 @@
 
 
 @code {
-    protected override void OnInitialized()
+    private bool isSalesOpen = false;
+    private bool isPaymentOpen = false;
+    private bool isItemsOpen = false;
+    private bool isSettingsOpen = false;
+
+
+    private void OnCultureChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+
+    protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += Refresh;
     }
@@ -77,35 +90,81 @@
     {
         InvokeAsync(StateHasChanged);
     }
+    private void ToggleSales()
+    {
+        isSalesOpen = !isSalesOpen;
+    }
 
-    #region Menu - Portal do Cliente
+    private void TogglePayment()
+    {
+        isPaymentOpen = !isPaymentOpen;
+    }
+    private void ToggleItemExtensions()
+    {
+        isItemsOpen = !isItemsOpen;
+    }
+    private void ToggleSettings()
+    {
+        isSettingsOpen = !isSettingsOpen;
+    }
+
+    #region Menu
 
     private List<SidebarMenuItem> Menu = new()
     {
         new SidebarMenuItem
         {
-            Key = "menuDashboard",
-            Icon = "nav-icon bi bi-speedometer2",
+            Key = "menuPrincipal",
+            Icon = "nav-icon bi bi-house-door-fill",
+            Section = "menuSectionGeneral",
             Url = "/"
         },
         new SidebarMenuItem
         {
-            Key = "menuPedidos",
-            Icon = "nav-icon bi bi-file-text",
-            Url = "/requests"
+            Key = "menuVendasGroup",
+            Icon = "nav-icon bi bi-cart-fill",
+            Children = new()
+            {
+                new() { Key = "menuQuotation", Url = "/quotations" },
+                new() { Key = "menuOrder", Url = "/orders" },
+                new() { Key = "createOrder", Url = "/add-orders" },
+                //new() { Key = "menucreateOrderByCat", Url = "/catalog-item" },
+                new() { Key = "menuReturns", Url = "/returns" },
+                new() { Key = "menuDeliveries", Url = "/delivery" },
+                new() { Key = "APInvoices", Url = "/invoices" },
+                new() { Key = "menuCredit", Url = "/credits" },
+            }
         },
         new SidebarMenuItem
         {
-            Key = "menuPagamentos",
-            Icon = "nav-icon bi bi-credit-card",
-            Url = "/payments"
+            Key = "menuPaymentGroup",
+            Icon = "nav-icon bi bi-credit-card-2-front-fill",
+            Children = new()
+            {
+                new() { Key = "menuPayments", Url = "/payments" }
+            }
         },
+        // new SidebarMenuItem
+        // {
+        //     Key = "menuItemExtension",
+        //     Icon = "nav-icon bi bi-box-seam",
+        //     Children = new()
+        //     {
+        //         new() { Key = "menuListItemExtension", Url = "/extensions/list-item-extension" },
+        //         new() { Key = "menuCreateItemExtension", Url = "/extensions/itemextension" }
+        //     }
+        // },
         new SidebarMenuItem
         {
-            Key = "menuDefinicoes",
-            Icon = "nav-icon bi bi-gear",
-            Url = "/settings"
-        }
+            Key="menuAdministratorGroup",
+            Icon = "nav-icon bi bi-gear-fill",
+            Section = "menuSectionAdmin",
+            Children = new()
+            {
+                new(){ Key = "menuConfigure", Url = "/configure-app"},
+            }
+        },
+        
     };
 
     private string SearchTerm = "";
@@ -139,8 +198,8 @@
                 {
                     Key = item.Key,
                     Icon = item.Icon,
+                    Section = item.Section,
                     Url = item.Url,
-                    AdminOnly = item.AdminOnly,
                     Children = filteredChildren // ONLY matched children
                 });
             }

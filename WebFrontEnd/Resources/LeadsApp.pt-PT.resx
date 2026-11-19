@@ -181,16 +181,19 @@
     <value>Confirme o seu email</value>
   </data>
   <data name="confirmEmailSentTo" xml:space="preserve">
-    <value>Enviámos um email de confirmação para</value>
+    <value>A sua conta foi criada com sucesso! Enviámos um email de confirmação para</value>
   </data>
   <data name="confirmEmailSentGeneric" xml:space="preserve">
-    <value>Enviámos um email de confirmação para o endereço que indicou.</value>
+    <value>A sua conta foi criada com sucesso! Enviámos um email de confirmação para o endereço que indicou no registo.</value>
+  </data>
+  <data name="confirmEmailInstructions" xml:space="preserve">
+    <value>Abra a mensagem e clique no botão «Confirmar a minha conta» para ativar o acesso. Só depois de confirmar o email é que poderá iniciar sessão.</value>
   </data>
   <data name="confirmEmailExpiry" xml:space="preserve">
-    <value>O link de confirmação expira em 24 horas.</value>
+    <value>O link de confirmação é válido durante 24 horas.</value>
   </data>
   <data name="confirmEmailSpam" xml:space="preserve">
-    <value>Se não o encontrar na caixa de entrada, verifique a pasta de spam.</value>
+    <value>Não recebeu o email? Aguarde alguns minutos e verifique também a pasta de spam ou lixo eletrónico.</value>
   </data>
   <data name="activateTitle" xml:space="preserve">
     <value>Conta criada</value>

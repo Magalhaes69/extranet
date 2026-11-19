@@ -17,7 +17,7 @@
         /// <param name="message">An optional message describing the result of the operation. The default is "Operation completed
         /// successfully.".</param>
         /// <returns>An <see cref="ApiResponse{T}"/> instance representing a successful operation, with the specified data and message.</returns>
-        public static ApiResponse<T> SuccessResponse(T data, string message = "Operation completed successfully.")
+        public static ApiResponse<T> SuccessResponse(T data, string message = "Operação concluída com sucesso.")
         {
             return new ApiResponse<T>
             {

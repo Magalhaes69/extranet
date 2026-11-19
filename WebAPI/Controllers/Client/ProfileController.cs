@@ -58,7 +58,7 @@ public class ProfileController : ControllerBase
                 Nuit = user.Nuit ?? "",
                 FiscalDesignation = user.FirstName ?? "",
                 CardCode = user.CardCode ?? "",
-                CreatedAt = user.DateCreated ?? DateTime.UtcNow,
+                CreatedAt = user.DateCreated.DateTime,
                 IsTrial = false
             };
 

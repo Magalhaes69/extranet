@@ -154,7 +154,7 @@
     <value>Devoluções</value>
   </data>
   <data name="menuUserCreate" xml:space="preserve">
-    <value>Criar utilizadore</value>
+    <value>Criar utilizadores</value>
   </data>
   <data name="menuUsers" xml:space="preserve">
     <value>Utilizadores</value>
@@ -169,7 +169,7 @@
     <value>Extensões</value>
   </data>
   <data name="searchMenu" xml:space="preserve">
-    <value>Menu de pesquisa...</value>
+    <value>Pesquisar no menu...</value>
   </data>
   <data name="menuPrincipal" xml:space="preserve">
     <value>Página principal</value>
@@ -179,5 +179,11 @@
   </data>
   <data name="menuConfigure" xml:space="preserve">
     <value>Configurações gerais</value>
+  </data>
+  <data name="menuSectionGeneral" xml:space="preserve">
+    <value>GERAL</value>
+  </data>
+  <data name="menuSectionAdmin" xml:space="preserve">
+    <value>ADMINISTRAÇÃO</value>
   </data>
 </root>

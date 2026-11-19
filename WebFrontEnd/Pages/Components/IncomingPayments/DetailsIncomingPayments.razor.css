@@ -1,0 +1,46 @@
+﻿#resizable-table th,
+#resizable-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 1px;
+}
+
+#resizable-table th {
+    position: relative;
+    min-width: 80px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#resizable-table th .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 1;
+}
+.custom-tabs li a {
+    color: var(--bs-body-color);
+    cursor: pointer;
+}
+
+    .custom-tabs li a:hover {
+        color: var(--bs-body-color);
+    }
+
+.custom-tabs .nav-item .active {
+    color: var(--bs-primary);
+    border-bottom: 3px solid var(--bs-primary);
+}
+
+.sapTitle-table {
+    color: var(--bs-body-color);
+    font-size: .875rem;
+    font-weight: bold;
+}

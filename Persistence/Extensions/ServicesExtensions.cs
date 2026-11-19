@@ -41,9 +41,13 @@ namespace Persistence.Extensions
 
             services.Configure<IdentityOptions>(options =>
             {
+                // Mesmas exigências do LicenseKey (e da página de registo):
+                // 6 caracteres, uma maiúscula e uma minúscula; sem especial nem dígito.
                 options.Password.RequireDigit = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
                 options.User.RequireUniqueEmail = true;
             });
 

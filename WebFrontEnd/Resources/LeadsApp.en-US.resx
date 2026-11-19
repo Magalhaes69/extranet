@@ -181,16 +181,19 @@
     <value>Confirm your e-mail</value>
   </data>
   <data name="confirmEmailSentTo" xml:space="preserve">
-    <value>We have sent a confirmation e-mail to</value>
+    <value>Your account has been created successfully! We have sent a confirmation e-mail to</value>
   </data>
   <data name="confirmEmailSentGeneric" xml:space="preserve">
-    <value>We have sent a confirmation e-mail to the address you provided.</value>
+    <value>Your account has been created successfully! We have sent a confirmation e-mail to the address you provided.</value>
+  </data>
+  <data name="confirmEmailInstructions" xml:space="preserve">
+    <value>Open the message and click the "Confirm my account" button to activate your access. You will only be able to sign in after confirming your e-mail.</value>
   </data>
   <data name="confirmEmailExpiry" xml:space="preserve">
-    <value>The confirmation link expires in 24 hours.</value>
+    <value>The confirmation link is valid for 24 hours.</value>
   </data>
   <data name="confirmEmailSpam" xml:space="preserve">
-    <value>If you cannot find it in your inbox, please check your spam folder.</value>
+    <value>Didn't receive the e-mail? Wait a few minutes and also check your spam or junk folder.</value>
   </data>
   <data name="activateTitle" xml:space="preserve">
     <value>Account created</value>

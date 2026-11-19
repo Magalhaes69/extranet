@@ -75,7 +75,10 @@ public sealed class LeadApiClient : ILeadApiClient
         using var document = JsonDocument.Parse(body);
         var root = document.RootElement;
 
-        var succeeded = FindProperty(root, "Succeeded");
+        // O ApiResponse do LicenseKey chama-lhe "Success"; "Succeeded" fica por
+        // tolerância a outras formas.
+        var succeeded = FindProperty(root, "Success")
+                        ?? FindProperty(root, "Succeeded");
 
         if (succeeded.HasValue &&
             succeeded.Value.ValueKind == JsonValueKind.False)

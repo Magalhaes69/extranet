@@ -180,4 +180,10 @@
   <data name="menuConfigure" xml:space="preserve">
     <value>Configure</value>
   </data>
+  <data name="menuSectionGeneral" xml:space="preserve">
+    <value>GENERAL</value>
+  </data>
+  <data name="menuSectionAdmin" xml:space="preserve">
+    <value>ADMINISTRATION</value>
+  </data>
 </root>

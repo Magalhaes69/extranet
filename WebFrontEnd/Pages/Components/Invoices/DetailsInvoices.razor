@@ -1,0 +1,353 @@
+﻿@page "/invoices-details/{DocNum:int}"
+
+
+@attribute [Authorize]
+
+@if (isLoading)
+{
+    <LoadingPage />
+}
+else
+{
+    <AppPageDetailsLayout Title=@Title>
+
+        <HeaderContent>
+            <HeaderDetailsComponent CardCode="@invoicesDto.CardCode"
+                                    CardName="@invoicesDto.CardName"
+                                    DocCurrency="@invoicesDto.DocCurrency"
+                                    Cancelled="@invoicesDto.Cancelled"
+                                    DocTotal="@invoicesDto.DocTotal"
+                                    DocumentStatus="@invoicesDto.DocumentStatus" />
+        </HeaderContent>
+
+        <Body>
+
+            <AppTabs Tabs="@tabs"
+                     ActiveTab="@activeSection"
+                     ActiveTabChanged="ScrollTo" />
+            <div class="app-content">
+                <div class="container-fluid">
+                    <div id="geral" class="card mb-2">
+                        <div class="card-body pt-5">
+                            <div class="row mb-3">
+
+                                <label for="inputEmail3" class="col-sm-2 col-form-label"> @LanSales["numAtCard"]:</label>
+                                <div class="col-sm-4">
+                                    <div class="position-relative">
+                                        <InputText class="form-control form-control-sm" @bind-Value="invoicesDto.NumAtCard" disabled />
+                                    </div>
+                                </div>
+
+                                <label for="Series" class="col-sm-2 col-form-label">@LanSales["salesSeries"]:</label>
+                                <div class="col-sm-4">
+                                    <InputNumber class="form-control form-control form-control-sm" @bind-Value="invoicesDto.Series" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                    </div>
+                                <label for="DocDate" class="col-sm-2 col-form-label">@LanSales["documentDate"]:</label>
+                                <div class="col-sm-4">
+                                    <input class="form-control form-control-sm"
+                                               Value="@(UiConverters.ToDate(invoicesDto.DocDate))"
+                                               disabled />
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                </div>
+                                <label for="DocDueDate" class="col-sm-2 col-form-label">@LanSales["deliveryDate"] <span class="text-danger fw-bold">*</span>:</label>
+                                <div class="col-sm-4">
+                                    <Input class="form-control form-control-sm"
+                                               Value="@(UiConverters.ToDate(invoicesDto.DocDueDate))"
+                                               disabled />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-1 sapTitle">@LanSales["tabDetailsContents"]</h5>
+                    <div id="conteudo" class="card mb-2">
+                        <div class="card-body pt-">
+
+                            <h6 class="mt-0">
+                                @LanSales["preferences"]</h6>
+
+                            <div class="row mb-3">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">@LanSales["currency"]: </label>
+                                <div class="col-sm-4">
+                                    <InputText class="form-control form-control-sm" @bind-Value="invoicesDto.DocCurrency" readonly />
+                                </div>
+
+                                <label for="DocType" class="col-sm-2 col-form-label">@LanSales["itemserviceType"]:</label>
+                                <div class="col-sm-4">
+                                    <InputText id="DocType" class="form-control form-control-sm" @bind-Value="invoicesDto.DocType" readonly/>
+                                        
+                                </div>
+                            </div>
+
+                            <AppTableDetails TableClass="@(ThemeService.CurrentTheme == "dark" ? "table-dark" : "table-light")">
+                                <HeaderGroup>
+                                    <colgroup>
+                                        <col style="width: 50px;" />
+                                        <col style="width: 50px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 150px;" />
+                                       
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 150px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 100px;" />
+                                        <col style="width: 80px;" />
+                                    </colgroup>
+                                </HeaderGroup>
+                                <Header>
+                                <tr>
+                                    <th class="border-end sticky-left"><input type="checkbox" @bind="AllSelected" @bind:event="oninput"></th>
+                                    <th scope="col" class="border-end" style="position: relative;">#<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanSales["itemCode"]<div class="resizer"></div></th>
+                                    <th scope="col" class="border-end" style="position: relative;">@LanSales["itemDscription"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["quantity"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["unitPrice"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["discountLine"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["priceAfterDiscount"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["taxCode"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["totalLC"]<div class="resizer"></div></th>
+                                    <th scope="col" class="text-end border-end" style="position: relative;">@LanSales["whse"]<div class="resizer"></div></th>
+                                </tr>
+                                </Header>
+
+                                <RowTemplate>
+                                    @if (invoicesDto.DocumentLines is not null)
+                                    {
+                                        @foreach (var item in invoicesDto.DocumentLines)
+                                        {
+                                            <tr>
+                                                <td><InputCheckbox @bind-Value="item.Selected" /></td>
+                                                <td>@item.LineNum</td>
+                                                <td>@item.ItemCode</td>
+                                                <td>@item.ItemDescription</td>
+                                                <td class="text-end">@item.Quantity</td>
+                                                <td class="text-end">@UiConverters.ToCurrency(item.Price ?? 0, item.Currency!)</td>
+                                                <td class="text-end"></td>
+                                                <td class="text-end"></td>
+                                                <td class="text-end">@item.VatGroup</td>
+                                                <td class="text-end">@UiConverters.ToCurrency(item.LineTotal ?? 0, item.Currency!)</td>
+                                                <td class="text-end">@item.WarehouseCode</td>
+                                            </tr>
+                                        }
+                                    }
+                                </RowTemplate>
+                            </AppTableDetails>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                </div>
+                                <div class="col-md-6 mt-2">
+                                    <div class="">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0"><b>@LanSales["totalSubtitle"]</b></h5>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <span>@LanSales["totalBeforeDiscount"]:</span>
+                                                <span>@UiConverters.ToCurrency(totalBefore, invoicesDto.DocCurrency!)</span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>@LanSales["discountPercent"]:</span>
+                                                <span>@UiConverters.ToFormat(invoicesDto.DiscountPercent ?? 0)</span>
+                                                <span>@UiConverters.ToCurrency(invoicesDto.TotalDiscount ?? 0, invoicesDto.DocCurrency!)</span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>
+                                                    @LanSales["rounding"]:</span>
+                                                <span>0</span>
+                                            </div>
+
+
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>@LanSales["vatSum"]:</span>
+                                                <span>@UiConverters.ToCurrency(invoicesDto.VatSum ?? 0, invoicesDto.DocCurrency!)</span>
+                                            </div>
+
+                                            <hr />
+
+                                            <div class="d-flex justify-content-between">
+                                                <strong>@LanSales["docTotal"]:</strong>
+                                                <strong>@UiConverters.ToCurrency(invoicesDto.DocTotal ?? 0, invoicesDto.DocCurrency!)</strong>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOGÍSTICA -->
+                    <h5 class="mb-1 sapTitle">@LanSales["tabDetailsLogistics"]</h5>
+                    <div id="logisticaQuotation">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <h5 class="mb-2 sapTitle-table ">@LanSales["shipToAddress"]o</h5>
+                                    <label for="ShipToCode" class="col-sm-2 col-form-label">
+                                        @LanSales["bpAddress"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="invoicesDto.ShipToCode" disabled />
+                                    </div>
+
+                                    <label for="PayToCode" class="col-sm-2 col-form-label">@LanSales["bpAddress"]:</label>
+                                    <div class="col-sm-4">
+
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="invoicesDto.PayToCode" disabled />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="Address2" class="col-sm-2 col-form-label"> @LanSales["addressSummary"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="invoicesDto.Address2" disabled />
+                                    </div>
+
+                                    <label for="Address" class="col-sm-2 col-form-label">
+                                        @LanSales["addressSummary"]:</label>
+                                    <div class="col-sm-4">
+                                        <InputText class="form-control form-control form-control-sm" @bind-Value="invoicesDto.Address" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Body>
+
+    </AppPageDetailsLayout>
+}
+<style>
+    .custom-tabs li a {
+        color: var(--bs-body-color);
+        cursor: pointer;
+    }
+
+    .custom-tabs li a:hover {
+            color: var(--bs-body-color);
+    }
+
+    .custom-tabs .nav-item .active {
+        color: var(--bs-primary);
+        border-bottom: 3px solid var(--bs-primary);
+    }
+
+    .sapTitle-table {
+        color: var(--bs-body-color);
+        font-size: .875rem;
+        font-weight: bold;
+    }
+
+
+    #resizable-table th,
+    #resizable-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 1px;
+    }
+
+    #resizable-table th {
+        position: relative;
+        min-width: 80px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    #resizable-table th .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 1;
+    }
+</style>
+@code {
+    private string activeSection = "geral";
+    private bool isOpen = true;
+    private bool isCollapsed = true;
+    [Parameter]
+    public int DocNum { get; set; }
+    private bool isLoading;
+    private GetAllInvoicesDto invoicesDto = new();
+
+    private decimal totalBefore = 0;
+    private List<TabItem> tabs = new();
+
+    private bool AllSelected
+    {
+        get => invoicesDto.DocumentLines!.All(l => l.Selected);
+        set
+        {
+            foreach (var line in invoicesDto.DocumentLines!)
+            {
+                line.Selected = value;
+            }
+        }
+    }
+    private string Title = string.Empty;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LayoutState.SetSidebar(true);
+            await js.InvokeVoidAsync("preventDropdownClose");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PageTitleService.SetTitle(LanGeneral["invoiceTitleNavbar"]);
+        PageState.SetTitle(LanGeneral["invoiceTitleNavbar"]);
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var CardCode = user.GetCardCode();
+        isLoading = true;
+        invoicesDto = await InvoicesService.GetByDocEntryInvoicesAsync(CardCode, DocNum);
+        invoicesDto.DocType = UiConverters.ToDocType(invoicesDto.DocType!);
+
+        tabs = new()
+        {
+            new TabItem {Id = "geral", Label=  LanSales["tabDetailsGeneral"]},
+            new TabItem {Id="conteudo", Label = LanSales["tabDetailsContents"]},
+            new TabItem {Id="logisticaQuotation", Label = LanSales["tabDetailsLogistics"]},
+            new TabItem {Id="anexos", Label = LanSales["tabDetailsAttachments"]}
+        };
+
+        totalBefore = invoicesDto.DocumentLines?.Sum(x => x.LineTotal) ?? 0;
+        Title = LanSales["invoices"] + $" {invoicesDto.DocNum}";
+        isLoading = false;
+    }
+    private async Task ScrollTo(string id)
+    {
+        activeSection = id;
+        await js.InvokeVoidAsync("scrollToSection", id);
+    }
+    private void ToggleCard()
+    {
+        isOpen = !isOpen;
+    }
+
+
+}
