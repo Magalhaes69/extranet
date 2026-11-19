@@ -23,12 +23,14 @@ public class CompanyUsersController : ControllerBase
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<CompanyUsersController> _logger;
     private readonly IUserActivityLogger _activity;
+    private readonly INotificationService _notifications;
 
-    public CompanyUsersController(UserManager<AppUser> userManager, ILogger<CompanyUsersController> logger, IUserActivityLogger activity)
+    public CompanyUsersController(UserManager<AppUser> userManager, ILogger<CompanyUsersController> logger, IUserActivityLogger activity, INotificationService notifications)
     {
         _userManager = userManager;
         _logger = logger;
         _activity = activity;
+        _notifications = notifications;
     }
 
     private string? CardCode => User.FindFirst("CardCode")?.Value;
@@ -114,6 +116,10 @@ public class CompanyUsersController : ControllerBase
 
         _logger.LogInformation("Utilizador {Email} criado pelo gestor {Manager}", email, manager.Email);
         await _activity.LogAsync(manager.Id, manager.CardCode, UserActivityActions.UserCreated, email);
+        await _notifications.AddAsync(user.Id, user.CardCode, NotificationTypes.AccountAccess, NotificationLevels.Success,
+            "Bem-vindo",
+            $"A sua conta foi criada por {manager.FirstName} {manager.LastName}. Tem acesso a: {DescribeProcesses(request.Processes)}.".Replace("  ", " "),
+            "/", null);
 
         return CreatedAtAction(nameof(GetById), new { id = user.Id }, await ToDtoAsync(user));
     }
@@ -157,7 +163,19 @@ public class CompanyUsersController : ControllerBase
                 return BadRequest(new { message = Describe(reset) });
         }
 
+        var processesBefore = (await _userManager.GetClaimsAsync(user))
+            .Where(c => c.Type == AppProcesses.ClaimType).Select(c => c.Value).ToHashSet();
+
         await SyncProcessesAsync(user, request.Processes);
+
+        var processesAfter = request.Processes.Where(AppProcesses.IsValid).ToHashSet();
+        if (!processesBefore.SetEquals(processesAfter))
+        {
+            await _notifications.AddAsync(user.Id, user.CardCode, NotificationTypes.AccountAccess, NotificationLevels.Info,
+                "Permissões actualizadas",
+                $"O gestor actualizou o seu acesso. Passa a ter acesso a: {DescribeProcesses(processesAfter)}.",
+                "/", null);
+        }
 
         var action = wasActive == request.IsActive
             ? UserActivityActions.UserUpdated
@@ -219,6 +237,24 @@ public class CompanyUsersController : ControllerBase
                           .ToList();
         if (toAdd.Count > 0)
             await _userManager.AddClaimsAsync(user, toAdd);
+    }
+
+    private static string DescribeProcesses(IEnumerable<string> processes)
+    {
+        var names = processes
+            .Where(AppProcesses.IsValid)
+            .Distinct()
+            .Select(p => p switch
+            {
+                AppProcesses.Dashboard => "Painel",
+                AppProcesses.Requests => "Pedidos",
+                AppProcesses.Payments => "Pagamentos",
+                AppProcesses.Licenses => "Licenças e notificações",
+                _ => p
+            })
+            .ToList();
+
+        return names.Count == 0 ? "nenhuma área" : string.Join(", ", names);
     }
 
     private static string? Validate(string firstName, string lastName, IEnumerable<string> processes)

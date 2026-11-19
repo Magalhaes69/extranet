@@ -1,127 +1,107 @@
+using Application.Services;
+using Domain.Dtos;
+using Domain.Interfaces;
+using Domain.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Domain.Dtos;
 
 namespace WebAPI.Controllers.Client;
 
 /// <summary>
-/// Controller para gestão de notificações
-/// Permite listar, marcar como lida e obter notificações não lidas
+/// Notificações do utilizador autenticado (o sino do cabeçalho). Qualquer utilizador tem as suas;
+/// quem tem o processo "licenses" recebe também os avisos de licenças e pedidos.
 /// </summary>
 [ApiController]
 [Route("api/client/[controller]")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "process:licenses")]
 public class NotificationsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private const int MaxTake = 100;
+
+    private readonly INotificationService _notifications;
+    private readonly LicenseNotificationSync _licenseSync;
     private readonly ILogger<NotificationsController> _logger;
 
-    public NotificationsController(IMediator mediator, ILogger<NotificationsController> logger)
+    public NotificationsController(
+        INotificationService notifications,
+        LicenseNotificationSync licenseSync,
+        ILogger<NotificationsController> logger)
     {
-        _mediator = mediator;
+        _notifications = notifications;
+        _licenseSync = licenseSync;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Lista todas as notificações do cliente
-    /// </summary>
+    private string? UserId => User.FindFirst("UserId")?.Value;
+    private string? CardCode => User.FindFirst("CardCode")?.Value;
+
+    /// <summary>Notificações mais recentes e número de não lidas.</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] bool? onlyUnread,
-        CancellationToken cancellationToken)
+        [FromQuery] int take = 30,
+        CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrWhiteSpace(userId))
-                return Forbid();
+        if (string.IsNullOrWhiteSpace(UserId))
+            return Forbid();
 
-            // TODO: Implementar GetClientNotificationsQuery
-            return Ok(new List<NotificationDto>());
-        }
-        catch (Exception ex)
+        // Avisos de licenças: só para quem pode ver licenças (a sincronização é limitada no tempo e nunca falha).
+        if (!string.IsNullOrWhiteSpace(CardCode) && AppProcesses.HasAccess(User, AppProcesses.Licenses))
+            await _licenseSync.SyncAsync(UserId, CardCode, cancellationToken);
+
+        var (items, unread) = await _notifications.GetAsync(
+            UserId, onlyUnread == true, Math.Clamp(take, 1, MaxTake), cancellationToken);
+
+        return Ok(new
         {
-            _logger.LogError(ex, "Erro ao listar notificações");
-            return StatusCode(500, new { message = "Erro ao carregar notificações" });
-        }
+            unread,
+            items = items.Select(n => new NotificationDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Message = n.Message,
+                Type = n.Type,
+                Level = n.Level,
+                IsRead = n.IsRead,
+                ReadAt = n.ReadAt,
+                ActionUrl = n.ActionUrl,
+                ActionText = n.ActionText,
+                // UTC explícito para o browser converter para a hora local.
+                CreatedAt = DateTime.SpecifyKind(n.CreatedAt, DateTimeKind.Utc)
+            })
+        });
     }
 
-    /// <summary>
-    /// Obtém contador de notificações não lidas
-    /// </summary>
+    /// <summary>Contador de notificações não lidas.</summary>
     [HttpGet("unread-count")]
     public async Task<IActionResult> GetUnreadCount(CancellationToken cancellationToken)
     {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrWhiteSpace(userId))
-                return Forbid();
+        if (string.IsNullOrWhiteSpace(UserId))
+            return Forbid();
 
-            // TODO: Implementar GetUnreadNotificationsCountQuery
-            return Ok(new { count = 0 });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao obter contador de notificações");
-            return StatusCode(500, new { message = "Erro ao carregar contador" });
-        }
+        return Ok(new { count = await _notifications.CountUnreadAsync(UserId, cancellationToken) });
     }
 
-    /// <summary>
-    /// Marca notificação como lida
-    /// </summary>
-    [HttpPost("{id}/mark-read")]
-    public async Task<IActionResult> MarkAsRead(
-        Guid id,
-        CancellationToken cancellationToken)
+    /// <summary>Marca uma notificação como lida.</summary>
+    [HttpPost("{id:guid}/mark-read")]
+    public async Task<IActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrWhiteSpace(userId))
-                return Forbid();
+        if (string.IsNullOrWhiteSpace(UserId))
+            return Forbid();
 
-            // TODO: Implementar MarkNotificationReadCommand
-            return Ok(new { flag = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao marcar notificação como lida");
-            return StatusCode(500, new
-            {
-                flag = false,
-                message = "Erro ao marcar notificação"
-            });
-        }
+        await _notifications.MarkReadAsync(UserId, id, cancellationToken);
+        return Ok(new { flag = true });
     }
 
-    /// <summary>
-    /// Marca todas as notificações como lidas
-    /// </summary>
+    /// <summary>Marca todas as notificações como lidas.</summary>
     [HttpPost("mark-all-read")]
     public async Task<IActionResult> MarkAllAsRead(CancellationToken cancellationToken)
     {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrWhiteSpace(userId))
-                return Forbid();
+        if (string.IsNullOrWhiteSpace(UserId))
+            return Forbid();
 
-            // TODO: Implementar MarkAllNotificationsReadCommand
-            return Ok(new { flag = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao marcar todas notificações como lidas");
-            return StatusCode(500, new
-            {
-                flag = false,
-                message = "Erro ao marcar notificações"
-            });
-        }
+        await _notifications.MarkAllReadAsync(UserId, cancellationToken);
+        return Ok(new { flag = true });
     }
 }

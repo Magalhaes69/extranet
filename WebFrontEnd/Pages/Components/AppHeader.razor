@@ -3,6 +3,8 @@
 @using WebFrontEnd.Services.Help
 @inject IStringLocalizer<NavBarApp> Lan
 @inject NavigationHistoryService History
+@inject IStringLocalizer<NotificationsApp> LN
+@inject WebFrontEnd.Services.Notifications.INotificationsService NotificationsApi
 
 @implements IDisposable
 
@@ -54,36 +56,66 @@
             </li>
             <!--end::Navbar Search-->
             <!--begin::Notifications Dropdown Menu-->
-            <li class="nav-item" data-bs-auto-close="outside">
-                <a class="nav-link px-2 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "") " data-bs-toggle="dropdown" href="#">
+            <li class="nav-item dropdown">
+                <a id="notif-toggle" class="nav-link px-2 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white rounded-2" : "")"
+                   data-bs-toggle="dropdown" data-bs-auto-close="outside" href="#" role="button"
+                   aria-label="@LN["title"]" @onclick="LoadNotificationsAsync">
                     <i class="bi bi-bell-fill"></i>
-                    <span class="navbar-badge badge text-bg-warning">15</span>
+                    @if (_unread > 0)
+                    {
+                        <span class="navbar-badge badge text-bg-warning">@(_unread > 99 ? "99+" : _unread.ToString())</span>
+                    }
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 dropdown-menu-principal @(ThemeService.CurrentTheme == "dark" ? " shadow-white" : "")">
-                    <!-- Tabs -->
-                    <ul class="nav nav-tabs px-2 pt-2 tab-text-color" id="notifTabs">
-                        <li class="nav-item">
-                            <a class="nav-link active @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#all">Todos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#date">Por data</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")" data-bs-toggle="tab" href="#priority">Por prioridade</a>
-                        </li>
-                    </ul>
+                    <!-- Cabeçalho -->
+                    <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2">
+                        <strong>@LN["title"]</strong>
+                        <button type="button" class="btn btn-link btn-sm p-0" disabled="@(_unread == 0)" @onclick="MarkAllReadAsync">
+                            <i class="bi bi-check2-all me-1"></i>@LN["markAll"]
+                        </button>
+                    </div>
 
-                    <!-- Tab Content -->
-                    <div class="tab-content text-center p-3 @(ThemeService.CurrentTheme == "dark" ? "text-white" : "text-dark")">
-                        <div class="tab-pane fade show active" id="all">
-                            Não tem notificações
-                        </div>
-                        <div class="tab-pane fade" id="date">
-                            Sem dados
-                        </div>
-                        <div class="tab-pane fade" id="priority">
-                            Sem prioridade
-                        </div>
+                    <!-- Filtro -->
+                    <div class="px-3 pb-2 d-flex gap-2">
+                        <button type="button" class="btn btn-sm @(!_unreadOnly ? "btn-primary" : "btn-outline-secondary")" @onclick="() => _unreadOnly = false">@LN["tabAll"]</button>
+                        <button type="button" class="btn btn-sm @(_unreadOnly ? "btn-primary" : "btn-outline-secondary")" @onclick="() => _unreadOnly = true">
+                            @LN["tabUnread"]@(_unread > 0 ? $" ({_unread})" : "")
+                        </button>
+                    </div>
+
+                    <!-- Lista -->
+                    <div class="notif-list border-top">
+                        @if (_notifications is null)
+                        {
+                            <div class="text-center text-muted small p-4">
+                                <i class="bi bi-exclamation-triangle d-block fs-4 mb-1"></i>@LN["errLoad"]
+                            </div>
+                        }
+                        else if (VisibleNotifications.Count == 0)
+                        {
+                            <div class="text-center text-muted small p-4">
+                                <i class="bi bi-bell-slash d-block fs-4 mb-1"></i>@(_unreadOnly ? LN["emptyUnread"] : LN["empty"])
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var n in VisibleNotifications)
+                            {
+                                <button type="button" class="dropdown-item notif-item d-flex gap-2 align-items-start py-2 @(n.IsRead ? "" : "notif-unread")"
+                                        @onclick="() => OpenNotificationAsync(n)">
+                                    <i class="bi @NotificationIcon(n.Level) fs-5 mt-1"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">@n.Title</div>
+                                        <div class="small text-muted">@n.Message</div>
+                                        <div class="small text-muted mt-1"><i class="bi bi-clock me-1"></i>@Ago(n.CreatedAt)</div>
+                                    </div>
+                                    @if (!n.IsRead)
+                                    {
+                                        <span class="notif-dot" title="@LN["unread"]"></span>
+                                    }
+                                </button>
+                            }
+                        }
                     </div>
                 </div>
             </li>
@@ -153,6 +185,8 @@
         PageTitleService.OnChange += StateHasChanged;
         History.OnChange += StateHasChanged;
         await LoadUser();
+        await LoadNotificationsAsync();
+        StartNotificationPolling();
     }
     private async Task ReloadProfile()
     {
@@ -212,8 +246,88 @@
     {
         InvokeAsync(StateHasChanged);
     }
+
+    // ---- Notificações (sino)
+    private List<WebFrontEnd.Services.Notifications.NotificationItemDto>? _notifications = new();
+    private int _unread;
+    private bool _unreadOnly;
+    private System.Threading.Timer? _notificationTimer;
+
+    private List<WebFrontEnd.Services.Notifications.NotificationItemDto> VisibleNotifications =>
+        (_notifications ?? new()).Where(n => !_unreadOnly || !n.IsRead).ToList();
+
+    private void StartNotificationPolling()
+    {
+        // Actualiza o contador de 60 em 60 segundos enquanto a página está aberta.
+        _notificationTimer = new System.Threading.Timer(
+            _ => _ = InvokeAsync(LoadNotificationsAsync), null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        var result = await NotificationsApi.GetAsync();
+        if (result is not null)
+        {
+            _notifications = result.Items;
+            _unread = result.Unread;
+        }
+        else if (_notifications is not null && _notifications.Count == 0)
+        {
+            _notifications = null; // primeira carga falhada: mostra o erro
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OpenNotificationAsync(WebFrontEnd.Services.Notifications.NotificationItemDto n)
+    {
+        if (!n.IsRead)
+        {
+            n.IsRead = true;
+            _unread = Math.Max(0, _unread - 1);
+            await NotificationsApi.MarkReadAsync(n.Id);
+        }
+
+        if (!string.IsNullOrWhiteSpace(n.ActionUrl) && n.ActionUrl.StartsWith('/'))
+        {
+            await CloseNotificationsAsync();
+            nav.NavigateTo(n.ActionUrl);
+        }
+    }
+
+    private async Task MarkAllReadAsync()
+    {
+        foreach (var n in _notifications ?? new())
+            n.IsRead = true;
+        _unread = 0;
+        await NotificationsApi.MarkAllReadAsync();
+    }
+
+    private async Task CloseNotificationsAsync() =>
+        await js.InvokeVoidAsync("eval",
+            "(function(){var e=document.getElementById('notif-toggle');if(e&&window.bootstrap){bootstrap.Dropdown.getOrCreateInstance(e).hide();}})()");
+
+    private static string NotificationIcon(string level) => level switch
+    {
+        "Success" => "bi-check-circle-fill text-success",
+        "Warning" => "bi-exclamation-triangle-fill text-warning",
+        "Error" => "bi-x-octagon-fill text-danger",
+        _ => "bi-info-circle-fill text-info"
+    };
+
+    private string Ago(DateTime utc)
+    {
+        var span = DateTime.UtcNow - utc.ToUniversalTime();
+        if (span.TotalMinutes < 1) return LN["agoNow"];
+        if (span.TotalMinutes < 60) return string.Format(LN["agoMinutes"].Value, (int)span.TotalMinutes);
+        if (span.TotalHours < 24) return string.Format(LN["agoHours"].Value, (int)span.TotalHours);
+        if (span.TotalDays < 7) return string.Format(LN["agoDays"].Value, (int)span.TotalDays);
+        return utc.ToLocalTime().ToString("dd/MM/yyyy");
+    }
+
     public void Dispose()
     {
+        _notificationTimer?.Dispose();
         ThemeService.OnThemeChanged -= Refresh;
         PageState.OnPageTitleChanged -= StateHasChanged;
         History.OnChange -= StateHasChanged;
