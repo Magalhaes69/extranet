@@ -58,8 +58,8 @@
         await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", storedTheme);
         UiStateService.OnChange += UpdateFavicon;
 
-        var favIcon = "favicon-sap.png";
-        UiStateService.SetFavicon($"https://localhost:7118/images/geral/{favIcon}");
+        var favIcon = "favicon.png";
+        UiStateService.SetFavicon(favIcon);
         
 
         History.Init(nav);
