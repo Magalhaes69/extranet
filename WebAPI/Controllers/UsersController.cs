@@ -9,8 +9,14 @@ using Application.UseCases.User.GetUserById;
 using Application.UseCases.User.UpdateUser;
 using Application.UseCases.User.UserProfile;
 using Application.UseCases.User.Verify2FA;
+using Domain.Interfaces;
+using Domain.Models;
+using Domain.Security;
+using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Services;
 
@@ -22,10 +28,16 @@ namespace WebAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IUserActivityLogger _activity;
 
-        public UsersController(IMediator mediator)
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+        public UsersController(IMediator mediator, UserManager<AppUser> userManager, IUserActivityLogger activity)
         {
             _mediator = mediator;
+            _userManager = userManager;
+            _activity = activity;
         }
 
         [HttpPost]
@@ -70,41 +82,93 @@ namespace WebAPI.Controllers
         //     return Ok(result);
         // }
 
-        //[HttpPut("updateprofile")]
-        //[Authorize]
-        //public async Task<IActionResult> UpdateUser(
-        //    [FromForm] UpdateUserRequest createUser,
-        //    [FromForm] IFormFile? file,
-        //    CancellationToken cancellationToken)
-        //{
+        /// <summary>
+        /// Actualiza o perfil do PRÓPRIO utilizador autenticado (Definições). O utilizador vem sempre do token:
+        /// o cliente não escolhe o Id, nem consegue alterar email, NUIT ou CardCode.
+        /// </summary>
+        [HttpPut("updateprofile")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UpdateProfile(
+            [FromForm] UpdateProfileForm form,
+            IFormFile? file,
+            CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var user = string.IsNullOrWhiteSpace(userId) ? null : await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return NotFound(new ServiceResponse { Flag = false, Message = "Utilizador não encontrado." });
 
-        //    if (file != null)
-        //    {
-        //        createUser.FileName = file.FileName;
-        //        createUser.ImageStream = file.OpenReadStream();
-        //    }
+            var request = new UpdateUserRequest
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Nuit = user.Nuit,
+                CardCode = user.CardCode,
+                ImageUrl = user.ImageUrl,
+                FirstName = form.FirstName,
+                LastName = form.LastName,
+                Theme = form.Theme,
+                Language = form.Language,
+                PhoneNumber = form.PhoneNumber,
+                TwoFactorEnabled = form.TwoFactorEnabled
+            };
 
-        //    var request = await _mediator.Send(createUser);
+            if (file is { Length: > 0 })
+            {
+                if (file.Length > 5 * 1024 * 1024)
+                    return BadRequest(new ServiceResponse { Flag = false, Message = "A imagem deve ter no máximo 5 MB." });
 
-        //    if (request == null)
-        //    {
-        //        return NotFound(new ServiceResponse
-        //        {
-        //            Flag = false,
-        //            Message = "User not found",
-        //            DocEntry = 0
-        //        });
-        //    }
+                // A extensão decide como o ficheiro é servido; só aceitamos formatos de imagem seguros.
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!AllowedImageExtensions.Contains(extension))
+                    return BadRequest(new ServiceResponse { Flag = false, Message = "Formato de imagem inválido. Use JPG, PNG, GIF ou WEBP." });
 
-        //    var response = new ServiceResponse
-        //    {
-        //        Flag = true,
-        //        Message = "Order created successfully",
-        //        DocEntry = 0
-        //    };
-        //    return Ok(response);
-        //}
+                request.FileName = file.FileName;
+                request.ImageStream = file.OpenReadStream();
+            }
 
+            try
+            {
+                await _mediator.Send(request, cancellationToken);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new ServiceResponse
+                {
+                    Flag = false,
+                    Message = string.Join(" ", ex.Errors.Select(e => e.ErrorMessage))
+                });
+            }
+
+            await _activity.LogAsync(user.Id, user.CardCode, UserActivityActions.ProfileUpdated);
+
+            return Ok(new ServiceResponse { Flag = true, Message = "Perfil actualizado com sucesso." });
+        }
+
+        /// <summary>Altera a palavra-passe do próprio utilizador (exige a palavra-passe actual).</summary>
+        [HttpPost("change-password")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordForm form)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var user = string.IsNullOrWhiteSpace(userId) ? null : await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return NotFound(new ServiceResponse { Flag = false, Message = "Utilizador não encontrado." });
+
+            if (string.IsNullOrWhiteSpace(form.CurrentPassword) || string.IsNullOrWhiteSpace(form.NewPassword))
+                return BadRequest(new ServiceResponse { Flag = false, Message = "Preencha a palavra-passe actual e a nova." });
+
+            if (form.CurrentPassword == form.NewPassword)
+                return BadRequest(new ServiceResponse { Flag = false, Message = "A nova palavra-passe tem de ser diferente da actual." });
+
+            var result = await _userManager.ChangePasswordAsync(user, form.CurrentPassword, form.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(new ServiceResponse { Flag = false, Message = IdentityErrorMessages.Describe(result) });
+
+            await _activity.LogAsync(user.Id, user.CardCode, UserActivityActions.PasswordChanged);
+
+            return Ok(new ServiceResponse { Flag = true, Message = "Palavra-passe alterada com sucesso." });
+        }
 
         [HttpGet("getbyid")]
         [Authorize]
@@ -138,5 +202,22 @@ namespace WebAPI.Controllers
             });
         }
      
+    }
+
+    /// <summary>Campos editáveis do perfil enviados pelas Definições (multipart/form-data).</summary>
+    public class UpdateProfileForm
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string Theme { get; set; } = "light";
+        public string? Language { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool TwoFactorEnabled { get; set; }
+    }
+
+    public class ChangePasswordForm
+    {
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

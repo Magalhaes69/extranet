@@ -51,14 +51,15 @@ namespace WebFrontEnd.Services.Auth
             };
             if (requests.Any(r => p == r || p.StartsWith(r + "/"))) return "requests";
             if (p == "payments" || p.StartsWith("incomingpayments-details")) return "payments";
-            if (p == "license" || p.StartsWith("license/")) return "licenses";
+            if (p.StartsWith("license")) return "licenses";
             return null;
         }
 
         public static bool RequiresManager(string path)
         {
             var p = Normalize(path);
-            return p.StartsWith("company-users") || p.StartsWith("configure-app");
+            return p.StartsWith("company-users") || p.StartsWith("configure-app")
+                || p.StartsWith("licenses/request") || p.StartsWith("licenses/renew");
         }
 
         public async Task<bool> CanAccessAsync(string path)

@@ -1,0 +1,153 @@
+@page "/license-requests"
+@using WebFrontEnd.Services.Licenses
+@inject IStringLocalizer<LicensesApp> L
+@inject ILicensesService LicensesApi
+@inject AccessService Access
+@attribute [Authorize]
+
+<div class="bg-body mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleRequests"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm" href="/licenses">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+                @if (_isManager)
+                {
+                    <a class="btn btn-primary btn-sm" href="/licenses/request">
+                        <i class="bi bi-plus-circle me-1"></i>@L["btnRequestLicense"]
+                    </a>
+                }
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_requests is null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errLoadRequests"]
+                        <button class="btn btn-link btn-sm" @onclick="Load">@L["retry"]</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" @bind="_statusFilter">
+                                <option value="0">@L["filterAll"]</option>
+                                @foreach (var s in new[] { 1, 2, 3, 4, 5, 6 })
+                                {
+                                    <option value="@s">@L[LicenseRules.RequestStatusKey(s)]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-9 text-md-end text-muted small pt-1">
+                            @string.Format(L["totalRequests"].Value, Filtered.Count)
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>@L["colDate"]</th>
+                                        <th>@L["colRequestType"]</th>
+                                        <th>@L["colDetail"]</th>
+                                        <th>@L["colRequestedBy"]</th>
+                                        <th>@L["colStatus"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Filtered)
+                                    {
+                                        <tr>
+                                            <td class="text-nowrap">@r.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <i class="bi @(r.Type == 2 ? "bi-arrow-repeat" : "bi-plus-circle") me-1"></i>
+                                                @L[r.Type == 2 ? "typeRenewal" : "typeNew"]
+                                            </td>
+                                            <td>
+                                                @if (r.Type == 2)
+                                                {
+                                                    @if (r.LicenseKeyId.HasValue)
+                                                    {
+                                                        <a href="/licenses/details/@r.LicenseKeyId" class="font-monospace text-decoration-none">@r.MaskedKey</a>
+                                                    }
+                                                    <span class="text-muted"> · @string.Format(L["months"].Value, r.Months)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@r.ProductName</span>
+                                                    <span class="text-muted"> · @string.Format(L["usersCount"].Value, r.Users)</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(r.Notes))
+                                                {
+                                                    <div class="small text-muted">@r.Notes</div>
+                                                }
+                                            </td>
+                                            <td>@r.RequestedByName</td>
+                                            <td>
+                                                <span class="badge @LicenseRules.RequestBadgeClass(r.Status)">@L[LicenseRules.RequestStatusKey(r.Status)]</span>
+                                                @if (!string.IsNullOrWhiteSpace(r.RejectionReason))
+                                                {
+                                                    <div class="small text-danger mt-1"><i class="bi bi-x-circle me-1"></i>@r.RejectionReason</div>
+                                                }
+                                                else if (!string.IsNullOrWhiteSpace(r.ReviewNotes))
+                                                {
+                                                    <div class="small text-muted mt-1"><i class="bi bi-chat-left-text me-1"></i>@r.ReviewNotes</div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    @if (Filtered.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-5">
+                                                <i class="bi bi-inboxes fs-2 d-block mb-2"></i>
+                                                @(_requests.Count == 0 ? L["noRequests"] : L["noResults"])
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<LicenseRequestDto>? _requests;
+    private bool _loading = true;
+    private bool _isManager;
+    private int _statusFilter;
+
+    private List<LicenseRequestDto> Filtered =>
+        (_requests ?? new())
+            .Where(r => _statusFilter == 0 || r.Status == _statusFilter)
+            .OrderByDescending(r => r.SubmittedAt)
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        PageTitleService.SetTitle(L["titleRequests"]);
+        _isManager = await Access.IsManagerAsync();
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+        _requests = await LicensesApi.GetRequestsAsync();
+        _loading = false;
+    }
+}

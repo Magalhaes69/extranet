@@ -61,8 +61,10 @@ namespace Application.UseCases.User.UpdateUser
             user.Theme = request.Theme ?? user.Theme;
             user.Language = request.Language ?? user.Language;
 
-            // Não permitir alteração de Email, Nuit, CardCode
-            // nem TwoFactorEnabled através deste endpoint.
+            // O utilizador pode ligar/desligar a verificação em dois passos da sua própria conta.
+            user.TwoFactorEnabled = request.TwoFactorEnabled;
+
+            // Não permitir alteração de Email, Nuit nem CardCode através deste endpoint.
 
             user.DateUpdated = DateTimeOffset.UtcNow;
 

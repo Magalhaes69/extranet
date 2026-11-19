@@ -9,12 +9,11 @@
     <!--begin::Sidebar Brand-->
     <div class="sidebar-brand">
         <!--begin::Brand Link-->
-        <a href="#" class="brand-link">
+        <a href="/" class="brand-link justify-content-center">
             <!--begin::Brand Image-->
-            <i class="bi bi-hexagon-fill brand-icon"></i>
+            <img src="images/onexclient-logo.png" alt="OnexClient" class="sidebar-logo @(ThemeService.CurrentTheme == "dark" ? "app-logo-chip" : "")" />
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <span class="brand-text">Extranet <strong>SAP</strong></span>
             <!--end::Brand Text-->
         </a>
         <!--end::Brand Link-->
@@ -148,6 +147,17 @@
             Children = new()
             {
                 new() { Key = "menuPayments", Url = "/payments" }
+            }
+        },
+        new SidebarMenuItem
+        {
+            Key = "menuLicensesGroup",
+            Icon = "nav-icon bi bi-patch-check-fill",
+            Process = "licenses",
+            Children = new()
+            {
+                new() { Key = "menuLicensesList", Url = "/licenses" },
+                new() { Key = "menuLicenseRequests", Url = "/license-requests" }
             }
         },
         // new SidebarMenuItem

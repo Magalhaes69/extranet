@@ -1,0 +1,207 @@
+@page "/licenses/details/{Id:guid}"
+@using WebFrontEnd.Services.Licenses
+@inject IStringLocalizer<LicensesApp> L
+@inject ILicensesService LicensesApi
+@inject AccessService Access
+@attribute [Authorize]
+
+<div class="bg-body mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleDetails"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm" href="/licenses">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+                @if (_license is not null && _isManager && LicenseRules.CanRenew(_license) && !_history.Any(r => r.Type == 2 && LicenseRules.IsOpen(r)))
+                {
+                    <a class="btn btn-primary btn-sm" href="/licenses/renew/@_license.Id">
+                        <i class="bi bi-arrow-repeat me-1"></i>@L["btnRenew"]
+                    </a>
+                }
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_license is null)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errNotFound"]
+                    </div>
+                }
+                else
+                {
+                    var state = LicenseRules.StateOf(_license);
+                    var nextExpiry = LicenseRules.NextExpiry(_license);
+
+                    @if (state is LicenseStatus.Expired or LicenseStatus.Expiring)
+                    {
+                        <div class="alert @(state == LicenseStatus.Expired ? "alert-danger" : "alert-warning") py-2" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@L[state == LicenseStatus.Expired ? "detailExpired" : "detailExpiring"]
+                        </div>
+                    }
+
+                    <!-- Dados -->
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold"><i class="bi bi-key me-2"></i>@L["sectionLicense"]</span>
+                            <span class="badge @LicenseRules.BadgeClass(state)">@L[LicenseRules.StateKey(state)]</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label text-muted">@L["colLicense"]</label>
+                                <div class="col-sm-4 pt-2 font-monospace">@_license.MaskedKey</div>
+                                <label class="col-sm-2 col-form-label text-muted">@L["colType"]</label>
+                                <div class="col-sm-4 pt-2">@L[LicenseRules.TypeKey(_license.LicenseType)]</div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label text-muted">@L["approval"]</label>
+                                <div class="col-sm-4 pt-2">@L[LicenseRules.ApprovalKey(_license.ApprovalStatus)]</div>
+                                <label class="col-sm-2 col-form-label text-muted">@L["colExpiry"]</label>
+                                <div class="col-sm-4 pt-2"><LicenseExpiry Date="@nextExpiry" /></div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label text-muted">@L["issuedAt"]</label>
+                                <div class="col-sm-2 pt-2">@Format(_license.IssuedAt)</div>
+                                <label class="col-sm-2 col-form-label text-muted">@L["activatedAt"]</label>
+                                <div class="col-sm-2 pt-2">@Format(_license.ActivatedAt)</div>
+                                @if (_license.RevokedAt.HasValue)
+                                {
+                                    <label class="col-sm-2 col-form-label text-muted">@L["revokedAt"]</label>
+                                    <div class="col-sm-2 pt-2 text-danger">@Format(_license.RevokedAt)</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Módulos -->
+                    <div class="card mb-3">
+                        <div class="card-header fw-semibold">
+                            <i class="bi bi-boxes me-2"></i>@L["sectionModules"]
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>@L["colModule"]</th>
+                                        <th>@L["colStatus"]</th>
+                                        <th class="text-end">@L["colMaxUsers"]</th>
+                                        <th>@L["colExpiry"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var module in _license.Modules.OrderBy(m => m.Name ?? m.Code))
+                                    {
+                                        var (key, css) = ModuleState(module);
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@(module.Name ?? module.Code)</div>
+                                                @if (!string.IsNullOrEmpty(module.Name))
+                                                {
+                                                    <small class="text-muted">@module.Code</small>
+                                                }
+                                            </td>
+                                            <td><span class="badge @css">@L[key]</span></td>
+                                            <td class="text-end">@module.MaxUsers</td>
+                                            <td><LicenseExpiry Date="@module.ExpiryDate" /></td>
+                                        </tr>
+                                    }
+                                    @if (_license.Modules.Count == 0)
+                                    {
+                                        <tr><td colspan="4" class="text-center text-muted py-4">@L["noModules"]</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Histórico -->
+                    <div class="card mb-3">
+                        <div class="card-header fw-semibold">
+                            <i class="bi bi-clock-history me-2"></i>@L["sectionHistory"]
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>@L["colDate"]</th>
+                                        <th>@L["colRequestType"]</th>
+                                        <th>@L["colPeriod"]</th>
+                                        <th>@L["colRequestedBy"]</th>
+                                        <th>@L["colStatus"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in _history)
+                                    {
+                                        <tr>
+                                            <td>@r.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@L[r.Type == 2 ? "typeRenewal" : "typeNew"]</td>
+                                            <td>@(r.Months.HasValue ? string.Format(L["months"].Value, r.Months) : "-")</td>
+                                            <td>@r.RequestedByName</td>
+                                            <td>
+                                                <span class="badge @LicenseRules.RequestBadgeClass(r.Status)">@L[LicenseRules.RequestStatusKey(r.Status)]</span>
+                                                @if (!string.IsNullOrWhiteSpace(r.RejectionReason))
+                                                {
+                                                    <div class="small text-danger mt-1">@r.RejectionReason</div>
+                                                }
+                                                else if (!string.IsNullOrWhiteSpace(r.ReviewNotes))
+                                                {
+                                                    <div class="small text-muted mt-1">@r.ReviewNotes</div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (_history.Count == 0)
+                                    {
+                                        <tr><td colspan="5" class="text-center text-muted py-4">@L["noHistory"]</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private LicenseDto? _license;
+    private List<LicenseRequestDto> _history = new();
+    private bool _loading = true;
+    private bool _isManager;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageTitleService.SetTitle(L["titleDetails"]);
+        _isManager = await Access.IsManagerAsync();
+        _loading = true;
+
+        var licenseTask = LicensesApi.GetByIdAsync(Id);
+        var historyTask = LicensesApi.GetHistoryAsync(Id);
+        _license = await licenseTask;
+        _history = await historyTask ?? new();
+
+        _loading = false;
+    }
+
+    private static string Format(DateTime? date) =>
+        date.HasValue ? date.Value.ToLocalTime().ToString("dd/MM/yyyy") : "-";
+
+    private static (string Key, string Css) ModuleState(LicenseModuleDto m)
+    {
+        if (!m.ModuleAvailable) return ("modUnavailable", "text-bg-secondary");
+        if (!m.IsEnabled) return ("modDisabled", "text-bg-secondary");
+        var days = LicenseRules.DaysLeft(m.ExpiryDate);
+        if (days <= 0) return ("modExpired", "text-bg-danger");
+        if (days <= LicenseRules.ExpiringDays) return ("stateExpiring", "text-bg-warning");
+        return ("modActive", "text-bg-success");
+    }
+}

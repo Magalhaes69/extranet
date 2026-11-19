@@ -189,4 +189,13 @@
   <data name="menuUserManagementGroup" xml:space="preserve">
     <value>Gestão de utilizadores</value>
   </data>
+  <data name="menuLicensesGroup" xml:space="preserve">
+    <value>Licenças</value>
+  </data>
+  <data name="menuLicensesList" xml:space="preserve">
+    <value>Minhas licenças</value>
+  </data>
+  <data name="menuLicenseRequests" xml:space="preserve">
+    <value>Pedidos de licença</value>
+  </data>
 </root>

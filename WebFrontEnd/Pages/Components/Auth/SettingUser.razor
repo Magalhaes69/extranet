@@ -1,25 +1,24 @@
-﻿@using WebFrontEnd.Services.CultureServices
+﻿@page "/settings"
+@using WebFrontEnd.Services.CultureServices
 @using WebFrontEnd.Services.Enums
 @inject IStringLocalizer<UserApp> UserLan
 @inject IStringLocalizer<App> Lan
+@using WebFrontEnd.Services.Activity
+@inject IUserActivityService ActivityApi
 @implements IDisposable
 @attribute [Authorize]
 
-@if (IsVisible)
-{
-    <div class="modal fade show d-block" tabindex="-1"  style="@(ThemeService.CurrentTheme == "dark"? "background: rgba(0,0,0,0.5);" : "")">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
-            <div class="modal-content rounded-3 @(ThemeService.CurrentTheme == "dark" ? "modal-dark btn-outline-primary border border-white" : "")">
-                <div class="modal-header py-1">
-                    <h5 class="modal-title">
-                        @UserLan["userSettings"]
-                    </h5>
-                </div>
-                <EditForm Model="appUser" Enhance OnValidSubmit="HandleUpdateUser">
+<div class="bg-body mb-4">
+    <AppContentHeader Title="@UserLan["userSettings"]" />
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card @(ThemeService.CurrentTheme == "dark" ? "settings-dark" : "")">
+                <EditForm Model="appUser" OnValidSubmit="HandleUpdateUser">
                     <!-- Body -->
-                    <div class="modal-body p-0">
+                    <div class="card-body p-0">
                         <div class="container-fluid">
-                            <div class="row g-0 modal-layout">
+                            <div class="row g-0 settings-layout">
 
                                 <!-- LEFT SIDEBAR -->
                                 <div class="col-12 col-md-4 col-lg-3 @(ThemeService.CurrentTheme == "dark" ? "sidebar" : "")">
@@ -42,12 +41,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="menu-item  @(selectedMenu == MenuItem.PaginaPrincipal ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.PaginaPrincipal))">
-                                            <i class="bi bi-house"></i>
-                                            <span>
-                                               @UserLan["homePage"]
-                                               </span>
-                                        </div>
 
                                         <div class="menu-item  @(selectedMenu == MenuItem.Atividades ? (ThemeService.CurrentTheme == "dark" ? "text-light active" : "text-light active") : (ThemeService.CurrentTheme == "dark" ? "text-light" : "text-dark")) " @onclick="@(() => SelectMenu(MenuItem.Atividades))">
                                             <i class="bi bi-activity"></i>
@@ -73,14 +66,18 @@
 
                                             <ul class="nav nav-tabs mb-3">
                                                 <li class="nav-item">
-                                                    <button class="nav-link active @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">Tema</button>
+                                                    <button type="button" class="nav-link @(aspectTab == AspectTab.Theme ? "active" : "") @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")"
+                                                            @onclick="() => aspectTab = AspectTab.Theme">@UserLan["tabTheme"]</button>
                                                 </li>
-                                                <li class="nav-item @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")">
-                                                    <button class="nav-link">Definições de visualização</button>
+                                                <li class="nav-item">
+                                                    <button type="button" class="nav-link @(aspectTab == AspectTab.View ? "active" : "") @(ThemeService.CurrentTheme == "light" ? "text-dark" : "")"
+                                                            @onclick="() => aspectTab = AspectTab.View">@UserLan["tabView"]</button>
                                                 </li>
                                             </ul>
 
-                                            <!-- Theme list -->
+                                            @if (aspectTab == AspectTab.Theme)
+                                            {
+                                                <!-- Theme list -->
                                             <div class="theme-item @(appUser.Theme == ThemeType.light.ToString() ? "selected text-light" : "")" @onclick="() => ChooseTheme(ThemeType.light)">
                                                 <div class="circle"></div>
                                                 <span>Claro</span>
@@ -98,6 +95,51 @@
                                                     <i class="bi bi-check-circle-fill check"></i>
                                                 }
                                             </div>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-muted small mb-3">@UserLan["viewHint"]</p>
+
+                                                <!-- Densidade -->
+                                                <h6 class="mt-3">@UserLan["viewDensity"]</h6>
+                                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                                    @foreach (var (value, key) in new[] { ("comfortable", "densityComfortable"), ("compact", "densityCompact") })
+                                                    {
+                                                        <button type="button" class="btn btn-sm @(viewDensity == value ? "btn-primary" : "btn-outline-secondary")"
+                                                                @onclick="() => SetDensity(value)">
+                                                            @UserLan[key]
+                                                        </button>
+                                                    }
+                                                </div>
+
+                                                <!-- Tamanho do texto -->
+                                                <h6>@UserLan["viewFontSize"]</h6>
+                                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                                    @foreach (var (value, key) in new[] { ("small", "fontSmall"), ("normal", "fontNormal"), ("large", "fontLarge") })
+                                                    {
+                                                        <button type="button" class="btn btn-sm @(viewFont == value ? "btn-primary" : "btn-outline-secondary")"
+                                                                @onclick="() => SetFont(value)">
+                                                            @UserLan[key]
+                                                        </button>
+                                                    }
+                                                </div>
+
+                                                <!-- Animações -->
+                                                <h6>@UserLan["viewMotion"]</h6>
+                                                <div class="form-check form-switch mb-1">
+                                                    <input class="form-check-input" type="checkbox" role="switch" id="reduce-motion"
+                                                           checked="@(viewMotion == "reduced")"
+                                                           @onchange="OnMotionChanged" />
+                                                    <label class="form-check-label" for="reduce-motion">@UserLan["viewReduceMotion"]</label>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>@UserLan["viewSavedHint"]</small>
+                                                    <div class="mt-2">
+                                                        <button type="button" class="btn btn-link btn-sm px-0" @onclick="ResetViewAsync">@UserLan["viewReset"]</button>
+                                                    </div>
+                                                </div>
+                                            }
                                         }
                                         else if (selectedMenu == MenuItem.Perfil)
                                         {
@@ -146,8 +188,9 @@
                                                     </label>
 
                                                     <div class="col-sm-4">
-                                                        <InputFile class="form-control form-control-sm"
+                                                        <InputFile @key="fileInputKey" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.webp"
                                                                    OnChange="HandleFileSelected" />
+                                                        <div class="form-text">@UserLan["imgHint"]</div>
 
 
                                                     </div>
@@ -167,13 +210,13 @@
                                                         }
                                                         else if (!string.IsNullOrEmpty(appUser.ImageUrl))
                                                         {
-                                                            <img src="@($"{ApiBaseUrl}{appUser.ImageUrl}")"
+                                                            <img src="@($"{ApiBaseUrl.TrimEnd('/')}{appUser.ImageUrl}")"
                                                                  class="img-fluid rounded border"
                                                                  style="max-height:100px;" />
                                                         }
                                                         else
                                                         {
-                                                            <img src="@($"{ApiBaseUrl}/images/users/default-user.png")"
+                                                            <img src="@($"{ApiBaseUrl.TrimEnd('/')}/images/users/defaul-user.png")"
                                                                  class="img-fluid rounded border"
                                                                  style="max-height:100px;" />
                                                         }
@@ -201,20 +244,113 @@
                                                     </div>
                                                 </div>
                                     </div>
+                                            <!-- Alterar palavra-passe (não faz parte do formulário do perfil: tem o seu próprio botão) -->
+                                            <div class="card p-3 mt-3">
+                                                <h5 class="mb-1"><i class="bi bi-key me-2"></i>@UserLan["pwdSection"]</h5>
+                                                <p class="text-muted small">@UserLan["pwdHint"]</p>
+
+                                                @if (!string.IsNullOrEmpty(pwdMessage))
+                                                {
+                                                    <div class="alert @(pwdOk ? "alert-success" : "alert-danger") py-2 small" role="alert">
+                                                        <i class="bi @(pwdOk ? "bi-check-circle" : "bi-exclamation-triangle") me-1"></i>@pwdMessage
+                                                    </div>
+                                                }
+
+                                                <div class="row mb-2">
+                                                    <label class="col-12 col-sm-3 col-form-label">@UserLan["pwdCurrent"]</label>
+                                                    <div class="col-12 col-sm-5">
+                                                        <input type="@(pwdShow ? "text" : "password")" class="form-control form-control-sm"
+                                                               autocomplete="current-password" @bind="pwdCurrent" @bind:event="oninput" />
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <label class="col-12 col-sm-3 col-form-label">@UserLan["pwdNew"]</label>
+                                                    <div class="col-12 col-sm-5">
+                                                        <input type="@(pwdShow ? "text" : "password")" class="form-control form-control-sm"
+                                                               autocomplete="new-password" @bind="pwdNew" @bind:event="oninput" />
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <label class="col-12 col-sm-3 col-form-label">@UserLan["pwdConfirm"]</label>
+                                                    <div class="col-12 col-sm-5">
+                                                        <input type="@(pwdShow ? "text" : "password")" class="form-control form-control-sm"
+                                                               autocomplete="new-password" @bind="pwdConfirm" @bind:event="oninput" />
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12 col-sm-3"></div>
+                                                    <div class="col-12 col-sm-9 d-flex flex-wrap align-items-center gap-3">
+                                                        <button type="button" class="btn btn-primary btn-sm" disabled="@pwdSaving" @onclick="ChangePasswordAsync">
+                                                            @if (pwdSaving)
+                                                            {
+                                                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                                                            }
+                                                            @UserLan["pwdSubmit"]
+                                                        </button>
+                                                        <div class="form-check m-0">
+                                                            <input class="form-check-input" type="checkbox" id="pwd-show" @bind="pwdShow" />
+                                                            <label class="form-check-label small" for="pwd-show">@UserLan["pwdShow"]</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         }
                                         else if (selectedMenu == MenuItem.Atividades)
                                         {
-                                            <h4>
-                                                @UserLan["userActivities"]</h4>
+                                            <h4>@UserLan["userActivities"]</h4>
                                             <div class="card p-3">
-                                                <p>@UserLan["userActivitiesDesc"]</p>
-                                            </div>
-                                        }
-                                        else if (selectedMenu == MenuItem.PaginaPrincipal)
-                                        {
-                                            <h4>@UserLan["homePage"]</h4>
-                                            <div class="card p-3">
-                                                <p>Configurações da página inicial.</p>
+                                                <p class="text-muted small">@UserLan["userActivitiesDesc"]</p>
+
+                                                @if (activitiesLoading && activities.Count == 0)
+                                                {
+                                                    <div class="text-center py-4"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span></div>
+                                                }
+                                                else if (activitiesError)
+                                                {
+                                                    <div class="alert alert-danger py-2 small mb-0" role="alert">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>@UserLan["activityLoadError"]
+                                                        <button type="button" class="btn btn-link btn-sm" @onclick="() => LoadActivitiesAsync(true)">@UserLan["activityRetry"]</button>
+                                                    </div>
+                                                }
+                                                else if (activities.Count == 0)
+                                                {
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="bi bi-activity fs-2 d-block mb-2"></i>@UserLan["activityEmpty"]
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <ul class="list-group list-group-flush">
+                                                        @foreach (var item in activities)
+                                                        {
+                                                            <li class="list-group-item bg-transparent d-flex align-items-start gap-3 px-0">
+                                                                <i class="bi @ActivityIcon(item.Action) fs-5 mt-1"></i>
+                                                                <div class="flex-grow-1">
+                                                                    <div>@ActivityLabel(item.Action)</div>
+                                                                    @if (!string.IsNullOrWhiteSpace(item.Details))
+                                                                    {
+                                                                        <small class="text-muted">@item.Details</small>
+                                                                    }
+                                                                </div>
+                                                                <small class="text-muted text-nowrap">@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                                                            </li>
+                                                        }
+                                                    </ul>
+
+                                                    @if (activities.Count < activitiesTotal)
+                                                    {
+                                                        <div class="text-center mt-3">
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@activitiesLoading" @onclick="() => LoadActivitiesAsync(false)">
+                                                                @if (activitiesLoading)
+                                                                {
+                                                                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                                                                }
+                                                                @UserLan["activityLoadMore"]
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                }
                                             </div>
                                         }
                                         else if (selectedMenu == MenuItem.Idioma)
@@ -250,7 +386,7 @@
                         </div>
                     </div>
                     <!-- Footer -->
-                    <div class="modal-footer py-1">
+                    <div class="card-footer d-flex justify-content-end gap-2 py-2">
                         <button class="btn py-0 @(ThemeService.CurrentTheme == "dark" ? "btn-outline-primary border border-white text-white" : "btn-secondary")  btn-sm rounded-1" @onclick="ShowFechar">@Lan["btnClose"]</button>
                         @if (ToastService.ShowSaveButton)
                         {
@@ -263,11 +399,9 @@
             </div>
         </div>
     </div>
-}
+</div>
 
 @code {
-    private bool IsVisible = false;
-
     private AppUserCreateDto appUser = new();
     CultureWithName SelectedCulture = null!;
     private MenuItem selectedMenu = MenuItem.Perfil;
@@ -276,22 +410,77 @@
     public enum MenuItem
     {
         Aspeto,
-        PaginaPrincipal,
         Atividades,
         Idioma,
         Perfil
     }
     private string ApiBaseUrl => Config["ApiSettings:BaseUrl"]!;
 
-    private void SelectMenu(MenuItem menu)
+    private async Task SelectMenu(MenuItem menu)
     {
         selectedMenu = menu;
+
+        // A actividade só é pedida à API quando o utilizador abre esta secção.
+        if (menu == MenuItem.Atividades && !activitiesLoaded)
+            await LoadActivitiesAsync(true);
     }
 
-    public async Task ShowModal()
-    {
-        IsVisible = true;
+    // ---- Actividade do utilizador
+    private const int ActivityPageSize = 20;
+    private readonly List<ActivityItemDto> activities = new();
+    private int activitiesTotal;
+    private int activitiesPage;
+    private bool activitiesLoading;
+    private bool activitiesLoaded;
+    private bool activitiesError;
 
+    private async Task LoadActivitiesAsync(bool reset)
+    {
+        if (activitiesLoading) return;
+
+        activitiesLoading = true;
+        activitiesError = false;
+        if (reset)
+        {
+            activities.Clear();
+            activitiesPage = 0;
+        }
+        StateHasChanged();
+
+        var page = await ActivityApi.GetAsync(activitiesPage + 1, ActivityPageSize);
+        if (page is null)
+        {
+            activitiesError = true;
+        }
+        else
+        {
+            activitiesPage++;
+            activities.AddRange(page.Items);
+            activitiesTotal = page.Total;
+            activitiesLoaded = true;
+        }
+
+        activitiesLoading = false;
+    }
+
+    private string ActivityLabel(string action) => UserLan["activity_" + action.Replace('.', '_')];
+
+    private static string ActivityIcon(string action) => action switch
+    {
+        "login" => "bi-box-arrow-in-right",
+        "password.changed" => "bi-key",
+        "profile.updated" => "bi-person-lines-fill",
+        "user.created" => "bi-person-plus",
+        "user.updated" => "bi-person-gear",
+        "user.deactivated" => "bi-person-x",
+        "user.activated" => "bi-person-check",
+        "license.requested" => "bi-patch-plus",
+        "license.renewal" => "bi-arrow-repeat",
+        _ => "bi-activity"
+    };
+
+    private async Task LoadProfile()
+    {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         appUser.Email = user.GetEmail();
@@ -314,11 +503,8 @@
         StateHasChanged();
     }
 
-    private void ShowFechar()
-    {
-        IsVisible = false;
-        StateHasChanged();
-    }
+    // Fechar = voltar à página principal (as definições já não são uma janela).
+    private void ShowFechar() => nav.NavigateTo("/");
 
     private string GetWarningButtonClass()
     {
@@ -329,13 +515,63 @@
     protected override async Task OnInitializedAsync()
     {
 
+        PageTitleService.SetTitle(UserLan["userSettings"]);
         ToastService.OnChange += StateHasChanged;
         ThemeService.OnThemeChanged += StateHasChanged;
+        await LoadProfile();
+        await LoadViewAsync();
     }
 
-    private void ChooseTheme(ThemeType theme)
+    private async Task ChooseTheme(ThemeType theme)
     {
         appUser.Theme = theme.ToString();
+
+        // Aplica já o tema escolhido; o botão Guardar grava-o no perfil.
+        var value = theme.ToString();
+        await js.InvokeVoidAsync("localStorage.setItem", "theme", value);
+        await js.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", value);
+        ThemeService.SetTheme(value);
+    }
+
+    // ---- Definições de visualização (guardadas no navegador e aplicadas a toda a aplicação)
+    private enum AspectTab { Theme, View }
+    private AspectTab aspectTab = AspectTab.Theme;
+    private string viewDensity = "comfortable";
+    private string viewFont = "normal";
+    private string viewMotion = "normal";
+
+    private async Task LoadViewAsync()
+    {
+        viewDensity = await js.InvokeAsync<string?>("localStorage.getItem", "view.density") ?? "comfortable";
+        viewFont = await js.InvokeAsync<string?>("localStorage.getItem", "view.font") ?? "normal";
+        viewMotion = await js.InvokeAsync<string?>("localStorage.getItem", "view.motion") ?? "normal";
+    }
+
+    private Task SetDensity(string value) => SetViewAsync("density", value);
+    private Task SetFont(string value) => SetViewAsync("font", value);
+    private Task OnMotionChanged(ChangeEventArgs e) =>
+        SetViewAsync("motion", e.Value is true ? "reduced" : "normal");
+
+    private async Task SetViewAsync(string name, string value)
+    {
+        switch (name)
+        {
+            case "density": viewDensity = value; break;
+            case "font": viewFont = value; break;
+            case "motion": viewMotion = value; break;
+        }
+        await js.InvokeVoidAsync("localStorage.setItem", $"view.{name}", value);
+        await js.InvokeVoidAsync("applyViewSettings");
+    }
+
+    private async Task ResetViewAsync()
+    {
+        viewDensity = "comfortable";
+        viewFont = "normal";
+        viewMotion = "normal";
+        foreach (var name in new[] { "density", "font", "motion" })
+            await js.InvokeVoidAsync("localStorage.removeItem", $"view.{name}");
+        await js.InvokeVoidAsync("applyViewSettings");
     }
 
     private async Task HandleUpdateUser()
@@ -344,9 +580,15 @@
         ToastService.ShowBusyButton = !ToastService.ShowSaveButton;
 
         var response = await AuthService.UpdateProfile(appUser, selectedFile);
-        if (response.Flag)
+        if (response is { Flag: true })
         {
             ToastService.ShowSuccess(Lan["successMessage"], ThemeService.CurrentTheme);
+
+            selectedFile = null;
+            ImagePreview = null;
+            fileInputKey++;
+            await LoadProfile();
+            await LayoutState.NotifyProfileChanged();
 
             var storedTheme = await js.InvokeAsync<string>("localStorage.getItem", "theme");
 
@@ -369,20 +611,92 @@
         }
         else
             ToastService.ShowError(Lan["errorMessage"], ThemeService.CurrentTheme);
-        ShowFechar();
         return;
     }
 
+    private const long MaxImageBytes = 5 * 1024 * 1024;
+    private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/gif", "image/webp" };
+    private int fileInputKey;
+
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        selectedFile = e.File;
+        var file = e.File;
 
-        // Preview
-        using var stream = selectedFile.OpenReadStream(5 * 1024 * 1024);
-        var buffer = new byte[selectedFile.Size];
-        await stream.ReadAsync(buffer);
+        if (!AllowedImageTypes.Contains(file.ContentType))
+        {
+            RejectImage(UserLan["imgInvalid"]);
+            return;
+        }
 
-        ImagePreview = $"data:{selectedFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        if (file.Size > MaxImageBytes)
+        {
+            RejectImage(UserLan["imgTooLarge"]);
+            return;
+        }
+
+        try
+        {
+            // Pré-visualização: lê o ficheiro todo (um único ReadAsync pode devolver só uma parte).
+            using var stream = file.OpenReadStream(MaxImageBytes);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+
+            selectedFile = file;
+            ImagePreview = $"data:{file.ContentType};base64,{Convert.ToBase64String(memory.ToArray())}";
+        }
+        catch (IOException)
+        {
+            RejectImage(UserLan["imgTooLarge"]);
+        }
+    }
+
+    private void RejectImage(string message)
+    {
+        selectedFile = null;
+        ImagePreview = null;
+        fileInputKey++; // limpa o campo de ficheiro
+        ToastService.ShowError(message, ThemeService.CurrentTheme);
+    }
+
+    // ---- Alterar palavra-passe
+    private string pwdCurrent = string.Empty;
+    private string pwdNew = string.Empty;
+    private string pwdConfirm = string.Empty;
+    private bool pwdShow;
+    private bool pwdSaving;
+    private bool pwdOk;
+    private string? pwdMessage;
+
+    private async Task ChangePasswordAsync()
+    {
+        pwdMessage = null;
+        pwdOk = false;
+
+        if (string.IsNullOrWhiteSpace(pwdCurrent) || string.IsNullOrWhiteSpace(pwdNew))
+        {
+            pwdMessage = UserLan["pwdRequired"];
+            return;
+        }
+        if (pwdNew != pwdConfirm)
+        {
+            pwdMessage = UserLan["pwdMismatch"];
+            return;
+        }
+
+        pwdSaving = true;
+        var result = await AuthService.ChangePassword(pwdCurrent, pwdNew);
+        pwdSaving = false;
+
+        pwdOk = result.Flag;
+        pwdMessage = result.Flag
+            ? UserLan["pwdSuccess"]
+            : (string.IsNullOrWhiteSpace(result.Message) ? UserLan["pwdError"].Value : result.Message);
+
+        if (result.Flag)
+        {
+            pwdCurrent = pwdNew = pwdConfirm = string.Empty;
+            ToastService.ShowSuccess(UserLan["pwdSuccess"], ThemeService.CurrentTheme);
+        }
     }
 
     public void Dispose()

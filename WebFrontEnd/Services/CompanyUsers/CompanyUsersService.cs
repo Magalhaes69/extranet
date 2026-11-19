@@ -102,7 +102,7 @@ namespace WebFrontEnd.Services.CompanyUsers
                     return null;
                 return await response.Content.ReadFromJsonAsync<List<CompanyUserDto>>() ?? new();
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
             {
                 return null;
             }
@@ -117,7 +117,7 @@ namespace WebFrontEnd.Services.CompanyUsers
                     return null;
                 return await response.Content.ReadFromJsonAsync<CompanyUserDto>();
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
             {
                 return null;
             }
@@ -170,7 +170,7 @@ namespace WebFrontEnd.Services.CompanyUsers
 
                 return new ServiceResult(false, message);
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
             {
                 return new ServiceResult(false, null);
             }

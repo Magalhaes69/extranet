@@ -115,6 +115,7 @@ namespace Persistence.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBaseUserRepository, AppUserRepository>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<IUserActivityLogger, UserActivityLogger>();
             
             services.AddScoped<IOrdersCartRepository, OrdersCartRepository>();
             services.AddScoped<IOrderLineCartRepository, OrderLineCartRepository>();

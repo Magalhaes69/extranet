@@ -184,12 +184,135 @@
     <value>Atividades do utilizador</value>
   </data>
   <data name="userActivitiesDesc" xml:space="preserve">
-    <value>Aqui podes mostrar logs, histórico ou ações do utilizador</value>
+    <value>Histórico das suas ações recentes na aplicação: inícios de sessão, gestão de utilizadores e pedidos de licença.</value>
   </data>
   <data name="userData" xml:space="preserve">
     <value> Dados do utilizador</value>
   </data>
   <data name="userSettings" xml:space="preserve">
     <value>Definições</value>
+  </data>
+  <data name="tabTheme" xml:space="preserve">
+    <value>Tema</value>
+  </data>
+  <data name="tabView" xml:space="preserve">
+    <value>Definições de visualização</value>
+  </data>
+  <data name="viewHint" xml:space="preserve">
+    <value>Ajuste a densidade e o tamanho do texto. As alterações aplicam-se de imediato a toda a aplicação.</value>
+  </data>
+  <data name="viewDensity" xml:space="preserve">
+    <value>Densidade</value>
+  </data>
+  <data name="densityComfortable" xml:space="preserve">
+    <value>Confortável</value>
+  </data>
+  <data name="densityCompact" xml:space="preserve">
+    <value>Compacta</value>
+  </data>
+  <data name="viewFontSize" xml:space="preserve">
+    <value>Tamanho do texto</value>
+  </data>
+  <data name="fontSmall" xml:space="preserve">
+    <value>Pequeno</value>
+  </data>
+  <data name="fontNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="fontLarge" xml:space="preserve">
+    <value>Grande</value>
+  </data>
+  <data name="viewMotion" xml:space="preserve">
+    <value>Animações</value>
+  </data>
+  <data name="viewReduceMotion" xml:space="preserve">
+    <value>Reduzir animações e transições</value>
+  </data>
+  <data name="viewSavedHint" xml:space="preserve">
+    <value>Estas definições são guardadas automaticamente neste navegador.</value>
+  </data>
+  <data name="viewReset" xml:space="preserve">
+    <value>Repor valores por defeito</value>
+  </data>
+  <data name="activityEmpty" xml:space="preserve">
+    <value>Ainda não há actividade registada.</value>
+  </data>
+  <data name="activityLoadMore" xml:space="preserve">
+    <value>Carregar mais</value>
+  </data>
+  <data name="activityLoadError" xml:space="preserve">
+    <value>Não foi possível carregar a actividade.</value>
+  </data>
+  <data name="activityRetry" xml:space="preserve">
+    <value>Tentar novamente</value>
+  </data>
+  <data name="activity_login" xml:space="preserve">
+    <value>Iniciou sessão</value>
+  </data>
+  <data name="activity_user_created" xml:space="preserve">
+    <value>Criou um utilizador</value>
+  </data>
+  <data name="activity_user_updated" xml:space="preserve">
+    <value>Actualizou um utilizador</value>
+  </data>
+  <data name="activity_user_deactivated" xml:space="preserve">
+    <value>Desactivou um utilizador</value>
+  </data>
+  <data name="activity_user_activated" xml:space="preserve">
+    <value>Activou um utilizador</value>
+  </data>
+  <data name="activity_license_requested" xml:space="preserve">
+    <value>Requisitou uma licença</value>
+  </data>
+  <data name="activity_license_renewal" xml:space="preserve">
+    <value>Pediu a renovação de uma licença</value>
+  </data>
+  <data name="pwdSection" xml:space="preserve">
+    <value>Alterar palavra-passe</value>
+  </data>
+  <data name="pwdHint" xml:space="preserve">
+    <value>Para alterar a palavra-passe, indique a actual e escolha uma nova.</value>
+  </data>
+  <data name="pwdCurrent" xml:space="preserve">
+    <value>Palavra-passe actual</value>
+  </data>
+  <data name="pwdNew" xml:space="preserve">
+    <value>Nova palavra-passe</value>
+  </data>
+  <data name="pwdConfirm" xml:space="preserve">
+    <value>Confirmar nova palavra-passe</value>
+  </data>
+  <data name="pwdShow" xml:space="preserve">
+    <value>Mostrar palavras-passe</value>
+  </data>
+  <data name="pwdSubmit" xml:space="preserve">
+    <value>Alterar palavra-passe</value>
+  </data>
+  <data name="pwdSuccess" xml:space="preserve">
+    <value>Palavra-passe alterada com sucesso.</value>
+  </data>
+  <data name="pwdRequired" xml:space="preserve">
+    <value>Preencha a palavra-passe actual e a nova.</value>
+  </data>
+  <data name="pwdMismatch" xml:space="preserve">
+    <value>A nova palavra-passe e a confirmação não coincidem.</value>
+  </data>
+  <data name="pwdError" xml:space="preserve">
+    <value>Não foi possível alterar a palavra-passe. Tente novamente.</value>
+  </data>
+  <data name="imgHint" xml:space="preserve">
+    <value>JPG, PNG, GIF ou WEBP, até 5 MB.</value>
+  </data>
+  <data name="imgInvalid" xml:space="preserve">
+    <value>Formato de imagem inválido. Use JPG, PNG, GIF ou WEBP.</value>
+  </data>
+  <data name="imgTooLarge" xml:space="preserve">
+    <value>A imagem deve ter no máximo 5 MB.</value>
+  </data>
+  <data name="activity_password_changed" xml:space="preserve">
+    <value>Alterou a palavra-passe</value>
+  </data>
+  <data name="activity_profile_updated" xml:space="preserve">
+    <value>Actualizou o perfil</value>
   </data>
 </root>

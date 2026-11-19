@@ -6,6 +6,15 @@
 
         public event Func<Task>? OnChange;
 
+        /// <summary>Disparado quando o perfil (nome, fotografia) muda, para o cabeçalho se actualizar.</summary>
+        public event Func<Task>? OnProfileChanged;
+
+        public async Task NotifyProfileChanged()
+        {
+            if (OnProfileChanged != null)
+                await OnProfileChanged.Invoke();
+        }
+
         public async Task ToggleSidebar()
         {
             IsSidebarCollapsed = !IsSidebarCollapsed;
