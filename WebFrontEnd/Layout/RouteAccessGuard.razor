@@ -1,0 +1,48 @@
+@implements IDisposable
+@inject AccessService Access
+@inject NavigationManager Navigation
+
+@* Bloqueia o acesso por URL a páginas de processos não atribuídos ao utilizador
+   (o menu já as esconde). A API aplica as mesmas regras. *@
+
+@if (_allowed)
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool _allowed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        await CheckAsync();
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) =>
+        _ = InvokeAsync(async () =>
+        {
+            await CheckAsync();
+            StateHasChanged();
+        });
+
+    private async Task CheckAsync()
+    {
+        var path = Navigation.ToBaseRelativePath(Navigation.Uri);
+        _allowed = await Access.CanAccessAsync(path);
+
+        if (_allowed)
+            return;
+
+        // Sem acesso ao painel (página inicial): leva para a primeira página permitida.
+        var target = AccessService.RequiredProcess(path) == "dashboard"
+            ? await Access.FirstAllowedRouteAsync()
+            : null;
+
+        Navigation.NavigateTo(target ?? "/accessDenied", replace: true);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

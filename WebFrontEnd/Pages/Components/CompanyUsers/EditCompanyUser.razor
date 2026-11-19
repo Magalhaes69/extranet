@@ -1,0 +1,91 @@
+@page "/company-users/edit/{Id}"
+@using WebFrontEnd.Services.CompanyUsers
+@inject IStringLocalizer<UserManagementApp> L
+@inject ICompanyUsersService CompanyUsers
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleEdit"]">
+            <ButtonList>
+                <a class="btn btn-outline-secondary btn-sm py-0" href="/company-users/details/@Id">
+                    <i class="bi bi-arrow-left me-1"></i>@L["btnBack"]
+                </a>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_model is null)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errNotFound"]
+                    </div>
+                }
+                else if (_isManager)
+                {
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-shield-check me-1"></i>@L["managerLocked"]
+                    </div>
+                }
+                else
+                {
+                    <CompanyUserForm Model="_model"
+                                     IsEdit="true"
+                                     Saving="_saving"
+                                     Error="@_error"
+                                     OnSubmit="Save"
+                                     OnCancel="Cancel" />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private CompanyUserFormModel? _model;
+    private bool _loading = true;
+    private bool _saving;
+    private bool _isManager;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PageTitleService.SetTitle(L["titleEdit"]);
+        _loading = true;
+
+        var user = await CompanyUsers.GetByIdAsync(Id);
+        _model = user is null ? null : CompanyUserFormModel.From(user);
+        _isManager = user?.IsManager == true;
+
+        _loading = false;
+    }
+
+    private async Task Save()
+    {
+        if (_model is null) return;
+
+        _saving = true;
+        _error = null;
+
+        var result = await CompanyUsers.UpdateAsync(_model);
+
+        _saving = false;
+        if (result.Succeeded)
+        {
+            ToastService.ShowSuccess(L["msgUpdated"], ThemeService.CurrentTheme);
+            nav.NavigateTo($"/company-users/details/{Id}");
+            return;
+        }
+
+        _error = result.Message ?? L["errSave"];
+    }
+
+    private void Cancel() => nav.NavigateTo($"/company-users/details/{Id}");
+}

@@ -216,4 +216,19 @@
   <data name="passwordLowercase" xml:space="preserve">
     <value>The password must contain at least one lowercase letter.</value>
   </data>
+  <data name="btnResend" xml:space="preserve">
+    <value>Resend confirmation email</value>
+  </data>
+  <data name="resendSending" xml:space="preserve">
+    <value>Sending...</value>
+  </data>
+  <data name="resendWait" xml:space="preserve">
+    <value>You can resend again in {0}s</value>
+  </data>
+  <data name="resendSuccess" xml:space="preserve">
+    <value>Email sent again. Check your inbox and spam folder.</value>
+  </data>
+  <data name="resendError" xml:space="preserve">
+    <value>Could not resend the email. Please try again shortly.</value>
+  </data>
 </root>

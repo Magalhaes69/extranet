@@ -3,6 +3,8 @@
 @attribute [AllowAnonymous]
 @inject IStringLocalizer<LeadsApp> L
 @inject NavigationManager Navigation
+@using WebFrontEnd.Services.Leads
+@inject ILeadsService LeadsService
 
 <PageTitle>@L["confirmEmailTitle"]</PageTitle>
 
@@ -28,6 +30,37 @@
     <p class="xl-login-text">@L["confirmEmailExpiry"]</p>
     <p class="xl-login-text">@L["confirmEmailSpam"]</p>
 
+    @if (!string.IsNullOrWhiteSpace(Email))
+    {
+        <div class="mb-3">
+            <button type="button"
+                    class="btn btn-outline-secondary w-100"
+                    disabled="@(_sending || _secondsLeft > 0)"
+                    @onclick="Resend">
+                @if (_sending)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    @L["resendSending"]
+                }
+                else if (_secondsLeft > 0)
+                {
+                    <i class="bi bi-clock me-1"></i> @string.Format(L["resendWait"].Value, _secondsLeft)
+                }
+                else
+                {
+                    <i class="bi bi-envelope-arrow-up me-1"></i> @L["btnResend"]
+                }
+            </button>
+
+            @if (_status is not null)
+            {
+                <div class="small mt-2 @(_statusOk ? "text-success" : "text-danger")" role="status">
+                    <i class="bi @(_statusOk ? "bi-check-circle" : "bi-exclamation-circle") me-1"></i>@_status
+                </div>
+            }
+        </div>
+    }
+
     <div class="d-grid">
         <button type="button" class="btn xl-btn-login" @onclick="GoToLogin">
             @L["btnGoToLogin"] <i class="bi bi-arrow-right ms-1"></i>
@@ -39,5 +72,35 @@
 @code {
     [SupplyParameterFromQuery(Name = "email")] public string? Email { get; set; }
 
+    private const int CooldownSeconds = 60;
+    private bool _sending;
+    private bool _statusOk;
+    private int _secondsLeft;
+    private string? _status;
+
     private void GoToLogin() => Navigation.NavigateTo("/login");
+
+    private async Task Resend()
+    {
+        if (_sending || _secondsLeft > 0 || string.IsNullOrWhiteSpace(Email))
+            return;
+
+        _sending = true;
+        _status = null;
+        StateHasChanged();
+
+        _statusOk = await LeadsService.ResendActivationAsync(Email);
+        _status = _statusOk ? L["resendSuccess"] : L["resendError"];
+        _sending = false;
+
+        // Limita os reenvios: o botão fica bloqueado durante 60 segundos.
+        _secondsLeft = CooldownSeconds;
+        while (_secondsLeft > 0)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            _secondsLeft--;
+        }
+        StateHasChanged();
+    }
 }

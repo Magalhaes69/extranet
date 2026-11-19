@@ -1,0 +1,162 @@
+@page "/company-users"
+@using WebFrontEnd.Services.CompanyUsers
+@inject IStringLocalizer<UserManagementApp> L
+@inject ICompanyUsersService CompanyUsers
+@attribute [Authorize]
+
+<div class="@(ThemeService.CurrentTheme == "dark" ? "bg-dark" : "bg-white") mb-4">
+    <div class="mb-4 position-relative">
+        <AppContentHeader Title="@L["titleList"]">
+            <ButtonList>
+                <button class="btn btn-primary btn-sm" @onclick="GoToCreate">
+                    <i class="bi bi-person-plus me-1"></i>@L["btnNew"]
+                </button>
+            </ButtonList>
+        </AppContentHeader>
+
+        <div class="app-content">
+            <div class="container-fluid">
+
+                @if (_loading)
+                {
+                    <LoadingPage />
+                }
+                else if (_users is null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@L["errLoad"]
+                        <button class="btn btn-link btn-sm" @onclick="Load">@L["retry"]</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="position-relative">
+                                <input type="text" class="form-control form-control-sm pe-4"
+                                       placeholder="@L["search"]"
+                                       @bind="_search" @bind:event="oninput" />
+                                <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-8 text-md-end text-muted small pt-1">
+                            @string.Format(L["totalUsers"].Value, Filtered.Count)
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>@L["colName"]</th>
+                                        <th>@L["colEmail"]</th>
+                                        <th>@L["colPhone"]</th>
+                                        <th>@L["colProcesses"]</th>
+                                        <th>@L["colStatus"]</th>
+                                        <th class="text-end">@L["colActions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Filtered)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="user-avatar">@Initials(user)</span>
+                                                    <a href="/company-users/details/@user.Id" class="fw-semibold text-decoration-none">@user.FullName</a>
+                                                </div>
+                                            </td>
+                                            <td>@user.Email</td>
+                                            <td>@(string.IsNullOrWhiteSpace(user.PhoneNumber) ? "-" : user.PhoneNumber)</td>
+                                            <td>
+                                                @if (user.IsManager)
+                                                {
+                                                    <span class="badge text-bg-primary"><i class="bi bi-shield-check me-1"></i>@L["manager"]</span>
+                                                }
+                                                else if (user.Processes.Count == 0)
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var key in user.Processes)
+                                                    {
+                                                        var info = CompanyProcesses.Find(key);
+                                                        if (info is null) continue;
+                                                        <span class="badge text-bg-light border me-1"><i class="bi @info.Icon me-1"></i>@L[info.LabelKey]</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge @(user.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                    @(user.IsActive ? L["statusActive"] : L["statusInactive"])
+                                                </span>
+                                            </td>
+                                            <td class="text-end text-nowrap">
+                                                <a class="btn btn-outline-secondary btn-sm py-0" href="/company-users/details/@user.Id" title="@L["btnView"]">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                @if (!user.IsManager)
+                                                {
+                                                    <a class="btn btn-outline-primary btn-sm py-0" href="/company-users/edit/@user.Id" title="@L["btnEdit"]">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    @if (Filtered.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-5">
+                                                <i class="bi bi-people fs-2 d-block mb-2"></i>
+                                                @(_users.Count == 0 ? L["noUsers"] : L["noResults"])
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CompanyUserDto>? _users;
+    private bool _loading = true;
+    private string _search = string.Empty;
+
+    private List<CompanyUserDto> Filtered =>
+        (_users ?? new())
+            .Where(u => string.IsNullOrWhiteSpace(_search)
+                || u.FullName.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || u.Email.Contains(_search, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        PageTitleService.SetTitle(L["titleList"]);
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+        _users = await CompanyUsers.GetAllAsync();
+        _loading = false;
+    }
+
+    private void GoToCreate() => nav.NavigateTo("/company-users/create");
+
+    private static string Initials(CompanyUserDto u)
+    {
+        var first = u.FirstName.Trim();
+        var last = u.LastName.Trim();
+        return $"{(first.Length > 0 ? first[0] : '?')}{(last.Length > 0 ? last[0] : string.Empty)}".ToUpperInvariant();
+    }
+}

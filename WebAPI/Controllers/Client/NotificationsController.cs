@@ -13,6 +13,7 @@ namespace WebAPI.Controllers.Client;
 [ApiController]
 [Route("api/client/[controller]")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "process:licenses")]
 public class NotificationsController : ControllerBase
 {
     private readonly IMediator _mediator;

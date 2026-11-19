@@ -1,5 +1,6 @@
 ﻿
 using Application.UseCases.User.Auth;
+using Application.Services;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
@@ -32,7 +33,8 @@ namespace Application.UseCases.User.Verify2FA
             if (!isValid)
                 throw new Exception("Invalid or expired code");
 
-            var token = _jwtTokenGenerator.GenerateToken(user);
+            var (roles, processes) = await UserAccessResolver.ResolveAsync(_userManager, user);
+            var token = _jwtTokenGenerator.GenerateToken(user, roles, processes);
 
             return new LoginResponse
             {

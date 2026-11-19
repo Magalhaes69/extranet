@@ -216,4 +216,19 @@
   <data name="passwordLowercase" xml:space="preserve">
     <value>A palavra-passe deve conter pelo menos uma letra minúscula.</value>
   </data>
+  <data name="btnResend" xml:space="preserve">
+    <value>Reenviar email de confirmação</value>
+  </data>
+  <data name="resendSending" xml:space="preserve">
+    <value>A enviar...</value>
+  </data>
+  <data name="resendWait" xml:space="preserve">
+    <value>Poderá reenviar novamente dentro de {0}s</value>
+  </data>
+  <data name="resendSuccess" xml:space="preserve">
+    <value>Email reenviado. Verifique a sua caixa de entrada e a pasta de spam.</value>
+  </data>
+  <data name="resendError" xml:space="preserve">
+    <value>Não foi possível reenviar o email. Tente novamente dentro de instantes.</value>
+  </data>
 </root>

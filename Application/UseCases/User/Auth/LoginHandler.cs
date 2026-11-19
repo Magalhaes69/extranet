@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Application.Services;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
@@ -30,6 +31,10 @@ namespace Application.UseCases.User.Auth
             if(!validadPassword)
                 throw new Exception("Invalid credentials");
 
+            // Conta desactivada pelo gestor da empresa
+            if (await _userManager.IsLockedOutAsync(user))
+                throw new Exception("Invalid credentials");
+
             // Verificar se o email foi confirmado
             if (!user.EmailConfirmed)
             {
@@ -59,7 +64,8 @@ namespace Application.UseCases.User.Auth
                 };
             }
 
-            var token = _jwtTokenGenerator.GenerateToken(user);
+            var (roles, processes) = await UserAccessResolver.ResolveAsync(_userManager, user);
+            var token = _jwtTokenGenerator.GenerateToken(user, roles, processes);
             return new LoginResponse
             {
                 Email = user.Email!,

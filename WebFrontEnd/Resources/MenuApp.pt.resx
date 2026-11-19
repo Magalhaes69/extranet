@@ -186,4 +186,7 @@
   <data name="menuSectionAdmin" xml:space="preserve">
     <value>ADMINISTRAÇÃO</value>
   </data>
+  <data name="menuUserManagementGroup" xml:space="preserve">
+    <value>Gestão de utilizadores</value>
+  </data>
 </root>

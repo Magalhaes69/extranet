@@ -8,6 +8,8 @@ namespace WebFrontEnd.Services.Leads
     {
         Task<bool> SubmitLeadAsync(LeadFormDto lead);
         Task<LeadResponseDto> CreateAsync(LeadFormDto lead);
+        /// <summary>Pede à API (POST account/resend-activation) o reenvio do email de confirmação.</summary>
+        Task<bool> ResendActivationAsync(string email);
     }
 
     public class LeadsService : ILeadsService
@@ -25,6 +27,21 @@ namespace WebFrontEnd.Services.Leads
         public Task<bool> SubmitLeadAsync(LeadFormDto lead)
         {
             return Task.FromResult(true);
+        }
+
+        public async Task<bool> ResendActivationAsync(string email)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    $"{_apiBaseUrl}account/resend-activation",
+                    new { email });
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException)
+            {
+                return false;
+            }
         }
 
         public async Task<LeadResponseDto> CreateAsync(LeadFormDto lead)
