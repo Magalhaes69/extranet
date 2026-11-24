@@ -13,5 +13,6 @@ namespace Domain.Models
         public string UserName { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public int SessionPoolSize { get; set; } = 4;
+        // Lista de preços utilizada para os módulos
     }
 }

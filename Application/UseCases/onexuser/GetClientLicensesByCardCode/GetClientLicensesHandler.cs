@@ -22,8 +22,10 @@ public sealed class GetClientLicensesHandler :
         if (string.IsNullOrWhiteSpace(request.CardCode))
             return null;
 
+        // Consultar a API LicenseKey.
+        // A resposta já deverá incluir os preços dos módulos.
         return await _licenseApiClient.GetByCardCodeAsync(
-            request.CardCode,
+            request.CardCode.Trim(),
             cancellationToken);
     }
 }

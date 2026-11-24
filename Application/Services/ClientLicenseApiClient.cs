@@ -1,10 +1,11 @@
-﻿
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
-namespace Application.Services;
-using Domain.Dtos;
 using Application.Interfaces;
+using Domain.Dtos;
+using Microsoft.Extensions.Configuration;
+
+namespace Application.Services;
+
 public sealed class ClientLicenseApiClient : IClientLicenseApiClient
 {
     private readonly HttpClient _httpClient;
@@ -28,19 +29,25 @@ public sealed class ClientLicenseApiClient : IClientLicenseApiClient
         var apiKey = _configuration["LicensingApi:ApiKey"];
 
         if (string.IsNullOrWhiteSpace(apiKey))
+        {
             throw new InvalidOperationException(
                 "LicensingApi:ApiKey não está configurada.");
+        }
 
+        // Endpoint do PROJ1 - LicenseKey
         var url = $"api/client/licenses/{Uri.EscapeDataString(cardCode.Trim())}";
 
         using var message = new HttpRequestMessage(
-            HttpMethod.Get, url);
+            HttpMethod.Get,
+            url);
 
         message.Headers.TryAddWithoutValidation(
-            "X-Api-Key", apiKey.Trim());
+            "X-Api-Key",
+            apiKey.Trim());
 
         using var response = await _httpClient.SendAsync(
-            message, cancellationToken);
+            message,
+            cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;
@@ -57,9 +64,11 @@ public sealed class ClientLicenseApiClient : IClientLicenseApiClient
                 response.StatusCode);
         }
 
-        return await response.Content.ReadFromJsonAsync<ClientLicenseOverviewDto>(
-            cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException(
-                "O LicenseKey devolveu uma resposta vazia.");
+        var result = await response.Content
+            .ReadFromJsonAsync<ClientLicenseOverviewDto>(
+                cancellationToken: cancellationToken);
+
+        return result ?? throw new InvalidOperationException(
+            "O LicenseKey devolveu uma resposta vazia.");
     }
 }
